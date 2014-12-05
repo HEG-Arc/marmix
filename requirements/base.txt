@@ -35,4 +35,9 @@ django-avatar==2.0
 # Time zones support
 pytz==2014.7
 
+# Django REST framework
+Markdown==2.5.2
+django-filter==0.9.1
+djangorestframework==3.0.0
+
 # Your custom requirements go here
