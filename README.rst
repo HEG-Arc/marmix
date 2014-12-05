@@ -12,8 +12,8 @@ A stock market serious game for higher education
     :target: https://coveralls.io/r/HEG-Arc/marmix
     :alt: Coverage Status
 
-.. image:: https://requires.io/github/HEG-Arc/marmix/requirements.svg?branch=gh-pages
-    :target: https://requires.io/github/HEG-Arc/marmix/requirements/?branch=gh-pages
+.. image:: https://requires.io/github/HEG-Arc/marmix/requirements.svg?branch=master
+    :target: https://requires.io/github/HEG-Arc/marmix/requirements/?branch=master
     :alt: Requirements Status
 
 .. image:: https://img.shields.io/badge/licence-GPLv3-brightgreen.svg
