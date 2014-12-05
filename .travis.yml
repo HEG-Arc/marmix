@@ -1,0 +1,21 @@
+language: python
+python:
+  - "3.4"
+install:
+  - pip install coveralls
+  - pip install -r requirements/test.txt
+script:
+  - coverage run --source marmix setup.py test
+after_success:
+  - coveralls
+notifications:
+  webhooks:
+    urls:
+      - http://requestb.in/x6amm3x6
+    on_success: always
+    on_failure: never
+  email:
+    recipients:
+      - cedric@gaspoz-fleiner.com
+    on_success: always
+    on_failure: always
