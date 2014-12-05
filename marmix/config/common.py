@@ -111,7 +111,7 @@ class Common(Configuration):
 
     # DATABASE CONFIGURATION
     # See: https://docs.djangoproject.com/en/dev/ref/settings/#databases
-    DATABASES = values.DatabaseURLValue('postgres://localhost/marmix')
+    DATABASES = values.DatabaseURLValue('postgres://marmix:marmix@localhost/marmix')
     # END DATABASE CONFIGURATION
 
     # CACHING
