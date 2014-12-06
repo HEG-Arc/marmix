@@ -28,11 +28,15 @@ from django.contrib import admin
 # Third-party app imports
 
 # MarMix imports
-#from .models import <model>
+from .models import Simulation, Currency
 
 
-# class <model>Admin(admin.ModelAdmin):
-#     pass
+class SimulationAdmin(admin.ModelAdmin):
+    pass
 
 
-#admin.site.register(<model>, <modeladmin>)
+class CurrencyAdmin(admin.ModelAdmin):
+    pass
+
+admin.site.register(Simulation, SimulationAdmin)
+admin.site.register(Currency, CurrencyAdmin)
