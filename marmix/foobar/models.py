@@ -43,5 +43,5 @@ class FooBar(TimeStampedModel):
         verbose_name_plural = _('FooBArs')
         ordering = ['foo']
 
-    def __unicode__(self):
+    def __str__(self):
         return self.number
