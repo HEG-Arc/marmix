@@ -43,4 +43,7 @@ djangorestframework==3.0.0
 # Django extensions
 django-extensions==1.4.8
 
-# Your custom requirements go here
+# Django-shorturls (for encoding)
+django-shorturls==1.1.0
+
+
