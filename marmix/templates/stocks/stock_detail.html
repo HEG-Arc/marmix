@@ -1,0 +1,35 @@
+{%  extends "base.html" %}
+
+{% block title %}
+    {{ block.super }} > Stock detail
+{% endblock title %}
+
+{% block content %}
+<h1>{{ object.name }}</h1>
+<dl>
+    <dt>Symbol</dt>
+    <dd>{{ object.symbol }}</dd>
+    <dt>Quantity</dt>
+    <dd>{{ object.quantity }}</dd>
+</dl>
+<p>{{ object.description|safe }}</p>
+
+<table>
+<tr>
+    <th>Price</th>
+    <th>Timestamp</th>
+</tr>
+{% for quote in object.quotes.all %}
+<tr>
+    <td>{{ quote.price }}</td>
+    <td>{{ quote.timestamp|date:"SHORT_DATE_FORMAT" }} {{ quote.timestamp|time:"H:i:s" }}</td>
+</tr>
+{% empty %}
+<tr>
+    <td colspan="2">No current quote for this stock</td>
+</tr>
+{% endfor %}
+</table>
+
+<a href="{% url 'stocks-list-view' %}">Back</a>
+{% endblock content %}

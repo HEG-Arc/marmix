@@ -21,7 +21,6 @@
 # along with MarMix. If not, see <http://www.gnu.org/licenses/>.
 
 # Stdlib imports
-from hashids import Hashids
 
 # Core Django imports
 from django.db import models
@@ -81,13 +80,13 @@ class Simulation(TimeStampedModel):
     simulation_type = models.CharField(verbose_name=_("type of simulation"), max_length=2,
                                        choices=SIMULATION_TYPE_CHOICES, default=INTRO,
                                        help_text=_("The type of this simulation"))
-    teams = models.IntegerField(verbose_name=_("number of teams"), max_length=3,
+    teams = models.IntegerField(verbose_name=_("number of teams"),
                                 default=1, help_text=_("Number of teams playing (does not include admin accounts"))
     capital = models.DecimalField(verbose_name=_("initial capital"), max_digits=14, decimal_places=4,
                                   default='0.0000', help_text=_("Initial capital paid to each team"))
-    currency = models.ForeignKey('Currency', verbose_name=_('currency'),
-                                 help_text=_('The currency symbol displayed in the interface (has no impact on the simulation'))
-    state = models.IntegerField(verbose_name=_("state of the simulation"), max_length=2,
+    currency = models.ForeignKey('Currency', verbose_name=_("currency"),
+                                 help_text=_("The currency symbol displayed in the interface (has no impact on the simulation)"))
+    state = models.IntegerField(verbose_name=_("state of the simulation"),
                                 choices=SIMULATION_STATE_CHOICES, default=CONFIGURING,
                                 help_text=_("The current state of this simulation"))
 
@@ -98,10 +97,9 @@ class Simulation(TimeStampedModel):
             self.code = short_code_encode(self.id, self.customer.short_code)
         super(Simulation, self).save(*args, **kwargs)
 
-
     class Meta:
-        verbose_name = _('simulation')
-        verbose_name_plural = _('simulations')
+        verbose_name = _("simulation")
+        verbose_name_plural = _("simulations")
         ordering = ['code']
 
     def __str__(self):
@@ -118,8 +116,8 @@ class Currency(models.Model):
                               help_text=_("The symbol of the currency"))
 
     class Meta:
-        verbose_name = _('currency')
-        verbose_name_plural = _('currencies')
+        verbose_name = _("currency")
+        verbose_name_plural = _("currencies")
         ordering = ['code']
 
     def __str__(self):

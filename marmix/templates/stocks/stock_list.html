@@ -1,0 +1,16 @@
+{%  extends "base.html" %}
+
+{% block title %}
+    {{ block.super }} > Stocks
+{% endblock title %}
+
+{% block content %}
+<h1>Stocks</h1>
+<ul>
+{% for stock in object_list %}
+    <li><a href="{% url 'stocks-detail-view' stock.id %}">{{ stock.symbol }}</a> - {{ stock.name }} ({{ stock.quantity }})</li>
+{% empty %}
+    <li>No stocks yet.</li>
+{% endfor %}
+</ul>
+{% endblock content %}

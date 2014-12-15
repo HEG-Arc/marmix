@@ -7,6 +7,7 @@ from django.views.generic import DetailView
 from django.views.generic import RedirectView
 from django.views.generic import UpdateView
 from django.views.generic import ListView
+from rest_framework import viewsets
 
 # Only authenticated users can access views using this.
 from braces.views import LoginRequiredMixin
@@ -16,6 +17,7 @@ from .forms import UserForm
 
 # Import the customized User model
 from .models import User
+from .serializers import UserSerializer
 
 
 class UserDetailView(LoginRequiredMixin, DetailView):
@@ -55,3 +57,11 @@ class UserListView(LoginRequiredMixin, ListView):
     # These next two lines tell the view to index lookups by username
     slug_field = "username"
     slug_url_kwarg = "username"
+
+
+class UserViewSet(viewsets.ReadOnlyModelViewSet):
+    """
+    This viewset automatically provides `list` and `detail` actions.
+    """
+    queryset = User.objects.all()
+    serializer_class = UserSerializer

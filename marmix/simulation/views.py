@@ -33,14 +33,32 @@ from django.template.context import RequestContext
 from django.http import Http404, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
+from django.http import Http404
 
 # Third-party app imports
+from rest_framework import permissions, viewsets
 
 # MarMix imports
-#from .models import <model>
-
+from .models import Simulation, Currency
+from .serializers import SimulationSerializer, CurrencySerializer
+from .permissions import IsOwnerOrReadOnly, IsAdminOrReadOnly
 
 logger = logging.getLogger(__name__)
+
+
+class SimulationViewSet(viewsets.ModelViewSet):
+    queryset = Simulation.objects.all()
+    serializer_class = SimulationSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly,)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+class CurrencyViewSet(viewsets.ModelViewSet):
+    queryset = Currency.objects.all()
+    serializer_class = CurrencySerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
 
 
 # class FooDetailView(DetailView):

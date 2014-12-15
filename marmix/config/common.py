@@ -42,12 +42,15 @@ class Common(Configuration):
         'allauth',  # registration
         'allauth.account',  # registration
         'allauth.socialaccount',  # registration
+        'rest_framework',  # API
     )
 
     # Apps specific for this project go here.
     LOCAL_APPS = (
         'users',  # custom users app
         'simulation',
+        'billing',
+        'stocks',
     )
 
     # See: https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -264,4 +267,6 @@ class Common(Configuration):
     }
     # END LOGGING CONFIGURATION
 
-    # Your common stuff: Below this line define 3rd party library settings
+    REST_FRAMEWORK = {
+        'PAGINATE_BY': 20
+    }
