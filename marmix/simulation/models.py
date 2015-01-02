@@ -21,6 +21,7 @@
 # along with MarMix. If not, see <http://www.gnu.org/licenses/>.
 
 # Stdlib imports
+import random
 
 # Core Django imports
 from django.db import models
@@ -80,8 +81,6 @@ class Simulation(TimeStampedModel):
     simulation_type = models.CharField(verbose_name=_("type of simulation"), max_length=2,
                                        choices=SIMULATION_TYPE_CHOICES, default=INTRO,
                                        help_text=_("The type of this simulation"))
-    teams = models.IntegerField(verbose_name=_("number of teams"),
-                                default=1, help_text=_("Number of teams playing (does not include admin accounts"))
     capital = models.DecimalField(verbose_name=_("initial capital"), max_digits=14, decimal_places=4,
                                   default='0.0000', help_text=_("Initial capital paid to each team"))
     currency = models.ForeignKey('Currency', verbose_name=_("currency"),
@@ -96,6 +95,11 @@ class Simulation(TimeStampedModel):
             super(Simulation, self).save(*args, **kwargs)
             self.code = short_code_encode(self.id, self.customer.short_code)
         super(Simulation, self).save(*args, **kwargs)
+
+    def _nb_teams(self):
+        teams = self.teams.all().count()
+        return teams
+    nb_teams = property(_nb_teams)
 
     class Meta:
         verbose_name = _("simulation")
@@ -127,27 +131,46 @@ class Currency(models.Model):
             return self.code
 
 
-# class Team(TimeStampedModel):
-#     """
-#     A team participating in a simulation.
-#     """
-#     simulation = models.ForeignKey('Simulation', verbose_name=_('simulation'), related_name=_('teams'),
-#                                    help_text=_("The simulation in which the team participate"))
-#     login = models.CharField(verbose_name=_("login"), max_length=50, blank=True, null=True,
-#                              help_text=_("A name that can be attributed to the team"))
-#     password = models.
-#     name = models.CharField(verbose_name=_("name"), max_length=50, blank=True, null=True,
-#                             help_text=_("A name that can be attributed to the team"))
-#     team_type =
-#     locked = models.BooleanField
-#
-#     class Meta:
-#         verbose_name = _('team')
-#         verbose_name_plural = _('teams')
-#         ordering = ['simulation', 'login']
-#
-#     def __str__(self):
-#         if self.symbol:
-#             return self.symbol
-#         else:
-#             return self.code
+class Team(TimeStampedModel):
+    """
+    A team participating in a simulation.
+    """
+    PLAYERS = 'P'
+    LIQUIDITY_MANAGER = 'L'
+    TEAM_TYPE_CHOICES = (
+        (PLAYERS, _('Players')),
+        (LIQUIDITY_MANAGER, _('Liquidity manager')),
+    )
+
+    customer = models.ForeignKey(Customer, verbose_name=_('organization'), related_name=_('teams'),
+                                 help_text=_("The organization the team belongs to"))
+    simulations = models.ManyToManyField('Simulation', verbose_name=_('simulations'), related_name=_('teams'), null=True,
+                                         blank=True, help_text=_("The simulation(s) the team belongs to"))
+    name = models.CharField(verbose_name=_("name"), max_length=50,
+                            help_text=_("A name that can be attributed to the team"))
+    team_type = models.CharField(verbose_name=_("type of team"), max_length=10, choices=TEAM_TYPE_CHOICES,
+                                 default=PLAYERS,
+                                 help_text=_("Indicates if it is a team of players or a liquidity manager"))
+    locked = models.BooleanField(verbose_name=_("locked"), default=False,
+                                 help_text=_("Locked teams can not log in the simulation"))
+    users = models.ManyToManyField(User, verbose_name=_('members'), related_name=_('teams'), null=True, blank=True,
+                                   help_text=_("The users belonging to the team"))
+
+    def _get_holdings(self):
+        # TODO: Compute it for real ;-)
+        holdings = random.randint(10000, 99999)
+        return holdings
+    get_holdings = property(_get_holdings)
+
+    def _get_members(self):
+        return self.users.all().count()
+    get_members = property(_get_members)
+
+    class Meta:
+        verbose_name = _('team')
+        verbose_name_plural = _('teams')
+        unique_together = ('customer', 'name')
+        ordering = ['customer', 'name']
+
+    def __str__(self):
+        return self.name

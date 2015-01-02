@@ -46,4 +46,11 @@ django-extensions==1.4.8
 # Django-shorturls (for encoding)
 django-shorturls==1.1.0
 
+# AngularJS
+django-angular==0.7.10
 
+# Permissions
+django-permission==0.8.3
+
+# Revision number
+dealer==2.0.4

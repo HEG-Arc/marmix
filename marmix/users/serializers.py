@@ -32,7 +32,7 @@ from .models import User
 
 
 class UserSerializer(serializers.ModelSerializer):
-    simulations = serializers.HyperlinkedRelatedField(many=True, read_only=True, view_name='simulations-list')
+    simulations = serializers.HyperlinkedRelatedField(many=True, read_only=True, view_name='simulation-detail')
 
     class Meta:
         model = User

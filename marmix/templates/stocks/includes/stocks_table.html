@@ -1,0 +1,30 @@
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Code</th>
+            <th>Administrator</th>
+            <th>Simulation type</th>
+            <th>Teams</th>
+            <th>Capital</th>
+            <th>Currency</th>
+            <th>State</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for simulation in stocks %}
+        <tr>
+            <td><a href="{% url 'simulations-detail-view' simulation.id %}">{{ simulation.code }}</a></td>
+            <td><a href="{% url 'users:detail' simulation.user.username  %}">{{ simulation.user }}</a></td>
+            <td>{{ simulation.get_simulation_type_display }}</td>
+            <td>{{ simulation.nb_teams }}</td>
+            <td>{{ simulation.capital|stringformat:".2f" }}</td>
+            <td>{{ simulation.currency }}</td>
+            <td>{{ simulation.get_state_display }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="3">No simulation available for this organization!</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

@@ -1,0 +1,16 @@
+{%  extends "base.html" %}
+
+{% block title %}
+    {{ block.super }} > Simulations
+{% endblock title %}
+
+{% block content %}
+<h1>{% if request.user.is_staff %}
+        All
+    {% else %}
+        {{ request.user|capfirst }}
+    {% endif %}Simulations</h1>
+
+{% include "simulation/includes/simulations_table.html" with simulations=object_list %}
+
+{% endblock content %}

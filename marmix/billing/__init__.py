@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-# admin.py
+# __init__.py
 #
 # Copyright (C) 2014 HES-SO//HEG Arc
 #
@@ -20,29 +20,9 @@
 # You should have received a copy of the GNU General Public License
 # along with MarMix. If not, see <http://www.gnu.org/licenses/>.
 
-# Stdlib imports
-
-# Core Django imports
-from django.contrib import admin
-
-# Third-party app imports
-
-# MarMix imports
-from .models import Simulation, Currency, Team
+"""
+The billing app is intended to support the commercial part of MarMix. Customers, users, credits, etc. are
+managed through this app.
+"""
 
 
-class SimulationAdmin(admin.ModelAdmin):
-    pass
-
-
-class CurrencyAdmin(admin.ModelAdmin):
-    pass
-
-
-class TeamAdmin(admin.ModelAdmin):
-    pass
-
-
-admin.site.register(Simulation, SimulationAdmin)
-admin.site.register(Currency, CurrencyAdmin)
-admin.site.register(Team, TeamAdmin)

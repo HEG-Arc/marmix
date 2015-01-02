@@ -1,0 +1,40 @@
+{%  extends "base.html" %}
+
+{% block title %}
+    {{ block.super }} > Simulation detail
+{% endblock title %}
+
+{% block content %}
+<h1>{{ object.customer }}</h1>
+<dl class="dl-horizontal">
+    <dt>Simulation code</dt>
+    <dd>{{ object.code }}</dd>
+    <dt>Administrator</dt>
+    <dd><a href="{% url 'users:detail' object.user.username  %}">{{ object.user }}</a></dd>
+    <dt>Simulation type</dt>
+    <dd>{{ object.get_simulation_type_display }}</dd>
+    <dt>Number of teams</dt>
+    <dd>{{ object.nb_teams }}</dd>
+    <dt>Initial capital</dt>
+    <dd>{{ object.capital|stringformat:".2f" }}</dd>
+    <dt>Currency</dt>
+    <dd>{{ object.currency }}</dd>
+    <dt>Current state</dt>
+    <dd>{{ object.get_state_display }}</dd>
+    <dt>Created at</dt>
+    <dd>{{ object.created }}</dd>
+</dl>
+
+<a class="btn btn-primary" href="{% url 'simulation-update-view' object.id %}"><i class="fa fa-pencil-square-o"></i> Edit the simulation</a>
+
+<h2>Teams</h2> <a class="btn btn-primary" href="{% url 'teams-selection-view' object.id %}"><i class="fa fa-plus-square-o fa-lg"></i> Manage teams for this simulation</a>
+
+{% include "simulation/includes/teams_table.html" with teams=object.teams.all %}
+
+<h2>Stocks</h2> <a class="btn btn-primary" href="{% url 'teams-create-view' object.id %}"><i class="fa fa-plus-square-o fa-lg"></i> Create simulation</a>
+
+{% include "stocks/includes/stocks_table.html" with stocks=object.stocks.all %}
+
+<a href="{% url 'customers-list-view' %}"><i class="fa fa-chevron-circle-left fa-lg"></i> Back</a>
+
+{% endblock content %}

@@ -38,11 +38,13 @@ class Common(Configuration):
     )
     THIRD_PARTY_APPS = (
         'crispy_forms',  # Form layouts
-        'avatar',  # for user avatars
-        'allauth',  # registration
-        'allauth.account',  # registration
-        'allauth.socialaccount',  # registration
+        'avatar',
+        'allauth',
+        'allauth.account',
+        #'allauth.socialaccount',
         'rest_framework',  # API
+        'djangular',  # AngularJS
+        'permission',
     )
 
     # Apps specific for this project go here.
@@ -130,7 +132,7 @@ class Common(Configuration):
 
     # GENERAL CONFIGURATION
     # See: https://docs.djangoproject.com/en/dev/ref/settings/#time-zone
-    TIME_ZONE = 'America/Los_Angeles'
+    TIME_ZONE = 'Europe/Zurich'
 
     # See: https://docs.djangoproject.com/en/dev/ref/settings/#language-code
     LANGUAGE_CODE = 'en-us'
@@ -153,7 +155,7 @@ class Common(Configuration):
     TEMPLATE_CONTEXT_PROCESSORS = (
         'django.contrib.auth.context_processors.auth',
         "allauth.account.context_processors.account",
-        "allauth.socialaccount.context_processors.socialaccount",
+        #"allauth.socialaccount.context_processors.socialaccount",
         'django.core.context_processors.debug',
         'django.core.context_processors.i18n',
         'django.core.context_processors.media',
@@ -162,6 +164,7 @@ class Common(Configuration):
         'django.contrib.messages.context_processors.messages',
         'django.core.context_processors.request',
         # Your stuff: custom template context processers go here
+        'dealer.contrib.django.context_processor',
     )
 
     # See: https://docs.djangoproject.com/en/dev/ref/settings/#template-dirs
@@ -215,6 +218,7 @@ class Common(Configuration):
     # AUTHENTICATION CONFIGURATION
     AUTHENTICATION_BACKENDS = (
         "django.contrib.auth.backends.ModelBackend",
+        "permission.backends.PermissionBackend",
         "allauth.account.auth_backends.AuthenticationBackend",
     )
 
@@ -270,3 +274,6 @@ class Common(Configuration):
     REST_FRAMEWORK = {
         'PAGINATE_BY': 20
     }
+
+    DEALER_TYPE = 'git'
+    DEALER_BACKENDS = 'git'

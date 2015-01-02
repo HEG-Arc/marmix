@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-{% load avatar_tags %}
 {% load static %}
 
 {% block title %}User: {{ object.username }}{% endblock %}
@@ -22,6 +21,7 @@
     <a class="btn btn-primary" href="{% url 'users:update' %}">My Info</a>
     <a class="btn btn-primary" href="{% url 'account_email' %}">E-Mail</a>
     <a class="btn btn-info" href="{% url 'avatar_change' %}">Avatar</a>
+    <a class="btn btn-warning" href="{% url 'avatar_change' %}"><i class="fa fa-users"></i> Join a team</a>
     <!-- Your Stuff: Custom user template urls -->
   </div>
 

@@ -38,7 +38,18 @@ class Local(Common):
             'debug_toolbar.panels.redirects.RedirectsPanel',
         ],
         'SHOW_TEMPLATE_CONTEXT': True,
+        'JQUERY_URL': '/static/jquery/js/jquery-2.1.0.min.js',
     }
     # end django-debug-toolbar
 
-    # Your local stuff: Below this line define 3rd party libary settings
+    # django-nose
+    INSTALLED_APPS += ('django_nose',)
+
+    # Use nose to run all tests
+    TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+
+    # Tell nose to measure coverage on the 'foo' and 'bar' apps
+    NOSE_ARGS = [
+        '--with-coverage',
+        '--cover-package=stocks, users',
+    ]

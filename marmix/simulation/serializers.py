@@ -29,19 +29,28 @@ from django.forms import widgets
 from rest_framework import serializers
 
 # MarMix imports
-from .models import Simulation, Currency
+from .models import Simulation, Currency, Team
 
 
 class SimulationSerializer(serializers.ModelSerializer):
     user = serializers.ReadOnlyField(source='user.username')
-    #currency = serializers.ReadOnlyField(source='currency.code')
+    stocks = serializers.HyperlinkedRelatedField(many=True, read_only=True, view_name='stock-detail')
+    currency = serializers.ReadOnlyField(source='currency.code')
 
     class Meta:
         model = Simulation
-        fields = ('id', 'code', 'customer', 'user', 'simulation_type', 'teams', 'capital', 'currency', 'state')
+        fields = ('id', 'code', 'customer', 'user', 'simulation_type', 'teams', 'capital', 'currency', 'state', 'stocks')
 
 
 class CurrencySerializer(serializers.ModelSerializer):
     class Meta:
         model = Currency
         fields = ('id', 'code', 'symbol')
+
+
+class TeamSerializer(serializers.ModelSerializer):
+    orders = serializers.HyperlinkedRelatedField(many=True, read_only=True, view_name='order-detail')
+
+    class Meta:
+        model = Team
+        fields = ('id', 'simulation', 'login', 'password', 'name', 'team_type', 'locked', 'orders')

@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-# admin.py
+# views.py
 #
 # Copyright (C) 2014 HES-SO//HEG Arc
 #
@@ -23,26 +23,19 @@
 # Stdlib imports
 
 # Core Django imports
-from django.contrib import admin
 
 # Third-party app imports
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework.reverse import reverse
 
 # MarMix imports
-from .models import Simulation, Currency, Team
 
 
-class SimulationAdmin(admin.ModelAdmin):
-    pass
-
-
-class CurrencyAdmin(admin.ModelAdmin):
-    pass
-
-
-class TeamAdmin(admin.ModelAdmin):
-    pass
-
-
-admin.site.register(Simulation, SimulationAdmin)
-admin.site.register(Currency, CurrencyAdmin)
-admin.site.register(Team, TeamAdmin)
+@api_view(('GET',))
+def api_root(request, format=None):
+    return Response({
+        'users': reverse('api-users-list', request=request, format=format),
+        'simulations': reverse('api-simulations-list', request=request, format=format),
+        'currencies': reverse('api-currencies-list', request=request, format=format),
+    })

@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-# admin.py
+# urls.py
 #
 # Copyright (C) 2014 HES-SO//HEG Arc
 #
@@ -23,26 +23,18 @@
 # Stdlib imports
 
 # Core Django imports
-from django.contrib import admin
+from django.conf.urls import patterns, url
 
 # Third-party app imports
 
 # MarMix imports
-from .models import Simulation, Currency, Team
+from .views import CustomerListView, CustomerDetailView, TeamsCreateView
 
 
-class SimulationAdmin(admin.ModelAdmin):
-    pass
+urlpatterns = patterns('',
+    url(r'^(?P<pk>\d+)/create-teams$', TeamsCreateView.as_view(), name='teams-create-view'),
+    url(r'^(?P<pk>\d+)/$', CustomerDetailView.as_view(), name='customers-detail-view'),
+    url(r'^$', CustomerListView.as_view(), name='customers-list-view'),
 
-
-class CurrencyAdmin(admin.ModelAdmin):
-    pass
-
-
-class TeamAdmin(admin.ModelAdmin):
-    pass
-
-
-admin.site.register(Simulation, SimulationAdmin)
-admin.site.register(Currency, CurrencyAdmin)
-admin.site.register(Team, TeamAdmin)
+#     url(r'^foo/$', foo, name='foo'),
+)

@@ -1,0 +1,32 @@
+{%  extends "base.html" %}
+
+{% block title %}
+    {{ block.super }} > Customer detail
+{% endblock title %}
+
+{% block content %}
+<h1>{{ object.name }}</h1>
+<dl class="dl-horizontal">
+    <dt>Short code</dt>
+    <dd>{{ object.short_code }}</dd>
+    <dt>Admin Users</dt>
+    <dd>
+        {% if object.users.all %}
+            {% for user in object.users.all %}
+                <a href="{% url 'users:detail' user.username  %}">{{ user }}</a>
+            {% if not forloop.last %}/ {% endif %}
+            {% endfor %}
+        {% else %}
+            No user with administrative rights!
+        {% endif %}
+</dl>
+<h2>Teams</h2> <a class="btn btn-primary" href="{% url 'teams-create-view' object.id %}"><i class="fa fa-plus-square-o fa-lg"></i> Create teams</a>
+
+{% include "simulation/includes/teams_table.html" with teams=object.teams.all %}
+
+<h2>Simulations</h2> <a class="btn btn-primary" href="{% url 'simulation-add-view' object.id %}"><i class="fa fa-plus-square-o fa-lg"></i> Create simulation</a>
+
+{% include "simulation/includes/simulations_table.html" with simulations=object.simulations.all %}
+
+<a href="{% url 'customers-list-view' %}"><i class="fa fa-chevron-circle-left fa-lg"></i> Back</a>
+{% endblock content %}

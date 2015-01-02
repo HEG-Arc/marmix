@@ -1,0 +1,36 @@
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Code</th>
+            <th>Administrator</th>
+            <th>Simulation type</th>
+            <th>Teams</th>
+            <th>Capital</th>
+            <th>Currency</th>
+            <th>State</th>
+            <th>Created</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for simulation in simulations %}
+        <tr>
+            <td><a href="{% url 'simulations-detail-view' simulation.id %}">{{ simulation.code }}</a></td>
+            <td><a href="{% url 'users:detail' simulation.user.username  %}">{{ simulation.user }}</a></td>
+            <td>{{ simulation.get_simulation_type_display }}</td>
+            <td>{{ simulation.nb_teams }}</td>
+            <td>{{ simulation.capital|stringformat:".2f" }}</td>
+            <td>{{ simulation.currency }}</td>
+            <td>{{ simulation.get_state_display }}
+                {% if simulation.user == request.user %}
+                    <a class="btn btn-danger btn-sm" href="{% url 'simulation-delete-view' simulation.id %}"><i class="fa fa-trash-o"></i></a>
+                {% endif %}
+            </td>
+            <td>{{ simulation.created|date:"SHORT_DATE_FORMAT" }}</td>
+        </tr>
+    {% empty %}
+        <tr>
+            <td colspan="8">You are not administrator of any simulation!</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

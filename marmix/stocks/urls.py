@@ -31,7 +31,6 @@ from django.conf.urls import patterns, url
 from .views import StockListView, StockDetailView
 
 urlpatterns = patterns('',
-                       url(r'^(?P<pk>\d+)/$', StockDetailView.as_view(), name='stocks-detail-view'),
-                       url(r'^$', StockListView.as_view(), name='stocks-list-view'),
-                       #     url(r'^foo/$', foo, name='foo'),
-                       )
+    url(r'^(?P<pk>\d+)/$', StockDetailView.as_view(), name='stocks-detail-view'),
+    url(r'^$', StockListView.as_view(), name='stocks-list-view'),
+)

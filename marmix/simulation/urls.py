@@ -28,10 +28,13 @@ from django.conf.urls import patterns, url
 # Third-party app imports
 
 # MarMix imports
-#from .views import <view>
+from .views import SimulationDetailView, SimulationListView, TeamsSelectionView, SimulationCreate, SimulationUpdate, SimulationDelete
 
-
-# urlpatterns = patterns('',
-#     url(r'^foo/(?P<foo_id>\d+)/$', foo, name='foo'),
-#     url(r'^foo/$', foo, name='foo'),
-# )
+urlpatterns = patterns('',
+    url(r'^(?P<pk>\d+)/select-teams/$', TeamsSelectionView.as_view(), name='teams-selection-view'),
+    url(r'^(?P<pk>\d+)/$', SimulationDetailView.as_view(), name='simulations-detail-view'),
+    url(r'^add/(?P<customer_id>\d+)/$', SimulationCreate.as_view(), name='simulation-add-view'),
+    url(r'^(?P<pk>\d+)/update/$', SimulationUpdate.as_view(), name='simulation-update-view'),
+    url(r'^(?P<pk>\d+)/delete/$', SimulationDelete.as_view(), name='simulation-delete-view'),
+    url(r'^', SimulationListView.as_view(), name='simulations-list-view'),
+)

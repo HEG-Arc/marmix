@@ -24,17 +24,30 @@
 
 # Core Django imports
 from django import forms
+from django.utils.safestring import mark_safe
+from django.core.urlresolvers import reverse
 
 # Third-party app imports
 
 # MarMix imports
-#from .models import <model>
+from .models import Team, Simulation
 
 
-# class BarForm(forms.ModelForm):
-#     """
-#     BarForm
-#     """
-#     class Meta:
-#         model = <model>
-#         fields = '__all__'
+class TeamsSelectionForm(forms.Form):
+    class MultipleTeamsField(forms.ModelMultipleChoiceField):
+        def label_from_instance(self, obj):
+            #url = reverse('card_detail', kwargs={'pk': obj.card_id}))
+            label = '%s' % (obj.name, )
+            return mark_safe(label)
+
+    teams = MultipleTeamsField(queryset=[], widget=forms.CheckboxSelectMultiple())
+
+    def __init__(self, *args, **kwargs):
+        self.customer = kwargs.pop('customer', None)
+        self.simulation = kwargs.pop('simulation', None)
+        initial = kwargs.get('initial', {})
+        initial.update({'teams': self.simulation.teams.all()})
+        kwargs['initial'] = initial
+        super(TeamsSelectionForm, self).__init__(*args, **kwargs)
+        self.fields['teams'].queryset = Team.objects.all().filter(customer=self.customer)
+

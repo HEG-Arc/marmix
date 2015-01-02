@@ -11,7 +11,7 @@ except ImportError:
     from distutils.core import setup
 
 import marmix
-version = marmix.__version__
+version = '3.0.1'
 
 setup(
     name='MarMix',

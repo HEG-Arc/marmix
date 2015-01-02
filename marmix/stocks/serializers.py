@@ -1,5 +1,5 @@
 # -*- coding: UTF-8 -*-
-# admin.py
+# serializers.py
 #
 # Copyright (C) 2014 HES-SO//HEG Arc
 #
@@ -23,26 +23,33 @@
 # Stdlib imports
 
 # Core Django imports
-from django.contrib import admin
 
 # Third-party app imports
+from rest_framework import serializers
 
 # MarMix imports
-from .models import Simulation, Currency, Team
+from .models import Stock, Quote, Order
 
 
-class SimulationAdmin(admin.ModelAdmin):
-    pass
+class StockSerializer(serializers.ModelSerializer):
+    quotes = serializers.HyperlinkedRelatedField(many=True, read_only=True, view_name='quote-detail')
+
+    class Meta:
+        model = Stock
+        fields = ('id', 'simulation', 'symbol', 'name', 'description', 'quantity', 'quotes')
 
 
-class CurrencyAdmin(admin.ModelAdmin):
-    pass
+class QuoteSerializer(serializers.ModelSerializer):
+    stock = serializers.HyperlinkedRelatedField(read_only=True, view_name='stock-detail')
+
+    class Meta:
+        model = Quote
+        fields = ('id', 'stock', 'price', 'timestamp')
 
 
-class TeamAdmin(admin.ModelAdmin):
-    pass
+class OrderSerializer(serializers.ModelSerializer):
 
-
-admin.site.register(Simulation, SimulationAdmin)
-admin.site.register(Currency, CurrencyAdmin)
-admin.site.register(Team, TeamAdmin)
+    class Meta:
+        model = Order
+        description = "Test"
+        fields = ('id', 'stock', 'team', 'order_type', 'quantity', 'price', 'created_at', 'fulfilled_at')

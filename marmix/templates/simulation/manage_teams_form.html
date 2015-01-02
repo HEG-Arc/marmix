@@ -1,0 +1,15 @@
+{%  extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+    {{ block.super }} > Simulation > Manage teams
+{% endblock title %}
+
+{% block content %}
+<h1>Manage teams</h1>
+<form action="{% url 'teams-selection-view' simulation_id %}" method="post">
+    {% csrf_token %}
+    {{ form|crispy }}
+    <button type="submit" class="btn btn-success"><i class="fa fa-check-square-o"></i> Update participating teams</button>
+</form>
+{% endblock content %}

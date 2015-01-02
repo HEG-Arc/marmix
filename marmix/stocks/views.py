@@ -35,9 +35,11 @@ from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 
 # Third-party app imports
+from rest_framework import permissions, viewsets
 
 # MarMix imports
-from stocks.models import Stock
+from .models import Stock, Quote, Order
+from .serializers import StockSerializer, QuoteSerializer, OrderSerializer
 
 
 logger = logging.getLogger(__name__)
@@ -61,3 +63,21 @@ class StockDetailView(DetailView):
         context = super(StockDetailView, self).get_context_data(**kwargs)
         #context['foo'] = "bar"
         return context
+
+
+class StockViewSet(viewsets.ModelViewSet):
+    queryset = Stock.objects.all()
+    serializer_class = StockSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+
+
+class QuoteViewSet(viewsets.ModelViewSet):
+    queryset = Quote.objects.all()
+    serializer_class = QuoteSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+
+
+class OrderViewSet(viewsets.ModelViewSet):
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
