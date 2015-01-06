@@ -2,6 +2,7 @@
 from django.conf.urls import patterns, url
 
 from users import views
+from simulation.views import TeamJoinView
 
 urlpatterns = patterns('',
     # URL pattern for the UserListView  # noqa

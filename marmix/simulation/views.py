@@ -48,7 +48,7 @@ from rest_framework import permissions, viewsets
 # MarMix imports
 from .models import Simulation, Currency, Team
 from .serializers import SimulationSerializer, CurrencySerializer, TeamSerializer
-from .forms import TeamsSelectionForm
+from .forms import TeamsSelectionForm, TeamJoinForm
 from billing.models import Customer
 from .permissions import IsOwnerOrReadOnly, IsAdminOrReadOnly
 
@@ -198,8 +198,10 @@ class SimulationDelete(SuccessMessageMixin, DeleteView):
     success_url = reverse_lazy('simulations-list-view')
     success_message = _("The simulation <b>%(code)s</b> was successfully deleted!")
 
-    def get_success_message(self, cleaned_data):
-        return self.success_message % {'code': self.object.code, }
+    def delete(self, request, *args, **kwargs):
+        simulation = get_object_or_404(Simulation, pk=self.kwargs['pk'])
+        messages.success(self.request, self.success_message % {'code': simulation.code, })
+        return super(SimulationDelete, self).delete(request, *args, **kwargs)
 
     def get_object(self, queryset=None):
         if self.request.user.is_staff:
@@ -207,3 +209,42 @@ class SimulationDelete(SuccessMessageMixin, DeleteView):
         else:
             simulation = get_object_or_404(Simulation, user=self.request.user, pk=self.kwargs['pk'])
         return simulation
+
+
+class TeamJoinView(SuccessMessageMixin, FormView):
+    template_name = 'simulation/join_team_form.html'
+    form_class = TeamJoinForm
+    success_message = _("You were successfully added to the team <b>%(team_name)s</b>!")
+    team_name = ''
+
+    def form_valid(self, form):
+        # This method is called when valid form data has been POSTed.
+        # It should return an HttpResponse.
+        team = get_object_or_404(Team, uuid=form.cleaned_data.get('uuid'))
+        user = self.request.user
+        team.users.add(user)
+        self.team_name = team.name
+        return super(TeamJoinView, self).form_valid(form)
+
+    def get_success_url(self):
+        return reverse('users:detail', kwargs={"username": self.request.user.username})
+
+    def get_success_message(self, cleaned_data):
+        return self.success_message % {'team_name': self.team_name, }
+
+
+class TeamDetailView(DetailView):
+
+    model = Team
+
+    def get_context_data(self, **kwargs):
+        context = super(TeamDetailView, self).get_context_data(**kwargs)
+        #context['foo'] = "bar"
+        return context
+
+    def get_object(self, queryset=None):
+        if self.request.user.is_staff:
+            team = get_object_or_404(Team, pk=self.kwargs['pk'])
+        else:
+            team = get_object_or_404(Team, users=self.request.user, pk=self.kwargs['pk'])
+        return team

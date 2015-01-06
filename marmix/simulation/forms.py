@@ -26,6 +26,9 @@
 from django import forms
 from django.utils.safestring import mark_safe
 from django.core.urlresolvers import reverse
+from django.db import IntegrityError
+from django.shortcuts import redirect
+from django.contrib import messages
 
 # Third-party app imports
 
@@ -51,3 +54,11 @@ class TeamsSelectionForm(forms.Form):
         super(TeamsSelectionForm, self).__init__(*args, **kwargs)
         self.fields['teams'].queryset = Team.objects.all().filter(customer=self.customer)
 
+
+class TeamJoinForm(forms.Form):
+    uuid = forms.CharField(max_length=8)
+
+    def join_team(self, request):
+        team = Team.objects.get(uuid=self.cleaned_data['uuid'])
+        user = request.user
+        user.team.add(team)

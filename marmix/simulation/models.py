@@ -22,6 +22,7 @@
 
 # Stdlib imports
 import random
+import uuid
 
 # Core Django imports
 from django.db import models
@@ -39,6 +40,11 @@ from users.models import User
 def short_code_encode(sim_id, cust_code):
     encoded_id = baseconv.base32.from_decimal(sim_id)
     return "%s-%s" % (cust_code.upper(), encoded_id)
+
+
+def generate_uuid(length):
+    # TODO: Add a test of unicity in the DB...
+    return str(uuid.uuid4().hex.upper()[0:length])
 
 
 class Simulation(TimeStampedModel):
@@ -155,6 +161,8 @@ class Team(TimeStampedModel):
                                  help_text=_("Locked teams can not log in the simulation"))
     users = models.ManyToManyField(User, verbose_name=_('members'), related_name=_('teams'), null=True, blank=True,
                                    help_text=_("The users belonging to the team"))
+    uuid = models.CharField(verbose_name=_("registration key"), max_length=8, blank=True, null=True, unique=True,
+                            help_text=_("A unique registration key that is automatically created"))
 
     def _get_holdings(self):
         # TODO: Compute it for real ;-)
@@ -165,6 +173,11 @@ class Team(TimeStampedModel):
     def _get_members(self):
         return self.users.all().count()
     get_members = property(_get_members)
+
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        if self.uuid is None:
+            self.uuid = generate_uuid(8)
+        models.Model.save(self, force_insert, force_update, using, update_fields)
 
     class Meta:
         verbose_name = _('team')

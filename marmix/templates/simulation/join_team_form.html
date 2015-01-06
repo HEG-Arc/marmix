@@ -1,0 +1,15 @@
+{%  extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+    {{ block.super }} > Simulation > Join team
+{% endblock title %}
+
+{% block content %}
+<h1>Join team</h1>
+<form action="{% url 'team-join-view' %}" method="post">
+    {% csrf_token %}
+    {{ form|crispy }}
+    <button type="submit" class="btn btn-success"><i class="fa fa-check-square-o"></i> Join team</button>
+</form>
+{% endblock content %}

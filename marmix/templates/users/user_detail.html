@@ -21,7 +21,7 @@
     <a class="btn btn-primary" href="{% url 'users:update' %}">My Info</a>
     <a class="btn btn-primary" href="{% url 'account_email' %}">E-Mail</a>
     <a class="btn btn-info" href="{% url 'avatar_change' %}">Avatar</a>
-    <a class="btn btn-warning" href="{% url 'avatar_change' %}"><i class="fa fa-users"></i> Join a team</a>
+    <a class="btn btn-warning" href="{% url 'team-join-view' %}"><i class="fa fa-users"></i> Join a team</a>
     <!-- Your Stuff: Custom user template urls -->
   </div>
 
@@ -29,6 +29,18 @@
 <!-- End Action buttons -->
 {% endif %}
 
+<div class="row">
+<h2>Current team(s)</h2>
+<p>{% if object.teams.all %}
+    {% for team in object.teams.all %}
+        <a href="{% url 'team-detail-view' team.id  %}">{{ team.name }}</a>
+        {% if not forloop.last %}/ {% endif %}
+    {% endfor %}
+{% else %}
+    Currently not member of any team.
+{% endif %}</p>
+
+</div>
 
 </div>
 {% endblock content %}

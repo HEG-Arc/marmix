@@ -1,0 +1,36 @@
+{%  extends "base.html" %}
+
+{% block title %}
+    {{ block.super }} > Team detail
+{% endblock title %}
+
+{% block content %}
+<h1>Team {{ object.name }}</h1>
+<dl class="dl-horizontal">
+    <dt>Simulation(s)</dt>
+    <dd>
+        {% if object.simulations.all %}
+            {% for simulation in object.simulations.all %}
+                {{ simulation }}
+            {% if not forloop.last %}/ {% endif %}
+            {% endfor %}
+        {% else %}
+            Not part of a simulation
+        {% endif %}
+    </dd>
+    <dt>Users</dt>
+    <dd>
+        {% if object.users.all %}
+            {% for user in object.users.all %}
+                <a href="{% url 'users:detail' user.username  %}">{{ user }}</a>
+            {% if not forloop.last %}/ {% endif %}
+            {% endfor %}
+        {% else %}
+            No user with administrative rights!
+        {% endif %}
+    </dd>
+    <dt>Registration code</dt>
+    <dd>{{ object.uuid }}</dd>
+</dl>
+
+{% endblock content %}
