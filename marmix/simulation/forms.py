@@ -38,10 +38,11 @@ from .models import Team, Simulation
 
 class TeamsSelectionForm(forms.Form):
     class MultipleTeamsField(forms.ModelMultipleChoiceField):
-        def label_from_instance(self, obj):
-            #url = reverse('card_detail', kwargs={'pk': obj.card_id}))
-            label = '%s' % (obj.name, )
-            return mark_safe(label)
+        pass
+        # def label_from_instance(self, obj):
+        #     #url = reverse('card_detail', kwargs={'pk': obj.card_id}))
+        #     label = '%s' % (obj.name, )
+        #     return mark_safe(label)
 
     teams = MultipleTeamsField(queryset=[], widget=forms.CheckboxSelectMultiple())
 

@@ -21,7 +21,10 @@
         {% endif %}
     </dd>
 </dl>
-<h2>Teams</h2> <a class="btn btn-primary" href="{% url 'teams-create-view' object.id %}"><i class="fa fa-plus-square-o fa-lg"></i> Create teams</a>
+<h2>Teams</h2>
+
+<a class="btn btn-primary" href="{% url 'teams-create-view' object.id %}"><i class="fa fa-plus-square-o fa-lg"></i> Create teams</a>
+<a class="btn btn-info" href="{% url 'teams-export-xlsx-customer' object.id %}"><i class="fa fa-file-excel-o fa-lg"></i> Export teams</a>
 
 {% include "simulation/includes/teams_table.html" with teams=object.teams.all %}
 

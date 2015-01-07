@@ -54,3 +54,6 @@ django-permission==0.8.3
 
 # Revision number
 dealer==2.0.4
+
+# Excel Export
+XlsxWriter==0.6.5

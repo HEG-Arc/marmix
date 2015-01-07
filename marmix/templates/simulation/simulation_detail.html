@@ -27,7 +27,10 @@
 
 <a class="btn btn-primary" href="{% url 'simulation-update-view' object.id %}"><i class="fa fa-pencil-square-o"></i> Edit the simulation</a>
 
-<h2>Teams</h2> <a class="btn btn-primary" href="{% url 'teams-selection-view' object.id %}"><i class="fa fa-plus-square-o fa-lg"></i> Manage teams for this simulation</a>
+<h2>Teams</h2>
+
+<a class="btn btn-primary" href="{% url 'teams-selection-view' object.id %}"><i class="fa fa-plus-square-o fa-lg"></i> Manage teams for this simulation</a>
+<a class="btn btn-info" href="{% url 'teams-export-xlsx-simulation' object.id %}"><i class="fa fa-file-excel-o fa-lg"></i> Export teams</a>
 
 {% include "simulation/includes/teams_table.html" with teams=object.teams.all %}
 

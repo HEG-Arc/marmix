@@ -24,6 +24,8 @@
 from hashlib import sha256
 import json
 import logging
+import io
+import datetime
 
 # Core Django imports
 from django.views.generic.detail import DetailView
@@ -44,6 +46,7 @@ from django.utils.translation import ugettext_lazy as _
 
 # Third-party app imports
 from rest_framework import permissions, viewsets
+from xlsxwriter.workbook import Workbook
 
 # MarMix imports
 from .models import Simulation, Currency, Team
@@ -53,6 +56,11 @@ from billing.models import Customer
 from .permissions import IsOwnerOrReadOnly, IsAdminOrReadOnly
 
 logger = logging.getLogger(__name__)
+
+
+def remove_tz_from_date(date):
+    naive_date = datetime.datetime(date.year, date.month, date.day, date.hour, date.minute, date.second, date.microsecond)
+    return naive_date
 
 
 class SimulationViewSet(viewsets.ModelViewSet):
@@ -248,3 +256,48 @@ class TeamDetailView(DetailView):
         else:
             team = get_object_or_404(Team, users=self.request.user, pk=self.kwargs['pk'])
         return team
+
+
+def teams_export_xlsx(request, simulation_id=None, customer_id=None):
+    if simulation_id:
+        simulation = get_object_or_404(Simulation, pk=simulation_id)
+        teams = simulation.teams.all()
+    elif customer_id:
+        customer = get_object_or_404(Customer, pk=customer_id)
+        teams = Team.objects.all().filter(customer=customer)
+    else:
+        customers = Customer.objects.all().filter(users=request.user)
+        teams = Team.objects.all().filter(customer=customers)
+
+    output = io.BytesIO()
+    workbook = Workbook(output, {'in_memory': True})
+    worksheet = workbook.add_worksheet('Teams')
+    bold = workbook.add_format({'bold': True})
+    date_format = workbook.add_format({'num_format': 'yyyy-MM-dd'})
+    worksheet.write(0, 0, 'Team', bold)
+    worksheet.write(0, 1, 'Registration key', bold)
+    worksheet.write(0, 2, 'Type', bold)
+    worksheet.write(0, 3, '# Members', bold)
+    worksheet.write(0, 4, 'Locked', bold)
+    worksheet.write(0, 5, 'Created', bold)
+    worksheet.write(0, 6, 'Modified', bold)
+    worksheet.write(0, 7, 'Organization', bold)
+    row = 1
+    for team in teams:
+        worksheet.write(row, 0, team.name)
+        worksheet.write(row, 1, team.uuid)
+        worksheet.write(row, 2, team.get_team_type_display())
+        worksheet.write(row, 3, team.get_members)
+        worksheet.write(row, 4, team.locked)
+        worksheet.write(row, 5, remove_tz_from_date(team.created), date_format)
+        worksheet.write(row, 6, remove_tz_from_date(team.modified), date_format)
+        worksheet.write(row, 7, team.customer.name)
+        row += 1
+    workbook.close()
+
+    output.seek(0)
+
+    response = HttpResponse(output.read(), content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    response['Content-Disposition'] = "attachment; filename=marmix_teams.xlsx"
+
+    return response

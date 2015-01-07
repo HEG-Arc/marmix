@@ -28,7 +28,8 @@ from django.conf.urls import patterns, url
 # Third-party app imports
 
 # MarMix imports
-from .views import SimulationDetailView, SimulationListView, TeamsSelectionView, SimulationCreate, SimulationUpdate, SimulationDelete, TeamJoinView, TeamDetailView
+from .views import SimulationDetailView, SimulationListView, TeamsSelectionView, SimulationCreate, SimulationUpdate, \
+    SimulationDelete, TeamJoinView, TeamDetailView, teams_export_xlsx
 
 urlpatterns = patterns('',
     url(r'^(?P<pk>\d+)/select-teams/$', TeamsSelectionView.as_view(), name='teams-selection-view'),
@@ -38,5 +39,8 @@ urlpatterns = patterns('',
     url(r'^(?P<pk>\d+)/delete/$', SimulationDelete.as_view(), name='simulation-delete-view'),
     url(r'^join-team/$', TeamJoinView.as_view(), name='team-join-view'),
     url(r'^team/(?P<pk>\d+)/$', TeamDetailView.as_view(), name='team-detail-view'),
+    url(r'^(?P<simulation_id>\d+)/teams/export/$', teams_export_xlsx, name='teams-export-xlsx-simulation'),
+    url(r'^teams/export/(?P<customer_id>\d+)/$', teams_export_xlsx, name='teams-export-xlsx-customer'),
+    url(r'^teams/export/$', teams_export_xlsx, name='teams-export-xlsx'),
     url(r'^', SimulationListView.as_view(), name='simulations-list-view'),
 )
