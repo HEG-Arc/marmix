@@ -1,46 +1,51 @@
 {% extends "base.html" %}
 {% load static %}
+{% load avatar_tags %}
 
 {% block title %}User: {{ object.username }}{% endblock %}
 
 {% block content %}
-<div class="container">
+    <div class="container">
 
-  <div class="row">
-    <div class="col-sm-12">
+        <div class="row">
+            <div class="col-sm-12">
 
-      <h2>{{ object.username }}</h2>
+                <h2>{% if object == request.user %}Welcome {% endif %}{{ object.username }}</h2>
+                <dl class="dl-horizontal">
+                    <dt>Name</dt>
+                    <dd>{{ object.first_name }} {{ object.last_name }} {% if object == request.user %}<a class="btn btn-primary btn-xs" href="{% url 'users:update' %}"><i class="fa fa-pencil-square-o"></i> Edit</a>{% endif %}</dd>
+                    <dt>Email</dt>
+                    <dd>{{ object.email }} {% if object == request.user %}<a class="btn btn-primary btn-xs" href="{% url 'account_email' %}">{% if object.email %}<i class="fa fa-pencil-square-o"></i> Edit{% else %}<i class="fa fa-plus-square-o fa-lg"></i> Add{% endif %}</a>{% endif %}</dd>
+                    <dt>Avatar</dt>
+                    <dd>{% if object == request.user %}<a href="{% url 'avatar_change' %}">{% avatar object %}</a>{% else %}{% avatar object %}{% endif %}</dd>
+                    <dt>Date joined</dt>
+                    <dd>{{ object.date_joined|date:"SHORT_DATE_FORMAT" }}</dd>
+                    <dt>Last login</dt>
+                    <dd>{{ object.last_login|date:"SHORT_DATE_FORMAT" }}</dd>
+                    <dt>Permissions</dt>
+                    <dd>Active {% if object.is_active %}<i class="fa fa-check"></i>{% else %}<i class="fa fa-times"></i>{% endif %} |
+                        Manager {% if object.is_poweruser %}<i class="fa fa-check"></i>{% else %}<i class="fa fa-times"></i>{% endif %} |
+                        Staff {% if object.is_staff %}<i class="fa fa-check"></i>{% else %}<i class="fa fa-times"></i>{% endif %} |
+                        Superuser {% if object.is_superuser %}<i class="fa fa-check"></i>{% else %}<i class="fa fa-times"></i>{% endif %}
+                    </dd>
+                </dl>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-12 ">
+                <h2>Current team(s)</h2>
+                {% if object == request.user %}<a class="btn btn-warning" href="{% url 'team-join-view' %}"><i class="fa fa-users"></i> Join a team</a>{% endif %}
+                <p>{% if object.teams.all %}
+                    {% for team in object.teams.all %}
+                        <a href="{% url 'team-detail-view' team.id  %}">{{ team.name }}</a>
+                        {% if not forloop.last %}/ {% endif %}
+                    {% endfor %}
+                {% else %}
+                    Currently not member of any team.
+                {% endif %}</p>
+            </div>
+        </div>
+
     </div>
-  </div>
-
-{% if object == request.user %}
-<!-- Action buttons -->     
-<div class="row">
-
-  <div class="col-sm-12 ">
-    <a class="btn btn-primary" href="{% url 'users:update' %}">My Info</a>
-    <a class="btn btn-primary" href="{% url 'account_email' %}">E-Mail</a>
-    <a class="btn btn-info" href="{% url 'avatar_change' %}">Avatar</a>
-    <a class="btn btn-warning" href="{% url 'team-join-view' %}"><i class="fa fa-users"></i> Join a team</a>
-    <!-- Your Stuff: Custom user template urls -->
-  </div>
-
-</div>
-<!-- End Action buttons -->
-{% endif %}
-
-<div class="row">
-<h2>Current team(s)</h2>
-<p>{% if object.teams.all %}
-    {% for team in object.teams.all %}
-        <a href="{% url 'team-detail-view' team.id  %}">{{ team.name }}</a>
-        {% if not forloop.last %}/ {% endif %}
-    {% endfor %}
-{% else %}
-    Currently not member of any team.
-{% endif %}</p>
-
-</div>
-
-</div>
 {% endblock content %}
