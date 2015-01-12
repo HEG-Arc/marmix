@@ -15,7 +15,7 @@
             <td>{{ stock.name }}</td>
             <td>{{ stock.quantity }}</td>
             {% if stock.last_quote %}
-                <td>{{ stock.last_quote.price|stringformat:".2f" }} @ {{ stock.last_quote.timestamp|date:"SHORT_DATE_FORMAT" }}</td>
+                <td>{{ stock.last_quote.price|stringformat:".2f" }} @ {{ stock.last_quote.timestamp|date:"SHORT_DATETIME_FORMAT" }}</td>
             {% else %}
                 <td>None</td>
             {% endif %}
