@@ -1,29 +1,29 @@
 <table class="table table-striped">
     <thead>
         <tr>
-            <th>Code</th>
-            <th>Administrator</th>
-            <th>Simulation type</th>
-            <th>Teams</th>
-            <th>Capital</th>
-            <th>Currency</th>
-            <th>State</th>
+            <th>Symbol</th>
+            <th>Name</th>
+            <th>Quantity</th>
+            <th>Last quote</th>
+            <th>Last transaction</th>
         </tr>
     </thead>
     <tbody>
-    {% for simulation in stocks %}
+    {% for stock in stocks %}
         <tr>
-            <td><a href="{% url 'simulations-detail-view' simulation.id %}">{{ simulation.code }}</a></td>
-            <td><a href="{% url 'users:detail' simulation.user.username  %}">{{ simulation.user }}</a></td>
-            <td>{{ simulation.get_simulation_type_display }}</td>
-            <td>{{ simulation.nb_teams }}</td>
-            <td>{{ simulation.capital|stringformat:".2f" }}</td>
-            <td>{{ simulation.currency }}</td>
-            <td>{{ simulation.get_state_display }}</td>
+            <td>{{ stock.symbol }}</td>
+            <td>{{ stock.name }}</td>
+            <td>{{ stock.quantity }}</td>
+            {% if stock.last_quote %}
+                <td>{{ stock.last_quote.price|stringformat:".2f" }} @ {{ stock.last_quote.timestamp|date:"SHORT_DATE_FORMAT" }}</td>
+            {% else %}
+                <td>None</td>
+            {% endif %}
+            <td>TBD</td>
         </tr>
         {% empty %}
         <tr>
-            <td colspan="3">No simulation available for this organization!</td>
+            <td colspan="5">No stock available for this simulation!</td>
         </tr>
     {% endfor %}
     </tbody>

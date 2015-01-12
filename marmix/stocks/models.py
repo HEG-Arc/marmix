@@ -48,6 +48,14 @@ class Stock(TimeStampedModel):
         verbose_name_plural = _('stocks')
         ordering = ['symbol']
 
+    def _last_quote(self):
+        try:
+            last_quote = self.quotes.all()[0]
+        except IndexError:
+            last_quote = None
+        return last_quote
+    last_quote = property(_last_quote)
+
     def __str__(self):
         return self.symbol
 
@@ -117,8 +125,8 @@ class Transaction(models.Model):
     fulfilled_at = models.DateTimeField(verbose_name=_("fulfilled"), auto_now_add=True, help_text=_("Fulfillment date"))
 
     class Meta:
-        verbose_name = _('order')
-        verbose_name_plural = _('orders')
+        verbose_name = _('transaction')
+        verbose_name_plural = _('transactions')
         ordering = ['stock', 'price']
 
     def __str__(self):

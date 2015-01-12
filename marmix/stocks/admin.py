@@ -28,11 +28,26 @@ from django.contrib import admin
 # Third-party app imports
 
 # MarMix imports
-#from .models import <model>
+from .models import Stock, Quote, Order, Transaction
 
 
-# class <model>Admin(admin.ModelAdmin):
-#     pass
+class StockAdmin(admin.ModelAdmin):
+    pass
 
 
-#admin.site.register(<model>, <modeladmin>)
+class QuoteAdmin(admin.ModelAdmin):
+    pass
+
+
+class OrderAdmin(admin.ModelAdmin):
+    pass
+
+
+class TransactionAdmin(admin.ModelAdmin):
+    pass
+
+
+admin.site.register(Stock, StockAdmin)
+admin.site.register(Quote, QuoteAdmin)
+admin.site.register(Order, OrderAdmin)
+admin.site.register(Transaction, TransactionAdmin)
