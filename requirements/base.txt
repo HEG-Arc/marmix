@@ -57,3 +57,6 @@ dealer==2.0.4
 
 # Excel Export
 XlsxWriter==0.6.5
+
+# Scheduler
+celery==3.1.17

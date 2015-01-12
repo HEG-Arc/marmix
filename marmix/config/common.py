@@ -277,3 +277,6 @@ class Common(Configuration):
 
     DEALER_TYPE = 'git'
     DEALER_BACKENDS = 'git'
+
+    # Celery
+    BROKER_URL = 'amqp://marmix:marmix@localhost:5672//'
