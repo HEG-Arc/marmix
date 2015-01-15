@@ -53,6 +53,7 @@ class Common(Configuration):
         'simulation',
         'billing',
         'stocks',
+        'tickers',
     )
 
     # See: https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
