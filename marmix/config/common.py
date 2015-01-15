@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/dev/ref/settings/
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
 from os.path import join, dirname
+import datetime
 
 from configurations import Configuration, values
 
@@ -281,3 +282,10 @@ class Common(Configuration):
 
     # Celery
     BROKER_URL = 'amqp://marmix:marmix@localhost:5672//'
+
+    CELERYBEAT_SCHEDULE = {
+        "main-ticker": {
+            "task": "tickers.tasks.main_ticker_task",
+            "schedule": datetime.timedelta(seconds=5),
+            },
+        }

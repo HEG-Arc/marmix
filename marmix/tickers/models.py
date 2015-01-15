@@ -58,6 +58,14 @@ class Ticker(TimeStampedModel):
         verbose_name_plural = _('tickers')
         ordering = ['simulation']
 
+    def _last_tick(self):
+        try:
+            last_tick = self.ticks.all()[0]
+        except IndexError:
+            last_tick = None
+        return last_tick
+    last_tick = property(_last_tick)
+
     def __str__(self):
         return self.simulation.__str__()
 
@@ -109,3 +117,21 @@ class TickerQuote(models.Model):
 
     def __str__(self):
         return "%s - %s (%s)" % (self.stock, self.price, self.timestamp)
+
+
+class TickerTick(models.Model):
+    """
+    Stocks are shares of a company that are automatically generated during the simulation setup.
+    """
+    ticker = models.ForeignKey('Ticker', verbose_name=_("ticker"), related_name="ticks", help_text=_("Related ticker"))
+    timestamp = models.DateTimeField(verbose_name=_("timestamp"), auto_now_add=True, help_text=_("Timestamp of the tick"))
+    sim_round = models.IntegerField(verbose_name=_("round"), default=0, help_text=_("Current round"))
+    sim_day = models.IntegerField(verbose_name=_("day"), default=0, help_text=_("Current day"))
+
+    class Meta:
+        verbose_name = _('tick')
+        verbose_name_plural = _('ticks')
+        ordering = ['-timestamp']
+
+    def __str__(self):
+        return "R%s/D%s" % (self.sim_round, self.sim_day)
