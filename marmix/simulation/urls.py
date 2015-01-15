@@ -29,7 +29,7 @@ from django.conf.urls import patterns, url
 
 # MarMix imports
 from .views import SimulationDetailView, SimulationListView, TeamsSelectionView, SimulationCreate, SimulationUpdate, \
-    SimulationDelete, TeamJoinView, TeamDetailView, teams_export_xlsx, SimulationInitializeView
+    SimulationDelete, TeamJoinView, TeamDetailView, teams_export_xlsx, SimulationInitializeView, manage_simulation
 
 urlpatterns = patterns('',
     url(r'^(?P<pk>\d+)/select-teams/$', TeamsSelectionView.as_view(), name='teams-selection-view'),
@@ -38,6 +38,7 @@ urlpatterns = patterns('',
     url(r'^(?P<pk>\d+)/update/$', SimulationUpdate.as_view(), name='simulation-update-view'),
     url(r'^(?P<pk>\d+)/delete/$', SimulationDelete.as_view(), name='simulation-delete-view'),
     url(r'^(?P<pk>\d+)/initialize/$', SimulationInitializeView.as_view(), name='simulation-initialize-view'),
+    url(r'^(?P<simulation_id>\d+)/state/(?P<next_state>\d+)/$', manage_simulation, name='simulation-manage-state'),
     url(r'^join-team/$', TeamJoinView.as_view(), name='team-join-view'),
     url(r'^team/(?P<pk>\d+)/$', TeamDetailView.as_view(), name='team-detail-view'),
     url(r'^(?P<simulation_id>\d+)/teams/export/$', teams_export_xlsx, name='teams-export-xlsx-simulation'),

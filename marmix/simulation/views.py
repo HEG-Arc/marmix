@@ -44,6 +44,7 @@ from django.core.urlresolvers import reverse
 from django.shortcuts import redirect
 from django.utils.translation import ugettext_lazy as _
 from django.forms.models import modelform_factory
+from django.http import HttpResponseRedirect
 
 # Third-party app imports
 from rest_framework import permissions, viewsets
@@ -346,3 +347,19 @@ class SimulationInitializeView(SuccessMessageMixin, CreateView):
         elif simulation.simulation_type == Simulation.ADVANCED:
             fields += ['nb_companies', 'initial_value', 'dividend_payoff_rate', 'transaction_costs', 'interest_rate', 'fixed_interest_rate']
         return modelform_factory(model=self.model, fields=fields)
+
+
+def manage_simulation(request, simulation_id, next_state):
+    simulation = get_object_or_404(Simulation, pk=simulation_id)
+    next_state = int(next_state)
+    if next_state == Simulation.RUNNING and simulation.state == Simulation.READY:
+        simulation.state = Simulation.RUNNING
+    elif next_state == Simulation.PAUSED and simulation.state == Simulation.RUNNING:
+        simulation.state = Simulation.PAUSED
+    elif next_state == Simulation.RUNNING and simulation.state == Simulation.PAUSED:
+        simulation.state = Simulation.RUNNING
+    elif next_state == Simulation.ARCHIVED and simulation.state == Simulation.FINISHED:
+        simulation.state = Simulation.ARCHIVED
+    simulation.save()
+    messages.info(request, 'The simulation is now <b>%s</b>' % simulation.get_state_display())
+    return HttpResponseRedirect(reverse('simulations-detail-view', args=[simulation.id]))

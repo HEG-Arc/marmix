@@ -29,11 +29,12 @@ from django.core.urlresolvers import reverse
 from django.db import IntegrityError
 from django.shortcuts import redirect
 from django.contrib import messages
+from django.utils.translation import ugettext_lazy as _
 
 # Third-party app imports
 
 # MarMix imports
-from .models import Team, Simulation
+from .models import Team
 
 
 class TeamsSelectionForm(forms.Form):
