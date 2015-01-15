@@ -44,6 +44,13 @@ class Ticker(TimeStampedModel):
     nb_rounds = models.IntegerField(verbose_name=_("number of rounds"), default="4", help_text=_("Number of simulation rounds"))
     nb_days = models.IntegerField(verbose_name=_("number of days per round"), default="10", help_text=_("Number of days in a simulation round"))
     day_duration = models.IntegerField(verbose_name=_("duration of a day"), default="60", help_text=_("Duration of each simulation day in seconds"))
+    dividend_payoff_rate = models.DecimalField(verbose_name=_("dividend payoff rate"), max_digits=14, decimal_places=4,
+                                               default='30.0000', help_text=_("Payoff rate in percent. To disable dividend payoff, set to 0.00"))
+    transaction_costs = models.DecimalField(verbose_name=_("transaction cost"), max_digits=14, decimal_places=4,
+                                            default='5.5000', help_text=_("Amount to be paid for one transaction. To disable transaction costs, set to 0.00"))
+    interest_rate = models.DecimalField(verbose_name=_("interest rate"), max_digits=14, decimal_places=4,
+                                        default='3.0000', help_text=_("Interest rate retributing portfolios. To disable retribution of cash, set to 0.00"))
+    fixed_interest_rate = models.BooleanField(verbose_name=_("fixed interest rate"), default=False, help_text=_("If fixed, the interest rate will not vary accross time"))
     # TODO: Add fields needed for the live simulation
 
     class Meta:
