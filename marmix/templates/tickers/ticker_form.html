@@ -1,0 +1,13 @@
+{%  extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+    {{ block.super }} > Initialize the simulation
+{% endblock title %}
+
+{% block content %}
+<form action="{% url 'simulation-initialize-view' simulation_id %}" method="post">{% csrf_token %}
+    {{ form|crispy }}
+    <button type="submit" class="btn btn-success"><i class="fa fa-cogs"></i> Initialize the simulation</button>
+</form>
+{% endblock content %}

@@ -43,6 +43,7 @@ from django.http import Http404
 from django.core.urlresolvers import reverse
 from django.shortcuts import redirect
 from django.utils.translation import ugettext_lazy as _
+from django.forms.models import modelform_factory
 
 # Third-party app imports
 from rest_framework import permissions, viewsets
@@ -53,6 +54,7 @@ from .models import Simulation, Currency, Team
 from .serializers import SimulationSerializer, CurrencySerializer, TeamSerializer
 from .forms import TeamsSelectionForm, TeamJoinForm
 from billing.models import Customer
+from tickers.models import Ticker
 from .permissions import IsOwnerOrReadOnly, IsAdminOrReadOnly
 
 logger = logging.getLogger(__name__)
@@ -107,7 +109,7 @@ class SimulationDetailView(DetailView):
 
     def get_context_data(self, **kwargs):
         context = super(SimulationDetailView, self).get_context_data(**kwargs)
-        #context['foo'] = "bar"
+        context['simulation_state'] = Simulation.SIMULATION_STATE_DICT
         return context
 
     def get_object(self, queryset=None):
@@ -301,3 +303,46 @@ def teams_export_xlsx(request, simulation_id=None, customer_id=None):
     response['Content-Disposition'] = "attachment; filename=marmix_teams.xlsx"
 
     return response
+
+
+class SimulationInitializeView(SuccessMessageMixin, CreateView):
+    model = Ticker
+    fields = []
+    success_message = _("The simulation <b>%(code)s</b> was successfully initialized. You can play the simulation right now!")
+
+    def get_initial(self):
+        simulation = get_object_or_404(Simulation, pk=self.kwargs['pk'])
+        ticker = simulation.ticker
+        return ticker.__dict__
+
+    def get_context_data(self, **kwargs):
+        context = super(SimulationInitializeView, self).get_context_data(**kwargs)
+        simulation = get_object_or_404(Simulation, pk=self.kwargs['pk'])
+        context['simulation_id'] = simulation.id
+        self.fields = ['nb_companies']
+        return context
+
+    def form_valid(self, form):
+        simulation = get_object_or_404(Simulation, pk=self.kwargs['pk'])
+        if simulation.simulation_type == Simulation.ADVANCED:
+            form.instance.with_drift = True
+        form.instance.simulation = simulation
+        form.instance.user = self.request.user
+        simulation.state = Simulation.READY
+        simulation.save()
+        return super(SimulationInitializeView, self).form_valid(form)
+
+    def get_success_url(self):
+        return reverse('simulations-detail-view', kwargs={'pk': self.object.pk})
+
+    def get_success_message(self, cleaned_data):
+        return self.success_message % {'code': self.object.simulation.code, }
+
+    def get_form_class(self):
+        simulation = get_object_or_404(Simulation, pk=self.kwargs['pk'])
+        fields = ['nb_rounds', 'nb_days', 'day_duration']
+        if simulation.simulation_type == Simulation.INTRO:
+            fields += ['nb_companies', 'initial_value', 'fixed_interest_rate']
+        elif simulation.simulation_type == Simulation.ADVANCED:
+            fields += ['nb_companies', 'initial_value', 'dividend_payoff_rate', 'transaction_costs', 'interest_rate', 'fixed_interest_rate']
+        return modelform_factory(model=self.model, fields=fields)

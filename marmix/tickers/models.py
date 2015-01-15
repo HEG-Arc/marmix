@@ -59,7 +59,7 @@ class Ticker(TimeStampedModel):
         ordering = ['simulation']
 
     def __str__(self):
-        return self.simulation
+        return self.simulation.__str__()
 
 
 class TickerStock(TimeStampedModel):

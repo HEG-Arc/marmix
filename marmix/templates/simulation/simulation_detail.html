@@ -27,7 +27,15 @@
 
 <a class="btn btn-primary" href="{% url 'simulation-update-view' object.id %}"><i class="fa fa-pencil-square-o"></i> Edit the simulation</a>
 
-<a class="btn btn-success" href="{% url 'simulation-update-view' object.id %}"><i class="fa fa-play"></i> Start the simulation</a>
+{% if object.state < simulation_state.READY %}
+    <a class="btn btn-warning" href="{% url 'simulation-initialize-view' object.id %}"><i class="fa fa-cogs"></i> Initialize the simulation</a>
+{% elif object.state == simulation_state.READY or object.state == simulation_state.PAUSED %}
+    <a class="btn btn-success" href="{% url 'simulation-update-view' object.id %}"><i class="fa fa-play"></i> Start the simulation</a>
+{% elif object.state == simulation_state.RUNNING %}
+    <a class="btn btn-warning" href="{% url 'simulation-update-view' object.id %}"><i class="fa fa-pause"></i> Pause the simulation</a>
+{% elif object.state == simulation_state.FINISHED %}
+    <a class="btn btn-danger" href="{% url 'simulation-update-view' object.id %}"><i class="fa fa-eject"></i> Archive the simulation</a>
+{% endif %}
 
 <h2>Teams</h2>
 

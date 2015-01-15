@@ -78,6 +78,15 @@ class Simulation(TimeStampedModel):
         (FINISHED, _('Finished')),
         (ARCHIVED, _('Archived (closed)')),
     )
+    SIMULATION_STATE_DICT = {
+        'CONFIGURING': CONFIGURING,
+        'INITIALIZING': INITIALIZING,
+        'READY': READY,
+        'RUNNING': RUNNING,
+        'PAUSED': PAUSED,
+        'FINISHED': FINISHED,
+        'ARCHIVED': ARCHIVED,
+        }
     code = models.CharField(verbose_name=_("code"), max_length=15, unique=True, blank=True,
                             help_text=_("The code of the simulation (for the user interface)"))
     customer = models.ForeignKey(Customer, verbose_name=_('customer'), related_name=_('simulations'),
