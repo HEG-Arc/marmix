@@ -62,4 +62,4 @@ XlsxWriter==0.6.5
 celery==3.1.17
 
 # Ticker
-numpy==
+numpy==1.9.1
