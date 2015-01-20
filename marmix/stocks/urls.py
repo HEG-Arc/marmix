@@ -28,9 +28,10 @@ from django.conf.urls import patterns, url
 # Third-party app imports
 
 # MarMix imports
-from .views import StockListView, StockDetailView
+from .views import StockListView, StockDetailView, HoldingsListView
 
 urlpatterns = patterns('',
     url(r'^(?P<pk>\d+)/$', StockDetailView.as_view(), name='stocks-detail-view'),
+    url(r'^holdings/$', HoldingsListView.as_view(), name='holdings-list-view'),
     url(r'^$', StockListView.as_view(), name='stocks-list-view'),
 )

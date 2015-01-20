@@ -37,7 +37,7 @@ from simulations.models import Simulation
 
 
 class Ticker(TimeStampedModel):
-    simulation = models.OneToOneField(Simulation, verbose_name=_("simulation"), primary_key=True, help_text=_("Related simulation"))
+    simulation = models.OneToOneField(Simulation, verbose_name=_("simulation"), help_text=_("Related simulation"))
     nb_companies = models.IntegerField(verbose_name=_("number of companies"), null=True, blank=True, help_text=_("Number of real/simulated companies"))
     initial_value = models.IntegerField(verbose_name=_("initial value of companies"), default="100", help_text=_("Initial value of the companies (discounted cash flow). The exact value is randomized."))
     state = models.IntegerField(verbose_name=_("state of the ticker"),
@@ -76,6 +76,7 @@ class Ticker(TimeStampedModel):
     def save(self, *args, **kwargs):
         if self.simulation_id:
             cache.delete('ticker-%s' % self.simulation_id)
+        super(Ticker, self).save(*args, **kwargs)
 
     def __str__(self):
         return self.simulation.__str__()

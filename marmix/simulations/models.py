@@ -199,3 +199,11 @@ class Team(TimeStampedModel):
 
     def __str__(self):
         return self.name
+
+
+def create_liquidity_manager(simulation):
+    trader = Team(customer=simulation.customer, name=_("Liquidity trader %s" % simulation.code),
+                  team_type=Team.LIQUIDITY_MANAGER)
+    trader.save()
+    trader.simulations.add(simulation)
+    return trader

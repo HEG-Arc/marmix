@@ -1,0 +1,39 @@
+{%  extends "base.html" %}
+
+{% block title %}
+    {{ block.super }} > Holdings
+{% endblock title %}
+
+{% block content %}
+<h1>Holdings</h1>
+<table class="table table-striped">
+<thead>
+<tr>
+    <th>Transaction</th>
+    <th>Asset</th>
+    <th>Price</th>
+    <th>Quantity</th>
+    <th>Amount</th>
+</tr>
+</thead>
+<tbody>
+{% for trans in object_list %}
+    <tr>
+        <td>{{ trans.transaction }}</td>
+        <td>
+            {% if trans.asset_type == 'STOCKS' %}
+                {{ trans.stock.symbol }}
+            {% else %}
+                {{ trans.get_asset_type_display|capfirst }}
+            {% endif %}
+        </td>
+        <td>{{ trans.price }}</td>
+        <td>{{ trans.quantity }}</td>
+        <td>{{ trans.amount }}</td>
+    </tr>
+{% empty %}
+    <tr><td colspan="5">No stocks yet.</td></tr>
+{% endfor %}
+</tbody>
+</table>
+{% endblock content %}

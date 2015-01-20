@@ -54,6 +54,7 @@ from xlsxwriter.workbook import Workbook
 from .models import Simulation, Currency, Team
 from .serializers import SimulationSerializer, CurrencySerializer, TeamSerializer
 from .forms import TeamsSelectionForm, TeamJoinForm
+from .tasks import initialize_simulation
 from customers.models import Customer
 from tickers.models import Ticker
 from .permissions import IsOwnerOrReadOnly, IsAdminOrReadOnly
@@ -306,50 +307,50 @@ def teams_export_xlsx(request, simulation_id=None, customer_id=None):
     return response
 
 
-class SimulationInitializeView(SuccessMessageMixin, CreateView):
+class SimulationInitializeView(SuccessMessageMixin, UpdateView):
     model = Ticker
-    fields = []
+    fields = ['nb_companies', 'initial_value', 'fixed_interest_rate']
     success_message = _("The simulation <b>%(code)s</b> was successfully initialized. You can play the simulation right now!")
+    simulation = None
 
-    def get_initial(self):
-        simulation = get_object_or_404(Simulation, pk=self.kwargs['pk'])
+    def get_object(self, queryset=None):
+        self.simulation = get_object_or_404(Simulation, pk=self.kwargs['pk'])
         try:
-            ticker = simulation.ticker
-            return ticker.__dict__
+            ticker = self.simulation.ticker
         except Ticker.DoesNotExist:
-            return None
+            ticker = Ticker(simulation=self.simulation)
+            ticker.save()
+        return ticker
 
     def get_context_data(self, **kwargs):
         context = super(SimulationInitializeView, self).get_context_data(**kwargs)
-        simulation = get_object_or_404(Simulation, pk=self.kwargs['pk'])
-        context['simulation_id'] = simulation.id
-        self.fields = ['nb_companies']
+        context['simulation_id'] = self.simulation.id
         return context
 
     def form_valid(self, form):
-        simulation = get_object_or_404(Simulation, pk=self.kwargs['pk'])
+        simulation = self.simulation
         if simulation.simulation_type == Simulation.ADVANCED:
             form.instance.with_drift = True
         form.instance.simulation = simulation
         form.instance.user = self.request.user
         simulation.state = Simulation.READY
         simulation.save()
+        initialize_simulation(simulation)
         return super(SimulationInitializeView, self).form_valid(form)
 
     def get_success_url(self):
-        return reverse('simulations-detail-view', kwargs={'pk': self.object.pk})
+        return reverse('simulations-detail-view', kwargs={'pk': self.simulation.id})
 
     def get_success_message(self, cleaned_data):
         return self.success_message % {'code': self.object.simulation.code, }
 
     def get_form_class(self):
-        simulation = get_object_or_404(Simulation, pk=self.kwargs['pk'])
         fields = ['nb_rounds', 'nb_days', 'day_duration']
-        if simulation.simulation_type == Simulation.INTRO:
+        if self.simulation.simulation_type == Simulation.INTRO:
             fields += ['nb_companies', 'initial_value', 'fixed_interest_rate']
-        elif simulation.simulation_type == Simulation.ADVANCED:
+        elif self.simulation.simulation_type == Simulation.ADVANCED:
             fields += ['nb_companies', 'initial_value', 'dividend_payoff_rate', 'transaction_costs', 'interest_rate', 'fixed_interest_rate']
-        return modelform_factory(model=self.model, fields=fields)
+        return modelform_factory(model=Ticker, fields=fields)
 
 
 def manage_simulation(request, simulation_id, next_state):

@@ -176,3 +176,47 @@ class TransactionLine(models.Model):
 
     def __str__(self):
         return "%s-%s" % (self.transaction_id, self.id)
+
+
+def create_generic_stocks(simulation):
+    char_shift = 65
+    stocks_created = 0
+    for i in range(0, simulation.ticker.nb_companies):
+        symbol = 2*chr(i+char_shift)
+        stock = Stock(simulation=simulation, symbol=symbol, name='Company %s' % symbol, quantity=10000)
+        stock.save()
+        stocks_created += 1
+    return stocks_created
+
+
+def process_opening_transactions(simulation):
+    # deposit cash
+    cash_deposit = Transaction(simulation=simulation, transaction_type=Transaction.INITIAL)
+    cash_deposit.save()
+    for team in simulation.teams.all():
+        if team.team_type == Team.PLAYERS:
+            amount = simulation.capital
+        elif team.team_type == Team.LIQUIDITY_MANAGER:
+            amount = 10000*simulation.capital
+        else:
+            amount = 0
+        deposit = TransactionLine(transaction=cash_deposit, team=team, quantity=1, price=amount,
+                                  amount=amount, asset_type=TransactionLine.CASH)
+        deposit.save()
+    # deposit stocks
+    for stock in simulation.stocks.all():
+        stocks_deposit = Transaction(simulation=simulation, transaction_type=Transaction.INITIAL)
+        stocks_deposit.save()
+        stock_quantity = stock.quantity
+        allocation = int(stock_quantity*.1/(simulation.teams.count()-1))
+        for team in simulation.teams.all():
+            if team.team_type == Team.PLAYERS:
+                quantity = allocation
+            elif team.team_type == Team.LIQUIDITY_MANAGER:
+                quantity = stock_quantity - ((simulation.teams.count()-1) * allocation)
+            else:
+                quantity = 0
+            deposit = TransactionLine(transaction=stocks_deposit, team=team, quantity=quantity, price=0, stock=stock,
+                                      amount=0, asset_type=TransactionLine.STOCKS)
+            deposit.save()
+    return True

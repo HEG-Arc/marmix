@@ -6,6 +6,7 @@
 {% endblock title %}
 
 {% block content %}
+<h1>Initialize the simulation</h1>
 <form action="{% url 'simulation-initialize-view' simulation_id %}" method="post">{% csrf_token %}
     {{ form|crispy }}
     <button type="submit" class="btn btn-success"><i class="fa fa-cogs"></i> Initialize the simulation</button>
