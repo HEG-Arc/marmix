@@ -2,10 +2,8 @@
 # Import the AbstractUser model
 from django.contrib.auth.models import AbstractUser
 
-# Import the basic Django ORM models library
-from django.db import models
 
-from django.utils.translation import ugettext_lazy as _
+from simulations.models import Simulation, Team
 
 
 class User(AbstractUser):
@@ -16,6 +14,10 @@ class User(AbstractUser):
             return True
         return False
     is_poweruser = property(_is_poweruser)
+
+    def _get_team(self):
+        return Team.objects.filter(simulations__state__gte=Simulation.READY, simulations__state__lte=Simulation.FINISHED).filter(users__username=self.username).first()
+    get_team = property(_get_team)
 
     def __unicode__(self):
         return self.username

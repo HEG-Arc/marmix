@@ -31,7 +31,7 @@ from django.contrib import messages
 # Third-party app imports
 
 # MarMix imports
-from simulation.models import Team
+from simulations.models import Team
 
 
 class TeamCreateForm(forms.Form):

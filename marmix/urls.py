@@ -33,12 +33,12 @@ urlpatterns = patterns('',
     # MarMix apps urls
     url(r'^stocks/', include('stocks.urls')),
     url(r'^customers/', include('billing.urls')),
-    url(r'^simulations/', include('simulation.urls')),
+    url(r'^simulations/', include('simulations.urls')),
 
 ) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 from django.conf.urls import url, include
-from simulation.views import SimulationViewSet, CurrencyViewSet, TeamViewSet
+from simulations.views import SimulationViewSet, CurrencyViewSet, TeamViewSet
 from stocks.views import StockViewSet, QuoteViewSet, OrderViewSet
 from users.views import UserViewSet
 from rest_framework.routers import DefaultRouter

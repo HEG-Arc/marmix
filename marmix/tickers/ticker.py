@@ -35,7 +35,7 @@ import pika
 
 # MarMix imports
 from .models import Ticker, TickerStock, TickerQuote
-from simulation.models import Simulation
+from simulations.models import Simulation
 
 # Mostly copied from
 # https://spring.io/blog/2010/08/19/building-rabbitmq-apps-using-python

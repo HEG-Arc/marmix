@@ -51,7 +51,7 @@ class Common(Configuration):
     # Apps specific for this project go here.
     LOCAL_APPS = (
         'users',  # custom users app
-        'simulation',
+        'simulations',
         'billing',
         'stocks',
         'tickers',

@@ -30,7 +30,7 @@ from django.core.cache import cache
 
 # MarMix imports
 from config.celery import app
-from simulation.models import Simulation
+from simulations.models import Simulation
 from tickers.models import TickerTick
 
 

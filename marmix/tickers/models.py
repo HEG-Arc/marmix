@@ -33,7 +33,7 @@ from django.utils import timezone
 from django_extensions.db.models import TimeStampedModel
 
 # MarMix imports
-from simulation.models import Simulation
+from simulations.models import Simulation
 
 
 class Ticker(TimeStampedModel):

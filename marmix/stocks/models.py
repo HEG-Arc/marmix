@@ -30,7 +30,7 @@ from django.utils.translation import ugettext_lazy as _
 from django_extensions.db.models import TimeStampedModel
 
 # MarMix imports
-from simulation.models import Simulation, Team
+from simulations.models import Simulation, Team
 
 
 class Stock(TimeStampedModel):
