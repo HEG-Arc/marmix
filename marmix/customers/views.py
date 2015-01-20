@@ -79,7 +79,7 @@ class CustomerListView(ListView):
 
 
 class TeamsCreateView(SuccessMessageMixin, FormView):
-    template_name = 'billing/create_teams.html'
+    template_name = 'customers/create_teams.html'
     form_class = TeamCreateForm
     success_message = "%(qty)s teams were created successfully"
 

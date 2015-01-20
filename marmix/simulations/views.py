@@ -122,7 +122,7 @@ class SimulationDetailView(DetailView):
 
 
 class TeamsSelectionView(SuccessMessageMixin, FormView):
-    template_name = 'simulation/manage_teams_form.html'
+    template_name = 'simulations/manage_teams_form.html'
     form_class = TeamsSelectionForm
     success_message = _("Participating teams were successfully updated")
 
@@ -223,7 +223,7 @@ class SimulationDelete(SuccessMessageMixin, DeleteView):
 
 
 class TeamJoinView(SuccessMessageMixin, FormView):
-    template_name = 'simulation/join_team_form.html'
+    template_name = 'simulations/join_team_form.html'
     form_class = TeamJoinForm
     success_message = _("You were successfully added to the team <b>%(team_name)s</b>!")
     team_name = ''
@@ -313,8 +313,11 @@ class SimulationInitializeView(SuccessMessageMixin, CreateView):
 
     def get_initial(self):
         simulation = get_object_or_404(Simulation, pk=self.kwargs['pk'])
-        ticker = simulation.ticker
-        return ticker.__dict__
+        try:
+            ticker = simulation.ticker
+            return ticker.__dict__
+        except Ticker.DoesNotExist:
+            return None
 
     def get_context_data(self, **kwargs):
         context = super(SimulationInitializeView, self).get_context_data(**kwargs)

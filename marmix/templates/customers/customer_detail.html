@@ -26,11 +26,11 @@
 <a class="btn btn-primary" href="{% url 'teams-create-view' object.id %}"><i class="fa fa-plus-square-o fa-lg"></i> Create teams</a>
 <a class="btn btn-info" href="{% url 'teams-export-xlsx-customer' object.id %}"><i class="fa fa-file-excel-o fa-lg"></i> Export teams</a>
 
-{% include "simulation/includes/teams_table.html" with teams=object.teams.all %}
+{% include "simulations/includes/teams_table.html" with teams=object.teams.all %}
 
 <h2>Simulations</h2> <a class="btn btn-primary" href="{% url 'simulation-add-view' object.id %}"><i class="fa fa-plus-square-o fa-lg"></i> Create simulation</a>
 
-{% include "simulation/includes/simulations_table.html" with simulations=object.simulations.all %}
+{% include "simulations/includes/simulations_table.html" with simulations=object.simulations.all %}
 
 <a href="{% url 'customers-list-view' %}"><i class="fa fa-chevron-circle-left fa-lg"></i> Back</a>
 {% endblock content %}
