@@ -54,7 +54,7 @@ from xlsxwriter.workbook import Workbook
 from .models import Simulation, Currency, Team
 from .serializers import SimulationSerializer, CurrencySerializer, TeamSerializer
 from .forms import TeamsSelectionForm, TeamJoinForm
-from billing.models import Customer
+from customers.models import Customer
 from tickers.models import Ticker
 from .permissions import IsOwnerOrReadOnly, IsAdminOrReadOnly
 

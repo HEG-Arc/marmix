@@ -52,7 +52,7 @@ class Common(Configuration):
     LOCAL_APPS = (
         'users',  # custom users app
         'simulations',
-        'billing',
+        'customers',
         'stocks',
         'tickers',
     )

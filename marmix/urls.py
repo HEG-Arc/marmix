@@ -32,7 +32,7 @@ urlpatterns = patterns('',
 
     # MarMix apps urls
     url(r'^stocks/', include('stocks.urls')),
-    url(r'^customers/', include('billing.urls')),
+    url(r'^customers/', include('customers.urls')),
     url(r'^simulations/', include('simulations.urls')),
 
 ) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

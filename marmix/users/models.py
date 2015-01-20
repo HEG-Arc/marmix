@@ -3,7 +3,7 @@
 from django.contrib.auth.models import AbstractUser
 
 
-from simulations.models import Simulation, Team
+#from simulations.models import Simulation
 
 
 class User(AbstractUser):
@@ -16,6 +16,7 @@ class User(AbstractUser):
     is_poweruser = property(_is_poweruser)
 
     def _get_team(self):
+        from simulations.models import Simulation, Team
         return Team.objects.filter(simulations__state__gte=Simulation.READY, simulations__state__lte=Simulation.FINISHED).filter(users__username=self.username).first()
     get_team = property(_get_team)
 

@@ -34,7 +34,7 @@ from django_extensions.db.models import TimeStampedModel
 from shorturls import baseconv
 
 # MarMix imports
-from billing.models import Customer
+from customers.models import Customer
 from users.models import User
 
 
