@@ -28,7 +28,7 @@ from django.contrib import admin
 # Third-party app imports
 
 # MarMix imports
-from .models import Stock, Quote, Order, Transaction
+from .models import Stock, Quote, Order, Transaction, TransactionLine
 
 
 class StockAdmin(admin.ModelAdmin):
@@ -47,7 +47,12 @@ class TransactionAdmin(admin.ModelAdmin):
     pass
 
 
+class TransactionLineAdmin(admin.ModelAdmin):
+    pass
+
+
 admin.site.register(Stock, StockAdmin)
 admin.site.register(Quote, QuoteAdmin)
 admin.site.register(Order, OrderAdmin)
 admin.site.register(Transaction, TransactionAdmin)
+admin.site.register(TransactionLine, TransactionLineAdmin)

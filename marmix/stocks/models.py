@@ -97,7 +97,8 @@ class Order(models.Model):
     price = models.DecimalField(verbose_name=_("price tag"), max_digits=14, decimal_places=4,
                                 blank=True, null=True, help_text=_("Price tag for one stock. If NULL, best available price"))
     created_at = models.DateTimeField(verbose_name=_("created"), auto_now_add=True, help_text=_("Creation of the order"))
-    fulfilled_at = models.DateTimeField(verbose_name=_("fulfilled"), null=True, blank=True, help_text=_("Fulfillment of the order"))
+    transaction = models.ForeignKey('Transaction', verbose_name=_("transaction"), related_name="orders", null=True,
+                                    blank=True, help_text=_("Related transaction"))
 
     class Meta:
         verbose_name = _('order')
@@ -113,25 +114,65 @@ class Order(models.Model):
 
 
 class Transaction(models.Model):
+    ORDER = 'ORDER'
+    EOR = 'EOR'
+    INITIAL = 'INITIAL'
+    EOS = 'EOS'
+    TRANSACTION_TYPE_CHOICES = (
+        (ORDER, _('stocks order fulfillment')),
+        (EOR, _('end of round transactions')),
+        (INITIAL, _('initial transactions')),
+        (EOS, _('end of simulation transactions')),
+    )
     """
     Transactions are the result of order placed that are fulfilled.
     """
-    stock = models.ForeignKey('Stock', verbose_name=_("stock"), related_name="transactions", help_text=_("Related stock"))
-    team_bid = models.ForeignKey(Team, verbose_name=_("buyers"), related_name="buy_transactions", help_text=_("Team buying the stock"))
-    team_ask = models.ForeignKey(Team, verbose_name=_("sellers"), related_name="sell_transactions", help_text=_("Team selling the stock"))
-    quantity = models.IntegerField(verbose_name=_("quantity"), default=0, help_text=_("Quantity exchanged"))
-    price = models.DecimalField(verbose_name=_("price tag"), max_digits=14, decimal_places=4,
-                                blank=True, null=True, help_text=_("Price tag for one stock"))
+    simulation = models.ForeignKey(Simulation, verbose_name=_("simulation"), related_name="transactions",
+                                   help_text=_("Related simulation"))
     fulfilled_at = models.DateTimeField(verbose_name=_("fulfilled"), auto_now_add=True, help_text=_("Fulfillment date"))
+    transaction_type = models.CharField(verbose_name=_("type of transaction"), max_length=20,
+                                        choices=TRANSACTION_TYPE_CHOICES, default=ORDER,
+                                        help_text=_("The type of transaction"))
 
     class Meta:
         verbose_name = _('transaction')
         verbose_name_plural = _('transactions')
-        ordering = ['stock', 'price']
+        ordering = ['-fulfilled_at']
 
     def __str__(self):
-        if self.order_type == self.BID:
-            quantity = -1 * self.quantity
-        else:
-            quantity = self.quantity
-        return "%s: %s@%s" % (self.stock, quantity, self.price)
+        return "%s" % self.id
+
+
+class TransactionLine(models.Model):
+    STOCKS = 'STOCKS'
+    DIVIDENDS = 'DIVIDENDS'
+    TRANSACTIONS = 'TRANSACTIONS'
+    INTERESTS = 'INTERESTS'
+    CASH = 'CASH'
+    ASSET_TYPE_CHOICES = (
+        (STOCKS, _('stocks')),
+        (DIVIDENDS, _('dividends payment')),
+        (TRANSACTIONS, _('costs of transaction')),
+        (INTERESTS, _('interests payment')),
+        (CASH, _('cash deposit')),
+    )
+    transaction = models.ForeignKey('Transaction', verbose_name=_("transaction"), related_name="lines",
+                                    help_text=_("Related transaction"))
+    stock = models.ForeignKey('Stock', verbose_name=_("stock"), related_name="transactions", null=True, blank=True,
+                              help_text=_("Related stock"))
+    team = models.ForeignKey(Team, verbose_name=_("team"), related_name="transactions", help_text=_("Team"))
+    quantity = models.IntegerField(verbose_name=_("quantity"), default=0, help_text=_("Quantity"))
+    price = models.DecimalField(verbose_name=_("price tag"), max_digits=14, decimal_places=4,
+                                blank=True, null=True, help_text=_("Price tag for one stock"))
+    amount = models.DecimalField(verbose_name=_("amount"), max_digits=14, decimal_places=4,
+                                 blank=True, null=True, help_text=_("Total amount (signed)"))
+    asset_type = models.CharField(verbose_name=_("type of asset"), max_length=20, choices=ASSET_TYPE_CHOICES,
+                                  default=STOCKS, help_text=_("The type of asset"))
+
+    class Meta:
+        verbose_name = _('transaction line')
+        verbose_name_plural = _('transaction lines')
+        ordering = ['-transaction_id']
+
+    def __str__(self):
+        return "%s-%s" % (self.transaction_id, self.id)
