@@ -24,6 +24,7 @@
 from __future__ import absolute_import
 
 # Core Django imports
+from django.core.cache import cache
 
 # Third-party app imports
 

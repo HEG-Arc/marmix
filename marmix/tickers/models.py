@@ -21,10 +21,13 @@
 # along with MarMix. If not, see <http://www.gnu.org/licenses/>.
 
 # Stdlib imports
-from django.utils import timezone
+import datetime
+
 # Core Django imports
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
+from django.core.cache import cache
+from django.utils import timezone
 
 # Third-party app imports
 from django_extensions.db.models import TimeStampedModel
@@ -59,12 +62,20 @@ class Ticker(TimeStampedModel):
         ordering = ['simulation']
 
     def _last_tick(self):
-        try:
-            last_tick = self.ticks.all()[0]
-        except IndexError:
-            last_tick = None
+        tick = cache.get('tick-%s' % self.simulation_id)
+        if tick:
+            last_tick = tick
+        else:
+            try:
+                last_tick = self.ticks.all()[0]
+            except IndexError:
+                last_tick = None
         return last_tick
     last_tick = property(_last_tick)
+
+    def save(self, *args, **kwargs):
+        if self.simulation_id:
+            cache.delete('ticker-%s' % self.simulation_id)
 
     def __str__(self):
         return self.simulation.__str__()
@@ -105,10 +116,12 @@ class TickerQuote(models.Model):
     """
     Quotes are the price of a given stock at a certain time.
     """
-    stock = models.ForeignKey('TickerStock', verbose_name=_("stock"), related_name="quotes", help_text=_("Related stock"))
+    stock = models.ForeignKey('TickerStock', verbose_name=_("stock"), related_name="quotes",
+                              help_text=_("Related stock"))
     price = models.DecimalField(verbose_name=_("stock price"), max_digits=14, decimal_places=4,
-                                          default='0.0000', help_text=_("Current stock price"))
-    timestamp = models.DateTimeField(verbose_name=_("timestamp"), auto_now_add=True, help_text=_("Timestamp of the quote"))
+                                default='0.0000', help_text=_("Current stock price"))
+    timestamp = models.DateTimeField(verbose_name=_("timestamp"), auto_now_add=True,
+                                     help_text=_("Timestamp of the quote"))
 
     class Meta:
         verbose_name = _('quote')
@@ -135,3 +148,8 @@ class TickerTick(models.Model):
 
     def __str__(self):
         return "R%s/D%s" % (self.sim_round, self.sim_day)
+
+    def save(self, *args, **kwargs):
+        tick = {'ticker': self.ticker_id, 'timestamp': self.timestamp, 'sim_round': self.sim_round,
+                'sim_day': self.sim_day}
+        cache.set('tick-%s' % self.ticker_id, tick)

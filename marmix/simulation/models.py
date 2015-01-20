@@ -27,6 +27,7 @@ import uuid
 # Core Django imports
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
+from django.core.cache import cache
 
 # Third-party app imports
 from django_extensions.db.models import TimeStampedModel
@@ -109,6 +110,8 @@ class Simulation(TimeStampedModel):
             self.code = 'MM-99999999'
             super(Simulation, self).save(*args, **kwargs)
             self.code = short_code_encode(self.id, self.customer.short_code)
+        if self.id:
+            cache.delete('simulation-%s' % self.id)
         super(Simulation, self).save(*args, **kwargs)
 
     def _nb_teams(self):

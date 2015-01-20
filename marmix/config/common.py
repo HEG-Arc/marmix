@@ -122,12 +122,13 @@ class Common(Configuration):
     # END DATABASE CONFIGURATION
 
     # CACHING
-    # Do this here because thanks to django-pylibmc-sasl and pylibmc
-    # memcacheify (used on heroku) is painful to install on windows.
+    # See: https://docs.djangoproject.com/en/1.7/topics/cache/
+    # And: https://docs.djangoproject.com/en/1.7/topics/cache/#cache-key-prefixing
     CACHES = {
         'default': {
-            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-            'LOCATION': ''
+            'BACKEND': 'django.core.cache.backends.memcached.MemcachedCache',
+            'LOCATION': '127.0.0.1:11211',
+            'KEY_PREFIX': 'marmix',
         }
     }
     # END CACHING
