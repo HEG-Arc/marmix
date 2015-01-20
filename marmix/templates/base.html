@@ -47,6 +47,7 @@
             <li><a href="{% url 'simulations-list-view' %}">Simulations</a></li>
           {% endif %}
           {% if request.user.is_authenticated %}
+            <li><a href="{% url 'holdings-list-view' %}">Holdings</a></li>
             <li><a href="{% url 'users:detail' request.user.username  %}">{% trans "My Profile" %}</a></li>
             <li><a href="{% url 'account_logout' %}">{% trans "Logout" %}</a></li>
           {% else %}

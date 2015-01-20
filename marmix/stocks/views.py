@@ -38,7 +38,7 @@ from django.conf import settings
 from rest_framework import permissions, viewsets
 
 # MarMix imports
-from .models import Stock, Quote, Order
+from .models import Stock, Quote, Order, TransactionLine
 from .serializers import StockSerializer, QuoteSerializer, OrderSerializer
 
 
@@ -63,6 +63,18 @@ class StockDetailView(DetailView):
         context = super(StockDetailView, self).get_context_data(**kwargs)
         #context['foo'] = "bar"
         return context
+
+
+class HoldingsListView(ListView):
+
+    def get_context_data(self, **kwargs):
+        context = super(HoldingsListView, self).get_context_data(**kwargs)
+        #context['foo'] = "bar"
+        return context
+
+    def get_queryset(self):
+        team = self.request.user.get_team
+        return TransactionLine.objects.filter(team=team)
 
 
 class StockViewSet(viewsets.ModelViewSet):
