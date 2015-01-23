@@ -27,13 +27,19 @@
                 {{ trans.get_asset_type_display|capfirst }}
             {% endif %}
         </td>
-        <td>{{ trans.price }}</td>
+        <td>{{ trans.price|stringformat:".2f" }}</td>
         <td>{{ trans.quantity }}</td>
-        <td>{{ trans.amount }}</td>
+        <td>{{ trans.amount|stringformat:".2f" }}</td>
     </tr>
 {% empty %}
     <tr><td colspan="5">No stocks yet.</td></tr>
 {% endfor %}
 </tbody>
 </table>
+
+<h1>Orders</h1>
+<a class="btn btn-primary" href="{% url 'order-create-view' %}"><i class="fa fa-plus-square-o fa-lg"></i> Create order</a>
+
+{% include "stocks/includes/orders_table.html" with orders=orders %}
+
 {% endblock content %}

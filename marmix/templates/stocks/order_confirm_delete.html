@@ -1,0 +1,28 @@
+{%  extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+    {{ block.super }} > Delete the order
+{% endblock title %}
+
+{% block content %}
+
+<h1>Delete order {{ object.code }}</h1>
+
+<form action="{% url 'order-delete-view' object.id %}" method="post">{% csrf_token %}
+    <p>Are you sure that you want to delete the following order?</p>
+    <dl class="dl-horizontal">
+    <dt>Stock</dt>
+    <dd>{{ object.stock }}</dd>
+    <dt>Type</dt>
+    <dd>{{ object.get_order_type_display|capfirst }}</dd>
+    <dt>Quantity</dt>
+    <dd>{{ object.quantity }}</dd>
+    <dt>Price</dt>
+    <dd>{{ object.price }}</dd>
+    <dt>Created at</dt>
+    <dd>{{ order.created_at|date:"SHORT_DATETIME_FORMAT" }}</dd>
+    </dl>
+    <button type="submit" class="btn btn-danger"><i class="fa fa-trash-o"></i> Delete this order</button>
+</form>
+{% endblock content %}

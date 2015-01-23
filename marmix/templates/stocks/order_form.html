@@ -1,0 +1,17 @@
+{%  extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+    {{ block.super }} > Create new simulation
+{% endblock title %}
+
+{% block content %}
+<form action="{% if action == 'create' %}{% url 'order-create-view' %}{% elif action == 'update' %}{% url 'order-update-view' order_id %}{% endif %}" method="post">{% csrf_token %}
+    {{ form|crispy }}
+    {% if action == 'create' %}
+        <button type="submit" class="btn btn-success"><i class="fa fa-check-square-o"></i> Submit order</button>
+    {% elif action == 'update' %}
+        <button type="submit" class="btn btn-success"><i class="fa fa-check-square-o"></i> Update order</button>
+    {% endif %}
+</form>
+{% endblock content %}

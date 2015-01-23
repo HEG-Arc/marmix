@@ -1,0 +1,41 @@
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Stock</th>
+            <th>Type</th>
+            <th>Quantity</th>
+            <th>Price</th>
+            <th>Created at</th>
+            <th>Fulfilled at</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for order in orders %}
+        <tr>
+            <td>{{ order.stock }}</td>
+            <td>{{ order.get_order_type_display|capfirst }}</td>
+            <td>{{ order.quantity }}</td>
+            {% if order.price %}
+                <td>{{ order.price|stringformat:".2f" }}</td>
+            {% else %}
+                <td>Market price</td>
+            {% endif %}
+            <td>{{ order.created_at|date:"SHORT_DATETIME_FORMAT" }}</td>
+            {% if order.transaction %}
+                <td>{{ order.transaction.fulfilled_at|date:"SHORT_DATETIME_FORMAT" }}</td>
+            {% else %}
+                <td></td>
+            {% endif %}
+            <td>
+                <a class="btn btn-primary btn-sm" href="{% url 'order-update-view' order.id %}"><i class="fa fa-pencil-square-o"></i></a>
+                <a class="btn btn-danger btn-sm" href="{% url 'order-delete-view' order.id %}"><i class="fa fa-trash-o"></i></a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5">No order available!</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>

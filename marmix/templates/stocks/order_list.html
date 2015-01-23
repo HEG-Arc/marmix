@@ -1,0 +1,13 @@
+{%  extends "base.html" %}
+
+{% block title %}
+    {{ block.super }} > Orders
+{% endblock title %}
+
+{% block content %}
+<h1>Orders</h1>
+<a class="btn btn-primary" href="{% url 'order-create-view' %}"><i class="fa fa-plus-square-o fa-lg"></i> Create order</a>
+
+{% include "stocks/includes/orders_table.html" with orders=object_list %}
+
+{% endblock content %}

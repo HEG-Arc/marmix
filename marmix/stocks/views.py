@@ -28,11 +28,16 @@ import logging
 # Core Django imports
 from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
+from django.views.generic.edit import FormView, CreateView, UpdateView, DeleteView
+from django.contrib.messages.views import SuccessMessageMixin
+from django.utils.translation import ugettext_lazy as _
+from django.core.urlresolvers import reverse, reverse_lazy
 from django.shortcuts import render_to_response, get_object_or_404, render
 from django.template.context import RequestContext
 from django.http import Http404, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
+from django.contrib import messages
 
 # Third-party app imports
 from rest_framework import permissions, viewsets
@@ -69,12 +74,23 @@ class HoldingsListView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super(HoldingsListView, self).get_context_data(**kwargs)
-        #context['foo'] = "bar"
+        orders = Order.objects.all()
+        context['orders'] = orders
         return context
 
     def get_queryset(self):
         team = self.request.user.get_team
         return TransactionLine.objects.filter(team=team)
+
+
+class OrderListView(ListView):
+
+    model = Order
+
+    def get_context_data(self, **kwargs):
+        context = super(OrderListView, self).get_context_data(**kwargs)
+        #context['foo'] = "bar"
+        return context
 
 
 class StockViewSet(viewsets.ModelViewSet):
@@ -93,3 +109,57 @@ class OrderViewSet(viewsets.ModelViewSet):
     queryset = Order.objects.all()
     serializer_class = OrderSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+
+
+class OrderCreateView(SuccessMessageMixin, CreateView):
+    model = Order
+    fields = ['stock', 'order_type', 'quantity', 'price']
+    success_message = _("Your order <b>%(order_id)s</b> is registered. It will be fulfilled when the next matching order is found.")
+
+    def get_context_data(self, **kwargs):
+        context = super(OrderCreateView, self).get_context_data(**kwargs)
+        context['action'] = 'create'
+        return context
+
+    def form_valid(self, form):
+        team = self.request.user.get_team
+        form.instance.team = team
+        return super(OrderCreateView, self).form_valid(form)
+
+    def get_success_url(self):
+        return reverse('holdings-list-view')
+
+    def get_success_message(self, cleaned_data):
+        return self.success_message % {'order_id': self.object.id, }
+
+
+class OrderUpdateView(SuccessMessageMixin, UpdateView):
+    model = Order
+    fields = ['stock', 'order_type', 'quantity', 'price']
+    success_message = _("Your order <b>%(order_id)s</b> is updated. It will be fulfilled when the next matching order is found.")
+
+    def get_context_data(self, **kwargs):
+        context = super(OrderUpdateView, self).get_context_data(**kwargs)
+        context['action'] = 'update'
+        context['order_id'] = self.object.id
+        return context
+
+    def form_valid(self, form):
+        return super(OrderUpdateView, self).form_valid(form)
+
+    def get_success_url(self):
+        return reverse('holdings-list-view')
+
+    def get_success_message(self, cleaned_data):
+        return self.success_message % {'order_id': self.object.id, }
+
+
+class OrderDeleteView(SuccessMessageMixin, DeleteView):
+    model = Order
+    success_url = reverse_lazy('holdings-list-view')
+    success_message = _("The order <b>%(code)s</b> was successfully deleted!")
+
+    def delete(self, request, *args, **kwargs):
+        order = get_object_or_404(Order, pk=self.kwargs['pk'])
+        messages.success(self.request, self.success_message % {'code': order.id, })
+        return super(OrderDeleteView, self).delete(request, *args, **kwargs)
