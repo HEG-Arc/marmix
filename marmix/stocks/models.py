@@ -204,6 +204,7 @@ def process_opening_transactions(simulation):
                                   amount=amount, asset_type=TransactionLine.CASH)
         deposit.save()
     # deposit stocks
+    # TODO: Calculate opening price!
     for stock in simulation.stocks.all():
         stocks_deposit = Transaction(simulation=simulation, transaction_type=Transaction.INITIAL)
         stocks_deposit.save()

@@ -23,7 +23,7 @@
 # Stdlib imports
 
 # Core Django imports
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import ugettext as _
 
 # Third-party app imports
 from async_messages import messages
@@ -40,23 +40,36 @@ def initialize_simulation(simulation):
     """
     The main task in charge of the initialization of the simulations
     """
+    msg_info = ""
+    msg_error = ""
     if simulation.simulation_type == Simulation.INTRO:
-        messages.info(simulation.user, _("Initialization of introductory simulation running..."))
+        msg_info += _("Initialization of introductory simulation running...") + "<br />"
         # stocks creation
         stocks = create_generic_stocks(simulation)
         if stocks > 0:
-            messages.info(simulation.user, _("%s stocks were created..." % stocks))
+            msg_info += _("%s stocks were created..." % stocks) + "<br />"
         else:
-            messages.error(simulation.user, _("No stocks were created! Please try to re-run the initialization."))
+            msg_error += _("No stocks were created!") + "<br />"
         # liquidity traders creation
         liquidity_manager = create_liquidity_manager(simulation)
         if liquidity_manager:
-            messages.info(simulation.user, _("%s was created..." % liquidity_manager.name))
+            msg_info += _("%s was created..." % liquidity_manager.name) + "<br />"
         else:
-            messages.error(simulation.user, _("No liquidity manager was created!"))
+            msg_error += _("No liquidity manager was created!") + "<br />"
+        # initialize ticker
+        # TODO: Initialize ticker
         # opening transactions
         openings = process_opening_transactions(simulation)
-        # initialize ticker
+        if openings:
+            msg_info += _("Openings transactions were processed...") + "<br />"
+        else:
+            msg_error += _("Unable to process opening transactions!") + "<br />"
+        if msg_info != "":
+            msg_info += _("Initialization succeeded! You can start running the simulation.")
+            messages.info(simulation.user, msg_info)
+        if msg_error != "":
+            msg_error += _("There were errors during the initialization process!")
+            messages.error(simulation.user, msg_error)
     elif simulation.simulation_type == Simulation.ADVANCED:
         messages.info(simulation.user, _("Initialization of advanced simulation running..."))
     elif simulation.simulation_type == Simulation.LIVE or simulation.simulation_type == Simulation.INDEXED:
