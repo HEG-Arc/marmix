@@ -32,8 +32,6 @@ from async_messages import messages
 from config.celery import app
 from simulations.models import Simulation, Team, create_liquidity_manager
 from tickers.models import TickerTick
-from stocks.models import Stock, Order
-
 
 @app.task
 def match_orders(simulation):
@@ -42,6 +40,7 @@ def match_orders(simulation):
     :param simulation:
     :return None:
     """
+    from .models import Stock, Order
     available_stocks = Stock.objects.filter(simulation=simulation)
     for stock in available_stocks:
         print("Stock: %s" % stock.symbol)
