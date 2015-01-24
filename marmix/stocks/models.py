@@ -31,6 +31,7 @@ from django_extensions.db.models import TimeStampedModel
 
 # MarMix imports
 from simulations.models import Simulation, Team
+from .tasks import match_orders
 
 
 class Stock(TimeStampedModel):
@@ -81,6 +82,8 @@ class Quote(models.Model):
 class Order(models.Model):
     """
     Orders are made by teams and posted in the order book. They are then processed by the order manager.
+    BID is the highest price that a buyer is willing to pay for a stock.
+    ASK is the lowest price that a seller is willing to accept for a stock.
     """
     BID = 'BID'
     ASK = 'ASK'
@@ -103,14 +106,19 @@ class Order(models.Model):
     class Meta:
         verbose_name = _('order')
         verbose_name_plural = _('orders')
-        ordering = ['stock', 'price']
+        ordering = ['price', 'created_at']
 
     def __str__(self):
         if self.order_type == self.BID:
-            quantity = -1 * self.quantity
-        else:
             quantity = self.quantity
+        else:
+            quantity = -1 * self.quantity
         return "%s: %s@%s" % (self.stock, quantity, self.price)
+
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        if self.transaction is None:
+            match_orders.apply_async([self.stock.simulation])
+        models.Model.save(self, force_insert, force_update, using, update_fields)
 
 
 class Transaction(models.Model):
