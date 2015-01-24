@@ -53,7 +53,7 @@ def match_orders(simulation):
             for sell_order in market_sell_orders:
                 qty_sold = sell_order.quantity
                 for buy_order in buy_orders:
-                    if qty_sold > 0:
+                    if qty_sold > 0 and buy_order.team != sell_order.team:
                         if buy_order.quantity >= qty_sold:
                             #  We can fulfill the whole order
                             qty_traded = qty_sold
@@ -69,7 +69,7 @@ def match_orders(simulation):
             for buy_order in market_buy_orders:
                 qty_bought = buy_order.quantity
                 for sell_order in sell_orders:
-                    if qty_bought > 0:
+                    if qty_bought > 0 and buy_order.team != sell_order.team:
                         if sell_order.quantity >= qty_bought:
                             #  We can fulfill the whole order
                             qty_traded = qty_bought
@@ -85,7 +85,7 @@ def match_orders(simulation):
             for sell_order in sell_orders:
                 qty_sold = sell_order.quantity
                 for buy_order in buy_orders:
-                    if sell_order.price <= buy_order.price:
+                    if sell_order.price <= buy_order.price and buy_order.team != sell_order.team:
                         if qty_sold > 0:
                             if buy_order.quantity >= qty_sold:
                                 #  We can fulfill the whole order
@@ -102,7 +102,7 @@ def match_orders(simulation):
             for buy_order in buy_orders:
                 qty_bought = buy_order.quantity
                 for sell_order in sell_orders:
-                    if sell_order.price <= buy_order.price:
+                    if sell_order.price <= buy_order.price and buy_order.team != sell_order.team:
                         if qty_bought > 0:
                             if sell_order.quantity >= qty_bought:
                                 #  We can fulfill the whole order
@@ -114,3 +114,4 @@ def match_orders(simulation):
                             print("New transaction: STOCK: %s QTY: %s SELLER: %s BUYER: %s" % (stock, qty_traded, sell_order.team, buy_order.team))
         else:
             print("No available buy_orders")
+    return "Processed!"
