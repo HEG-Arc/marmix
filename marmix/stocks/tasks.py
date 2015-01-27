@@ -33,6 +33,7 @@ from config.celery import app
 from simulations.models import Simulation, Team, create_liquidity_manager
 from tickers.models import TickerTick
 
+
 @app.task
 def match_orders(simulation):
     """
@@ -40,7 +41,7 @@ def match_orders(simulation):
     :param simulation:
     :return None:
     """
-    from .models import Stock, Order
+    from .models import Stock, Order, process_order
     available_stocks = Stock.objects.filter(simulation=simulation)
     for stock in available_stocks:
         print("Stock: %s" % stock.symbol)
@@ -61,6 +62,7 @@ def match_orders(simulation):
                             #  We fulfill a partial order and look for the next one
                             qty_traded = buy_order.quantity
                         qty_sold -= qty_traded
+                        process_order(simulation, sell_order, buy_order, qty_traded)
                         print("New transaction: STOCK: %s QTY: %s SELLER: %s BUYER: %s" % (stock, qty_traded, sell_order.team, buy_order.team))
         else:
             print("No available market_sell_orders")
@@ -77,6 +79,7 @@ def match_orders(simulation):
                             #  We fulfill a partial order and look for the next one
                             qty_traded = sell_order.quantity
                         qty_bought -= qty_traded
+                        process_order(simulation, sell_order, buy_order, qty_traded)
                         print("New transaction: STOCK: %s QTY: %s SELLER: %s BUYER: %s" % (stock, qty_traded, sell_order.team, buy_order.team))
         else:
             print("No available market_buy_orders")
@@ -94,6 +97,7 @@ def match_orders(simulation):
                                 #  We fulfill a partial order and look for the next one
                                 qty_traded = buy_order.quantity
                             qty_sold -= qty_traded
+                            process_order(simulation, sell_order, buy_order, qty_traded)
                             print("New transaction: STOCK: %s QTY: %s SELLER: %s BUYER: %s" % (stock, qty_traded, sell_order.team, buy_order.team))
         else:
             print("No available sell_orders")
@@ -111,7 +115,88 @@ def match_orders(simulation):
                                 #  We fulfill a partial order and look for the next one
                                 qty_traded = sell_order.quantity
                             qty_bought -= qty_traded
+                            process_order(simulation, sell_order, buy_order, qty_traded)
                             print("New transaction: STOCK: %s QTY: %s SELLER: %s BUYER: %s" % (stock, qty_traded, sell_order.team, buy_order.team))
         else:
             print("No available buy_orders")
     return "Processed!"
+
+
+@app.task
+def check_matching_orders(order):
+    """
+    Looks for matching orders in the order book.
+
+    :param order: An order object
+    :return : None
+    """
+    from .models import Stock, Order, process_order
+    if order.order_type == Order.ASK:
+        book_order_type = Order.BID
+    else:
+        book_order_type = Order.ASK
+    if not order.price:
+        # This is a market order
+        order_book = Order.objects.filter(stock=order.stock).filter(transaction__isnull=True).filter(order_type=book_order_type).filter(price__isnull=False)
+        if order_book:
+            qty = order.quantity
+            for match_order in order_book:
+                if match_order.team != order.team:
+                    if match_order.quantity >= qty:
+                        #  We can fulfill the whole order
+                        qty_traded = qty
+                    else:
+                        #  We fulfill a partial order and look for the next one
+                        qty_traded = match_order.quantity
+                    if order.order_type == Order.ASK:
+                        sell_order = order
+                        buy_order = match_order
+                    else:
+                        sell_order = match_order
+                        buy_order = order
+                    process_order(order.stock.simulation, sell_order, buy_order, qty_traded)
+                    print("New transaction: STOCK: %s QTY: %s SELLER: %s BUYER: %s" % (order.stock, qty_traded, sell_order.team, buy_order.team))
+                    break
+    else:
+        # This is a limit order
+        order_book = Order.objects.filter(stock=order.stock).filter(transaction__isnull=True).filter(order_type=book_order_type).filter(price__isnull=True)
+        if order_book:
+            qty = order.quantity
+            for match_order in order_book:
+                if match_order.team != order.team:
+                    if match_order.quantity >= qty:
+                        #  We can fulfill the whole order
+                        qty_traded = qty
+                    else:
+                        #  We fulfill a partial order and look for the next one
+                        qty_traded = match_order.quantity
+                    if order.order_type == Order.ASK:
+                        sell_order = order
+                        buy_order = match_order
+                    else:
+                        sell_order = match_order
+                        buy_order = order
+                    process_order(order.stock.simulation, sell_order, buy_order, qty_traded)
+                    print("New transaction: STOCK: %s QTY: %s SELLER: %s BUYER: %s" % (order.stock, qty_traded, sell_order.team, buy_order.team))
+                    break
+        else:
+            order_book = Order.objects.filter(stock=order.stock).filter(transaction__isnull=True).filter(order_type=book_order_type).filter(price__isnull=False)
+            if order_book:
+                qty = order.quantity
+                for match_order in order_book:
+                    if order.order_type == Order.ASK:
+                        sell_order = order
+                        buy_order = match_order
+                    else:
+                        sell_order = match_order
+                        buy_order = order
+                    if match_order.team != order.team and sell_order.price <= buy_order.price:
+                        if match_order.quantity >= qty:
+                            #  We can fulfill the whole order
+                            qty_traded = qty
+                        else:
+                            #  We fulfill a partial order and look for the next one
+                            qty_traded = match_order.quantity
+                        process_order(order.stock.simulation, sell_order, buy_order, qty_traded)
+                        print("New transaction: STOCK: %s QTY: %s SELLER: %s BUYER: %s" % (order.stock, qty_traded, sell_order.team, buy_order.team))
+                        break
