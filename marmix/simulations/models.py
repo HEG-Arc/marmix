@@ -202,6 +202,12 @@ class Team(TimeStampedModel):
 
 
 def create_liquidity_manager(simulation):
+    """
+    Create a new team to host the liquidity manager.
+
+    :param simulation: Simulation object in which to add a new team
+    :return: Team object created
+    """
     trader = Team(customer=simulation.customer, name=_("Liquidity trader %s" % simulation.code),
                   team_type=Team.LIQUIDITY_MANAGER)
     trader.save()

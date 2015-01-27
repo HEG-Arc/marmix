@@ -38,7 +38,15 @@ from stocks.models import create_generic_stocks, process_opening_transactions
 @app.task
 def initialize_simulation(simulation):
     """
-    The main task in charge of the initialization of the simulations
+    Initialize the simulation (async Celery task).
+
+    -Creates stocks
+    -Creates a liquidity manager
+    -Initialize the ticker
+    -Creates opening transactions
+
+    :param simulation: Simulation object
+    :return: None
     """
     msg_info = ""
     msg_error = ""

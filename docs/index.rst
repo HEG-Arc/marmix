@@ -4,7 +4,11 @@
    contain the root `toctree` directive.
 
 Welcome to MarMix's documentation!
-====================================================================
+==================================
+
+.. image:: /medias/marmix_200.png
+   :width: 200 px
+   :alt: MarMix logo
 
 Contents:
 
@@ -13,6 +17,7 @@ Contents:
 
    install
    deploy
+   applications
    tests
 
 

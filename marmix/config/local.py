@@ -53,3 +53,5 @@ class Local(Common):
         '--with-coverage',
         '--cover-package=stocks, users',
     ]
+
+    INSTALLED_APPS += ('django_extensions',)

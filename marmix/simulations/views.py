@@ -308,6 +308,9 @@ def teams_export_xlsx(request, simulation_id=None, customer_id=None):
 
 
 class SimulationInitializeView(SuccessMessageMixin, UpdateView):
+    """
+    Update/Create the simulation. It calls initialize_simulation after form validation.
+    """
     model = Ticker
     fields = ['nb_companies', 'initial_value', 'fixed_interest_rate']
     success_message = _("The simulation <b>%(code)s</b> was successfully initialized. You can play the simulation right now!")
@@ -355,6 +358,16 @@ class SimulationInitializeView(SuccessMessageMixin, UpdateView):
 
 
 def manage_simulation(request, simulation_id, next_state):
+    """
+    Helper to change the current state of the simulation.
+
+    Available states are READY -> RUNNING <-> PAUSED -> FINISHED -> ARCHIVED.
+
+    :param request:
+    :param simulation_id:
+    :param next_state:
+    :return: HttpResponseRedirect
+    """
     simulation = get_object_or_404(Simulation, pk=simulation_id)
     next_state = int(next_state)
     if next_state == Simulation.RUNNING and simulation.state == Simulation.READY:

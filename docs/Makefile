@@ -4,8 +4,10 @@
 # You can set these variables from the command line.
 SPHINXOPTS    =
 SPHINXBUILD   = sphinx-build
-PAPER         =
-BUILDDIR      = _build
+PAPER         = a4
+BUILDDIR      = ../../MarMix-docs
+PDFBUILDDIR   = /tmp
+PDF           = ../MarMix3-Manual.pdf
 
 # Internal variables.
 PAPEROPT_a4     = -D latex_paper_size=a4
@@ -14,7 +16,7 @@ ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
 # the i18n builder cannot share the environment and doctrees with the others
 I18NSPHINXOPTS  = $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
 
-.PHONY: help clean html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest gettext
+.PHONY: help clean html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest gettext marmix
 
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
@@ -37,6 +39,7 @@ help:
 	@echo "  changes    to make an overview of all changed/added/deprecated items"
 	@echo "  linkcheck  to check all external links for integrity"
 	@echo "  doctest    to run all doctests embedded in the documentation (if enabled)"
+	@echo "  marmix     to make the PDF and HTML files and push them to the GitHub repository"
 
 clean:
 	-rm -rf $(BUILDDIR)/*
@@ -77,17 +80,17 @@ qthelp:
 	@echo
 	@echo "Build finished; now you can run "qcollectiongenerator" with the" \
 	      ".qhcp project file in $(BUILDDIR)/qthelp, like this:"
-	@echo "# qcollectiongenerator $(BUILDDIR)/qthelp/marmix.qhcp"
+	@echo "# qcollectiongenerator $(BUILDDIR)/qthelp/MarMix.qhcp"
 	@echo "To view the help file:"
-	@echo "# assistant -collectionFile $(BUILDDIR)/qthelp/marmix.qhc"
+	@echo "# assistant -collectionFile $(BUILDDIR)/qthelp/MarMix.qhc"
 
 devhelp:
 	$(SPHINXBUILD) -b devhelp $(ALLSPHINXOPTS) $(BUILDDIR)/devhelp
 	@echo
 	@echo "Build finished."
 	@echo "To view the help file:"
-	@echo "# mkdir -p $$HOME/.local/share/devhelp/marmix"
-	@echo "# ln -s $(BUILDDIR)/devhelp $$HOME/.local/share/devhelp/marmix"
+	@echo "# mkdir -p $$HOME/.local/share/devhelp/MarMix"
+	@echo "# ln -s $(BUILDDIR)/devhelp $$HOME/.local/share/devhelp/MarMix"
 	@echo "# devhelp"
 
 epub:
@@ -103,10 +106,11 @@ latex:
 	      "(use \`make latexpdf' here to do that automatically)."
 
 latexpdf:
-	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) $(BUILDDIR)/latex
+	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) $(PDFBUILDDIR)/latex
 	@echo "Running LaTeX files through pdflatex..."
-	$(MAKE) -C $(BUILDDIR)/latex all-pdf
-	@echo "pdflatex finished; the PDF files are in $(BUILDDIR)/latex."
+	$(MAKE) -C $(PDFBUILDDIR)/latex all-pdf
+	cp $(PDFBUILDDIR)/latex/*.pdf $(PDF)
+	@echo "pdflatex finished; the PDF file is $(PDF)."
 
 text:
 	$(SPHINXBUILD) -b text $(ALLSPHINXOPTS) $(BUILDDIR)/text
@@ -151,3 +155,30 @@ doctest:
 	$(SPHINXBUILD) -b doctest $(ALLSPHINXOPTS) $(BUILDDIR)/doctest
 	@echo "Testing of doctests in the sources finished, look at the " \
 	      "results in $(BUILDDIR)/doctest/output.txt."
+
+marmix:
+	@echo "Building MarMix's documentation..."
+	@echo
+	@echo "Generating the global database model graph"
+	#../marmix/manage.py graph_models -a -g -o ./medias/MarMix_model.png
+	@echo
+	@echo "Done"
+	@echo
+	@echo "Building the HTML pages"
+	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+	@echo
+	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
+	@echo
+	@echo "Building the PDF document"
+	#$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) $(PDFBUILDDIR)/latex
+	@echo "Running LaTeX files through pdflatex..."
+	#$(MAKE) -C $(PDFBUILDDIR)/latex all-pdf
+	#cp $(PDFBUILDDIR)/latex/*.pdf $(PDF)
+	@echo
+	@echo "pdflatex finished; the PDF file is $(PDF)."
+	@echo
+	@echo "Commiting the documentation to GitHub"
+	@echo
+	#cd $(BUILDDIR)/html; git add . ; git commit -m "rebuilt docs"; git push origin gh-pages
+	@echo
+	@echo "All done! Thank you for contributing documentation ;-)"

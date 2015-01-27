@@ -33,6 +33,9 @@ from .models import Simulation, Currency, Team
 
 
 class SimulationSerializer(serializers.ModelSerializer):
+    """
+    Simulation serializer.
+    """
     user = serializers.ReadOnlyField(source='user.username')
     stocks = serializers.HyperlinkedRelatedField(many=True, read_only=True, view_name='stock-detail')
     currency = serializers.ReadOnlyField(source='currency.code')
@@ -43,12 +46,18 @@ class SimulationSerializer(serializers.ModelSerializer):
 
 
 class CurrencySerializer(serializers.ModelSerializer):
+    """
+    Currency serializer.
+    """
     class Meta:
         model = Currency
         fields = ('id', 'code', 'symbol')
 
 
 class TeamSerializer(serializers.ModelSerializer):
+    """
+    Team serializer.
+    """
     orders = serializers.HyperlinkedRelatedField(many=True, read_only=True, view_name='order-detail')
 
     class Meta:
