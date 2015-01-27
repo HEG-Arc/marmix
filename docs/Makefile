@@ -160,7 +160,7 @@ marmix:
 	@echo "Building MarMix's documentation..."
 	@echo
 	@echo "Generating the global database model graph"
-	#../marmix/manage.py graph_models -a -g -o ./medias/MarMix_model.png
+	../marmix/manage.py graph_models -a -g -o ./medias/MarMix_model.png
 	@echo
 	@echo "Done"
 	@echo
@@ -170,15 +170,15 @@ marmix:
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 	@echo
 	@echo "Building the PDF document"
-	#$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) $(PDFBUILDDIR)/latex
+	$(SPHINXBUILD) -b latex $(ALLSPHINXOPTS) $(PDFBUILDDIR)/latex
 	@echo "Running LaTeX files through pdflatex..."
-	#$(MAKE) -C $(PDFBUILDDIR)/latex all-pdf
+	$(MAKE) -C $(PDFBUILDDIR)/latex all-pdf
 	#cp $(PDFBUILDDIR)/latex/*.pdf $(PDF)
 	@echo
 	@echo "pdflatex finished; the PDF file is $(PDF)."
 	@echo
 	@echo "Commiting the documentation to GitHub"
 	@echo
-	#cd $(BUILDDIR)/html; git add . ; git commit -m "rebuilt docs"; git push origin gh-pages
+	cd $(BUILDDIR)/html; git add . ; git commit -m "rebuilt docs"; git push origin gh-pages
 	@echo
 	@echo "All done! Thank you for contributing documentation ;-)"
