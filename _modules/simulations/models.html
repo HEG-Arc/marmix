@@ -1,0 +1,311 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>simulations.models &mdash; MarMix 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
+    <link rel="top" title="MarMix 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">MarMix 0.1.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for simulations.models</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: UTF-8 -*-</span>
+<span class="c"># models.py</span>
+<span class="c">#</span>
+<span class="c"># Copyright (C) 2014 HES-SO//HEG Arc</span>
+<span class="c">#</span>
+<span class="c"># Author(s): Cédric Gaspoz &lt;cedric.gaspoz@he-arc.ch&gt;</span>
+<span class="c">#</span>
+<span class="c"># This file is part of MarMix.</span>
+<span class="c">#</span>
+<span class="c"># MarMix is free software: you can redistribute it and/or modify</span>
+<span class="c"># it under the terms of the GNU General Public License as published by</span>
+<span class="c"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c"># (at your option) any later version.</span>
+<span class="c">#</span>
+<span class="c"># MarMix is distributed in the hope that it will be useful,</span>
+<span class="c"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c"># GNU General Public License for more details.</span>
+<span class="c">#</span>
+<span class="c"># You should have received a copy of the GNU General Public License</span>
+<span class="c"># along with MarMix. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+
+<span class="c"># Stdlib imports</span>
+<span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">import</span> <span class="nn">uuid</span>
+
+<span class="c"># Core Django imports</span>
+<span class="kn">from</span> <span class="nn">django.db</span> <span class="kn">import</span> <span class="n">models</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+<span class="kn">from</span> <span class="nn">django.core.cache</span> <span class="kn">import</span> <span class="n">cache</span>
+
+<span class="c"># Third-party app imports</span>
+<span class="kn">from</span> <span class="nn">django_extensions.db.models</span> <span class="kn">import</span> <span class="n">TimeStampedModel</span>
+<span class="kn">from</span> <span class="nn">shorturls</span> <span class="kn">import</span> <span class="n">baseconv</span>
+
+<span class="c"># MarMix imports</span>
+<span class="kn">from</span> <span class="nn">customers.models</span> <span class="kn">import</span> <span class="n">Customer</span>
+<span class="kn">from</span> <span class="nn">users.models</span> <span class="kn">import</span> <span class="n">User</span>
+
+
+<span class="k">def</span> <span class="nf">short_code_encode</span><span class="p">(</span><span class="n">sim_id</span><span class="p">,</span> <span class="n">cust_code</span><span class="p">):</span>
+    <span class="n">encoded_id</span> <span class="o">=</span> <span class="n">baseconv</span><span class="o">.</span><span class="n">base32</span><span class="o">.</span><span class="n">from_decimal</span><span class="p">(</span><span class="n">sim_id</span><span class="p">)</span>
+    <span class="k">return</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">-</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">cust_code</span><span class="o">.</span><span class="n">upper</span><span class="p">(),</span> <span class="n">encoded_id</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">generate_uuid</span><span class="p">(</span><span class="n">length</span><span class="p">):</span>
+    <span class="c"># TODO: Add a test of unicity in the DB...</span>
+    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span><span class="o">.</span><span class="n">hex</span><span class="o">.</span><span class="n">upper</span><span class="p">()[</span><span class="mi">0</span><span class="p">:</span><span class="n">length</span><span class="p">])</span>
+
+
+<div class="viewcode-block" id="Simulation"><a class="viewcode-back" href="../../modules/simulations.html#simulations.models.Simulation">[docs]</a><span class="k">class</span> <span class="nc">Simulation</span><span class="p">(</span><span class="n">TimeStampedModel</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A simulation hold all configuration parameters used to setup and run a simulation.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">INTRO</span> <span class="o">=</span> <span class="s">&#39;IN&#39;</span>
+    <span class="n">ADVANCED</span> <span class="o">=</span> <span class="s">&#39;AD&#39;</span>
+    <span class="n">LIVE</span> <span class="o">=</span> <span class="s">&#39;LI&#39;</span>
+    <span class="n">INDEXED</span> <span class="o">=</span> <span class="s">&#39;ID&#39;</span>
+    <span class="n">SIMULATION_TYPE_CHOICES</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="n">INTRO</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Introduction&#39;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="n">ADVANCED</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Advanced&#39;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="n">LIVE</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Live simulation&#39;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="n">INDEXED</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Indexed simulation&#39;</span><span class="p">)),</span>
+    <span class="p">)</span>
+
+    <span class="n">CONFIGURING</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">INITIALIZING</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">READY</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">RUNNING</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="n">PAUSED</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">FINISHED</span> <span class="o">=</span> <span class="mi">5</span>
+    <span class="n">ARCHIVED</span> <span class="o">=</span> <span class="mi">9</span>
+    <span class="n">SIMULATION_STATE_CHOICES</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="n">CONFIGURING</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Configuring&#39;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="n">INITIALIZING</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Initializing&#39;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="n">READY</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Ready to play&#39;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="n">RUNNING</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Running&#39;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="n">PAUSED</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Paused&#39;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="n">FINISHED</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Finished&#39;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="n">ARCHIVED</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Archived (closed)&#39;</span><span class="p">)),</span>
+    <span class="p">)</span>
+    <span class="n">SIMULATION_STATE_DICT</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">&#39;CONFIGURING&#39;</span><span class="p">:</span> <span class="n">CONFIGURING</span><span class="p">,</span>
+        <span class="s">&#39;INITIALIZING&#39;</span><span class="p">:</span> <span class="n">INITIALIZING</span><span class="p">,</span>
+        <span class="s">&#39;READY&#39;</span><span class="p">:</span> <span class="n">READY</span><span class="p">,</span>
+        <span class="s">&#39;RUNNING&#39;</span><span class="p">:</span> <span class="n">RUNNING</span><span class="p">,</span>
+        <span class="s">&#39;PAUSED&#39;</span><span class="p">:</span> <span class="n">PAUSED</span><span class="p">,</span>
+        <span class="s">&#39;FINISHED&#39;</span><span class="p">:</span> <span class="n">FINISHED</span><span class="p">,</span>
+        <span class="s">&#39;ARCHIVED&#39;</span><span class="p">:</span> <span class="n">ARCHIVED</span><span class="p">,</span>
+        <span class="p">}</span>
+    <span class="n">code</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;code&quot;</span><span class="p">),</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span> <span class="n">unique</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                            <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;The code of the simulation (for the user interface)&quot;</span><span class="p">))</span>
+    <span class="n">customer</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="n">Customer</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;customer&#39;</span><span class="p">),</span> <span class="n">related_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;simulations&#39;</span><span class="p">),</span>
+                                 <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;The customer account running this simulation&quot;</span><span class="p">))</span>
+    <span class="n">user</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="n">User</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;user&#39;</span><span class="p">),</span> <span class="n">related_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;simulations&#39;</span><span class="p">),</span>
+                             <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;The user account running this simulation&quot;</span><span class="p">))</span>
+    <span class="n">simulation_type</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;type of simulation&quot;</span><span class="p">),</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                                       <span class="n">choices</span><span class="o">=</span><span class="n">SIMULATION_TYPE_CHOICES</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">INTRO</span><span class="p">,</span>
+                                       <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;The type of this simulation&quot;</span><span class="p">))</span>
+    <span class="n">capital</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">DecimalField</span><span class="p">(</span><span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;initial capital&quot;</span><span class="p">),</span> <span class="n">max_digits</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">decimal_places</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+                                  <span class="n">default</span><span class="o">=</span><span class="s">&#39;0.0000&#39;</span><span class="p">,</span> <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;Initial capital paid to each team&quot;</span><span class="p">))</span>
+    <span class="n">currency</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="s">&#39;Currency&#39;</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;currency&quot;</span><span class="p">),</span>
+                                 <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;The currency symbol displayed in the interface (has no impact on the simulation)&quot;</span><span class="p">))</span>
+    <span class="n">state</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;state of the simulation&quot;</span><span class="p">),</span>
+                                <span class="n">choices</span><span class="o">=</span><span class="n">SIMULATION_STATE_CHOICES</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">CONFIGURING</span><span class="p">,</span>
+                                <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;The current state of this simulation&quot;</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">code</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">code</span> <span class="o">=</span> <span class="s">&#39;MM-99999999&#39;</span>
+            <span class="nb">super</span><span class="p">(</span><span class="n">Simulation</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">code</span> <span class="o">=</span> <span class="n">short_code_encode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">customer</span><span class="o">.</span><span class="n">short_code</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">:</span>
+            <span class="n">cache</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="s">&#39;simulation-</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Simulation</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_nb_teams</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">teams</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">teams</span><span class="o">.</span><span class="n">all</span><span class="p">()</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">teams</span>
+    <span class="n">nb_teams</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">_nb_teams</span><span class="p">)</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&quot;simulation&quot;</span><span class="p">)</span>
+        <span class="n">verbose_name_plural</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&quot;simulations&quot;</span><span class="p">)</span>
+        <span class="n">ordering</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;code&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">code</span>
+
+</div>
+<div class="viewcode-block" id="Currency"><a class="viewcode-back" href="../../modules/simulations.html#simulations.models.Currency">[docs]</a><span class="k">class</span> <span class="nc">Currency</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A currency, used for display purpose in each views. It has no incidence on the core of the simulation.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">code</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;code of currency&quot;</span><span class="p">),</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                            <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;The ISO code of the currency&quot;</span><span class="p">))</span>
+    <span class="n">symbol</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;symbol of currency&quot;</span><span class="p">),</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                              <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;The symbol of the currency&quot;</span><span class="p">))</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&quot;currency&quot;</span><span class="p">)</span>
+        <span class="n">verbose_name_plural</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&quot;currencies&quot;</span><span class="p">)</span>
+        <span class="n">ordering</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;code&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbol</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbol</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">code</span>
+
+</div>
+<div class="viewcode-block" id="Team"><a class="viewcode-back" href="../../modules/simulations.html#simulations.models.Team">[docs]</a><span class="k">class</span> <span class="nc">Team</span><span class="p">(</span><span class="n">TimeStampedModel</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A team participating in a simulation.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">PLAYERS</span> <span class="o">=</span> <span class="s">&#39;P&#39;</span>
+    <span class="n">LIQUIDITY_MANAGER</span> <span class="o">=</span> <span class="s">&#39;L&#39;</span>
+    <span class="n">TEAM_TYPE_CHOICES</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="n">PLAYERS</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Players&#39;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="n">LIQUIDITY_MANAGER</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;Liquidity manager&#39;</span><span class="p">)),</span>
+    <span class="p">)</span>
+
+    <span class="n">customer</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="n">Customer</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;organization&#39;</span><span class="p">),</span> <span class="n">related_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;teams&#39;</span><span class="p">),</span>
+                                 <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;The organization the team belongs to&quot;</span><span class="p">))</span>
+    <span class="n">simulations</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ManyToManyField</span><span class="p">(</span><span class="s">&#39;Simulation&#39;</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;simulations&#39;</span><span class="p">),</span> <span class="n">related_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;teams&#39;</span><span class="p">),</span> <span class="n">null</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                                         <span class="n">blank</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;The simulation(s) the team belongs to&quot;</span><span class="p">))</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;name&quot;</span><span class="p">),</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+                            <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;A name that can be attributed to the team&quot;</span><span class="p">))</span>
+    <span class="n">team_type</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;type of team&quot;</span><span class="p">),</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="n">TEAM_TYPE_CHOICES</span><span class="p">,</span>
+                                 <span class="n">default</span><span class="o">=</span><span class="n">PLAYERS</span><span class="p">,</span>
+                                 <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;Indicates if it is a team of players or a liquidity manager&quot;</span><span class="p">))</span>
+    <span class="n">locked</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">BooleanField</span><span class="p">(</span><span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;locked&quot;</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                                 <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;Locked teams can not log in the simulation&quot;</span><span class="p">))</span>
+    <span class="n">users</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ManyToManyField</span><span class="p">(</span><span class="n">User</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;members&#39;</span><span class="p">),</span> <span class="n">related_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&#39;teams&#39;</span><span class="p">),</span> <span class="n">null</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                                   <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;The users belonging to the team&quot;</span><span class="p">))</span>
+    <span class="n">uuid</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;registration key&quot;</span><span class="p">),</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">unique</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                            <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;A unique registration key that is automatically created&quot;</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_get_holdings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c"># TODO: Compute it for real ;-)</span>
+        <span class="n">holdings</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">10000</span><span class="p">,</span> <span class="mi">99999</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">holdings</span>
+    <span class="n">get_holdings</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">_get_holdings</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_members</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">users</span><span class="o">.</span><span class="n">all</span><span class="p">()</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+    <span class="n">get_members</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">_get_members</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">force_insert</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">force_update</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">using</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">update_fields</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">uuid</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">uuid</span> <span class="o">=</span> <span class="n">generate_uuid</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span>
+        <span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">force_insert</span><span class="p">,</span> <span class="n">force_update</span><span class="p">,</span> <span class="n">using</span><span class="p">,</span> <span class="n">update_fields</span><span class="p">)</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;team&#39;</span><span class="p">)</span>
+        <span class="n">verbose_name_plural</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;teams&#39;</span><span class="p">)</span>
+        <span class="n">unique_together</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;customer&#39;</span><span class="p">,</span> <span class="s">&#39;name&#39;</span><span class="p">)</span>
+        <span class="n">ordering</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;customer&#39;</span><span class="p">,</span> <span class="s">&#39;name&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+
+</div>
+<div class="viewcode-block" id="create_liquidity_manager"><a class="viewcode-back" href="../../modules/simulations.html#simulations.models.create_liquidity_manager">[docs]</a><span class="k">def</span> <span class="nf">create_liquidity_manager</span><span class="p">(</span><span class="n">simulation</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a new team to host the liquidity manager.</span>
+
+<span class="sd">    :param simulation: Simulation object in which to add a new team</span>
+<span class="sd">    :return: Team object created</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">trader</span> <span class="o">=</span> <span class="n">Team</span><span class="p">(</span><span class="n">customer</span><span class="o">=</span><span class="n">simulation</span><span class="o">.</span><span class="n">customer</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;Liquidity trader </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">simulation</span><span class="o">.</span><span class="n">code</span><span class="p">),</span>
+                  <span class="n">team_type</span><span class="o">=</span><span class="n">Team</span><span class="o">.</span><span class="n">LIQUIDITY_MANAGER</span><span class="p">)</span>
+    <span class="n">trader</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+    <span class="n">trader</span><span class="o">.</span><span class="n">simulations</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">simulation</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">trader</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/marmix_200.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">MarMix 0.1.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2015, Cédric Gaspoz.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

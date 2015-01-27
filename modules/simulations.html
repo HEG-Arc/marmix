@@ -1,0 +1,741 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Simulations &mdash; MarMix 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+    <link rel="top" title="MarMix 0.1.0 documentation" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">MarMix 0.1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="simulations">
+<h1>Simulations<a class="headerlink" href="#simulations" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-simulations.models">
+<span id="models"></span><h2>Models<a class="headerlink" href="#module-simulations.models" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="simulations.models.Currency">
+<em class="property">class </em><tt class="descclassname">simulations.models.</tt><tt class="descname">Currency</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/simulations/models.html#Currency"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.models.Currency" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">django.db.models.base.Model</span></tt></p>
+<p>A currency, used for display purpose in each views. It has no incidence on the core of the simulation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>id</strong> (<em>AutoField</em>) &#8211; Id</li>
+<li><strong>code</strong> (<em>CharField</em>) &#8211; The ISO code of the currency</li>
+<li><strong>symbol</strong> (<em>CharField</em>) &#8211; The symbol of the currency</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="simulations.models.Simulation">
+<em class="property">class </em><tt class="descclassname">simulations.models.</tt><tt class="descname">Simulation</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/simulations/models.html#Simulation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.models.Simulation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">django_extensions.db.models.TimeStampedModel</span></tt></p>
+<p>A simulation hold all configuration parameters used to setup and run a simulation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>id</strong> (<em>AutoField</em>) &#8211; Id</li>
+<li><strong>created</strong> (<em>CreationDateTimeField</em>) &#8211; Created</li>
+<li><strong>modified</strong> (<em>ModificationDateTimeField</em>) &#8211; Modified</li>
+<li><strong>code</strong> (<em>CharField</em>) &#8211; The code of the simulation (for the user interface)</li>
+<li><strong>customer_id</strong> (ForeignKey to <a class="reference internal" href="../applications.html#customers.models.Customer" title="customers.models.Customer"><tt class="xref py py-class docutils literal"><span class="pre">Customer</span></tt></a>) &#8211; The customer account running this simulation</li>
+<li><strong>user_id</strong> (ForeignKey to <a class="reference internal" href="../applications.html#users.models.User" title="users.models.User"><tt class="xref py py-class docutils literal"><span class="pre">User</span></tt></a>) &#8211; The user account running this simulation</li>
+<li><strong>simulation_type</strong> (<em>CharField</em>) &#8211; The type of this simulation</li>
+<li><strong>capital</strong> (<em>DecimalField</em>) &#8211; Initial capital paid to each team</li>
+<li><strong>currency_id</strong> (ForeignKey to <a class="reference internal" href="#simulations.models.Currency" title="simulations.models.Currency"><tt class="xref py py-class docutils literal"><span class="pre">Currency</span></tt></a>) &#8211; The currency symbol displayed in the interface (has no impact on the simulation)</li>
+<li><strong>state</strong> (<em>IntegerField</em>) &#8211; The current state of this simulation</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="simulations.models.Team">
+<em class="property">class </em><tt class="descclassname">simulations.models.</tt><tt class="descname">Team</tt><big>(</big><em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/simulations/models.html#Team"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.models.Team" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">django_extensions.db.models.TimeStampedModel</span></tt></p>
+<p>A team participating in a simulation.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>id</strong> (<em>AutoField</em>) &#8211; Id</li>
+<li><strong>created</strong> (<em>CreationDateTimeField</em>) &#8211; Created</li>
+<li><strong>modified</strong> (<em>ModificationDateTimeField</em>) &#8211; Modified</li>
+<li><strong>customer_id</strong> (ForeignKey to <a class="reference internal" href="../applications.html#customers.models.Customer" title="customers.models.Customer"><tt class="xref py py-class docutils literal"><span class="pre">Customer</span></tt></a>) &#8211; The organization the team belongs to</li>
+<li><strong>name</strong> (<em>CharField</em>) &#8211; A name that can be attributed to the team</li>
+<li><strong>team_type</strong> (<em>CharField</em>) &#8211; Indicates if it is a team of players or a liquidity manager</li>
+<li><strong>locked</strong> (<em>BooleanField</em>) &#8211; Locked teams can not log in the simulation</li>
+<li><strong>uuid</strong> (<em>CharField</em>) &#8211; A unique registration key that is automatically created</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="simulations.models.create_liquidity_manager">
+<tt class="descclassname">simulations.models.</tt><tt class="descname">create_liquidity_manager</tt><big>(</big><em>simulation</em><big>)</big><a class="reference internal" href="../_modules/simulations/models.html#create_liquidity_manager"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.models.create_liquidity_manager" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new team to host the liquidity manager.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>simulation</strong> &#8211; Simulation object in which to add a new team</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">Team object created</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-simulations.tasks">
+<span id="tasks"></span><h2>Tasks<a class="headerlink" href="#module-simulations.tasks" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="simulations.tasks.initialize_simulation">
+<tt class="descclassname">simulations.tasks.</tt><tt class="descname">initialize_simulation</tt><big>(</big><em>simulation</em><big>)</big><a class="reference internal" href="../_modules/simulations/tasks.html#initialize_simulation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.tasks.initialize_simulation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize the simulation (async Celery task).</p>
+<p>-Creates stocks
+-Creates a liquidity manager
+-Initialize the ticker
+-Creates opening transactions</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>simulation</strong> &#8211; Simulation object</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">None</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-simulations.views">
+<span id="views"></span><h2>Views<a class="headerlink" href="#module-simulations.views" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="simulations.views.CurrencyViewSet">
+<em class="property">class </em><tt class="descclassname">simulations.views.</tt><tt class="descname">CurrencyViewSet</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/simulations/views.html#CurrencyViewSet"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.views.CurrencyViewSet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">rest_framework.viewsets.ModelViewSet</span></tt></p>
+<dl class="attribute">
+<dt id="simulations.views.CurrencyViewSet.permission_classes">
+<tt class="descname">permission_classes</tt><em class="property"> = (&lt;class 'rest_framework.permissions.IsAuthenticatedOrReadOnly'&gt;,)</em><a class="headerlink" href="#simulations.views.CurrencyViewSet.permission_classes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="simulations.views.CurrencyViewSet.queryset">
+<tt class="descname">queryset</tt><em class="property"> = [&lt;Currency: CHF&gt;]</em><a class="headerlink" href="#simulations.views.CurrencyViewSet.queryset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="simulations.views.CurrencyViewSet.serializer_class">
+<tt class="descname">serializer_class</tt><a class="headerlink" href="#simulations.views.CurrencyViewSet.serializer_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">CurrencySerializer</span></tt></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="simulations.views.CurrencyViewSet.suffix">
+<tt class="descname">suffix</tt><em class="property"> = None</em><a class="headerlink" href="#simulations.views.CurrencyViewSet.suffix" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="simulations.views.SimulationCreate">
+<em class="property">class </em><tt class="descclassname">simulations.views.</tt><tt class="descname">SimulationCreate</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/simulations/views.html#SimulationCreate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.views.SimulationCreate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">django.contrib.messages.views.SuccessMessageMixin</span></tt>, <tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.edit.CreateView</span></tt></p>
+<dl class="attribute">
+<dt id="simulations.views.SimulationCreate.fields">
+<tt class="descname">fields</tt><em class="property"> = ['code', 'simulation_type', 'capital', 'currency']</em><a class="headerlink" href="#simulations.views.SimulationCreate.fields" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="simulations.views.SimulationCreate.form_valid">
+<tt class="descname">form_valid</tt><big>(</big><em>form</em><big>)</big><a class="reference internal" href="../_modules/simulations/views.html#SimulationCreate.form_valid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.views.SimulationCreate.form_valid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="simulations.views.SimulationCreate.get_context_data">
+<tt class="descname">get_context_data</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/simulations/views.html#SimulationCreate.get_context_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.views.SimulationCreate.get_context_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="simulations.views.SimulationCreate.get_success_message">
+<tt class="descname">get_success_message</tt><big>(</big><em>cleaned_data</em><big>)</big><a class="reference internal" href="../_modules/simulations/views.html#SimulationCreate.get_success_message"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.views.SimulationCreate.get_success_message" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="simulations.views.SimulationCreate.get_success_url">
+<tt class="descname">get_success_url</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/simulations/views.html#SimulationCreate.get_success_url"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.views.SimulationCreate.get_success_url" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="simulations.views.SimulationCreate.model">
+<tt class="descname">model</tt><a class="headerlink" href="#simulations.views.SimulationCreate.model" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">Simulation</span></tt></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="simulations.views.SimulationCreate.success_message">
+<tt class="descname">success_message</tt><em class="property"> = &lt;django.utils.functional.lazy.&lt;locals&gt;.__proxy__ object at 0x2aec9a26e780&gt;</em><a class="headerlink" href="#simulations.views.SimulationCreate.success_message" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="simulations.views.SimulationDelete">
+<em class="property">class </em><tt class="descclassname">simulations.views.</tt><tt class="descname">SimulationDelete</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/simulations/views.html#SimulationDelete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.views.SimulationDelete" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">django.contrib.messages.views.SuccessMessageMixin</span></tt>, <tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.edit.DeleteView</span></tt></p>
+<dl class="method">
+<dt id="simulations.views.SimulationDelete.delete">
+<tt class="descname">delete</tt><big>(</big><em>request</em>, <em>*args</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/simulations/views.html#SimulationDelete.delete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.views.SimulationDelete.delete" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="simulations.views.SimulationDelete.get_object">
+<tt class="descname">get_object</tt><big>(</big><em>queryset=None</em><big>)</big><a class="reference internal" href="../_modules/simulations/views.html#SimulationDelete.get_object"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.views.SimulationDelete.get_object" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="simulations.views.SimulationDelete.model">
+<tt class="descname">model</tt><a class="headerlink" href="#simulations.views.SimulationDelete.model" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">Simulation</span></tt></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="simulations.views.SimulationDelete.success_message">
+<tt class="descname">success_message</tt><em class="property"> = &lt;django.utils.functional.lazy.&lt;locals&gt;.__proxy__ object at 0x2aec9a26e978&gt;</em><a class="headerlink" href="#simulations.views.SimulationDelete.success_message" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="simulations.views.SimulationDelete.success_url">
+<tt class="descname">success_url</tt><em class="property"> = &lt;django.utils.functional.lazy.&lt;locals&gt;.__proxy__ object at 0x2aec9a26e940&gt;</em><a class="headerlink" href="#simulations.views.SimulationDelete.success_url" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="simulations.views.SimulationDetailView">
+<em class="property">class </em><tt class="descclassname">simulations.views.</tt><tt class="descname">SimulationDetailView</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/simulations/views.html#SimulationDetailView"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.views.SimulationDetailView" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.detail.DetailView</span></tt></p>
+<dl class="method">
+<dt id="simulations.views.SimulationDetailView.get_context_data">
+<tt class="descname">get_context_data</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/simulations/views.html#SimulationDetailView.get_context_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.views.SimulationDetailView.get_context_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="simulations.views.SimulationDetailView.get_object">
+<tt class="descname">get_object</tt><big>(</big><em>queryset=None</em><big>)</big><a class="reference internal" href="../_modules/simulations/views.html#SimulationDetailView.get_object"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.views.SimulationDetailView.get_object" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="simulations.views.SimulationDetailView.model">
+<tt class="descname">model</tt><a class="headerlink" href="#simulations.views.SimulationDetailView.model" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">Simulation</span></tt></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="simulations.views.SimulationInitializeView">
+<em class="property">class </em><tt class="descclassname">simulations.views.</tt><tt class="descname">SimulationInitializeView</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/simulations/views.html#SimulationInitializeView"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.views.SimulationInitializeView" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">django.contrib.messages.views.SuccessMessageMixin</span></tt>, <tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.edit.UpdateView</span></tt></p>
+<p>Update/Create the simulation. It calls initialize_simulation after form validation.</p>
+<dl class="attribute">
+<dt id="simulations.views.SimulationInitializeView.fields">
+<tt class="descname">fields</tt><em class="property"> = ['nb_companies', 'initial_value', 'fixed_interest_rate']</em><a class="headerlink" href="#simulations.views.SimulationInitializeView.fields" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="simulations.views.SimulationInitializeView.form_valid">
+<tt class="descname">form_valid</tt><big>(</big><em>form</em><big>)</big><a class="reference internal" href="../_modules/simulations/views.html#SimulationInitializeView.form_valid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.views.SimulationInitializeView.form_valid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="simulations.views.SimulationInitializeView.get_context_data">
+<tt class="descname">get_context_data</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/simulations/views.html#SimulationInitializeView.get_context_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.views.SimulationInitializeView.get_context_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="simulations.views.SimulationInitializeView.get_form_class">
+<tt class="descname">get_form_class</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/simulations/views.html#SimulationInitializeView.get_form_class"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.views.SimulationInitializeView.get_form_class" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="simulations.views.SimulationInitializeView.get_object">
+<tt class="descname">get_object</tt><big>(</big><em>queryset=None</em><big>)</big><a class="reference internal" href="../_modules/simulations/views.html#SimulationInitializeView.get_object"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.views.SimulationInitializeView.get_object" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="simulations.views.SimulationInitializeView.get_success_message">
+<tt class="descname">get_success_message</tt><big>(</big><em>cleaned_data</em><big>)</big><a class="reference internal" href="../_modules/simulations/views.html#SimulationInitializeView.get_success_message"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.views.SimulationInitializeView.get_success_message" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="simulations.views.SimulationInitializeView.get_success_url">
+<tt class="descname">get_success_url</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/simulations/views.html#SimulationInitializeView.get_success_url"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.views.SimulationInitializeView.get_success_url" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="simulations.views.SimulationInitializeView.model">
+<tt class="descname">model</tt><a class="headerlink" href="#simulations.views.SimulationInitializeView.model" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">Ticker</span></tt></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="simulations.views.SimulationInitializeView.simulation">
+<tt class="descname">simulation</tt><em class="property"> = None</em><a class="headerlink" href="#simulations.views.SimulationInitializeView.simulation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="simulations.views.SimulationInitializeView.success_message">
+<tt class="descname">success_message</tt><em class="property"> = &lt;django.utils.functional.lazy.&lt;locals&gt;.__proxy__ object at 0x2aec9a26ebe0&gt;</em><a class="headerlink" href="#simulations.views.SimulationInitializeView.success_message" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="simulations.views.SimulationListView">
+<em class="property">class </em><tt class="descclassname">simulations.views.</tt><tt class="descname">SimulationListView</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/simulations/views.html#SimulationListView"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.views.SimulationListView" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.list.ListView</span></tt></p>
+<dl class="method">
+<dt id="simulations.views.SimulationListView.get_context_data">
+<tt class="descname">get_context_data</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/simulations/views.html#SimulationListView.get_context_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.views.SimulationListView.get_context_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="simulations.views.SimulationListView.get_queryset">
+<tt class="descname">get_queryset</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/simulations/views.html#SimulationListView.get_queryset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.views.SimulationListView.get_queryset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="simulations.views.SimulationListView.model">
+<tt class="descname">model</tt><a class="headerlink" href="#simulations.views.SimulationListView.model" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">Simulation</span></tt></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="simulations.views.SimulationUpdate">
+<em class="property">class </em><tt class="descclassname">simulations.views.</tt><tt class="descname">SimulationUpdate</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/simulations/views.html#SimulationUpdate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.views.SimulationUpdate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">django.contrib.messages.views.SuccessMessageMixin</span></tt>, <tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.edit.UpdateView</span></tt></p>
+<dl class="attribute">
+<dt id="simulations.views.SimulationUpdate.fields">
+<tt class="descname">fields</tt><em class="property"> = ['code', 'simulation_type', 'capital', 'currency']</em><a class="headerlink" href="#simulations.views.SimulationUpdate.fields" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="simulations.views.SimulationUpdate.get_context_data">
+<tt class="descname">get_context_data</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/simulations/views.html#SimulationUpdate.get_context_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.views.SimulationUpdate.get_context_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="simulations.views.SimulationUpdate.get_object">
+<tt class="descname">get_object</tt><big>(</big><em>queryset=None</em><big>)</big><a class="reference internal" href="../_modules/simulations/views.html#SimulationUpdate.get_object"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.views.SimulationUpdate.get_object" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="simulations.views.SimulationUpdate.get_success_url">
+<tt class="descname">get_success_url</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/simulations/views.html#SimulationUpdate.get_success_url"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.views.SimulationUpdate.get_success_url" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="simulations.views.SimulationUpdate.model">
+<tt class="descname">model</tt><a class="headerlink" href="#simulations.views.SimulationUpdate.model" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">Simulation</span></tt></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="simulations.views.SimulationUpdate.success_message">
+<tt class="descname">success_message</tt><em class="property"> = &lt;django.utils.functional.lazy.&lt;locals&gt;.__proxy__ object at 0x2aec9a26e860&gt;</em><a class="headerlink" href="#simulations.views.SimulationUpdate.success_message" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="simulations.views.SimulationViewSet">
+<em class="property">class </em><tt class="descclassname">simulations.views.</tt><tt class="descname">SimulationViewSet</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/simulations/views.html#SimulationViewSet"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.views.SimulationViewSet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">rest_framework.viewsets.ModelViewSet</span></tt></p>
+<dl class="method">
+<dt id="simulations.views.SimulationViewSet.perform_create">
+<tt class="descname">perform_create</tt><big>(</big><em>serializer</em><big>)</big><a class="reference internal" href="../_modules/simulations/views.html#SimulationViewSet.perform_create"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.views.SimulationViewSet.perform_create" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="simulations.views.SimulationViewSet.permission_classes">
+<tt class="descname">permission_classes</tt><em class="property"> = (&lt;class 'rest_framework.permissions.IsAuthenticatedOrReadOnly'&gt;,)</em><a class="headerlink" href="#simulations.views.SimulationViewSet.permission_classes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="simulations.views.SimulationViewSet.queryset">
+<tt class="descname">queryset</tt><em class="property"> = [&lt;Simulation: ARC-1&gt;]</em><a class="headerlink" href="#simulations.views.SimulationViewSet.queryset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="simulations.views.SimulationViewSet.serializer_class">
+<tt class="descname">serializer_class</tt><a class="headerlink" href="#simulations.views.SimulationViewSet.serializer_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">SimulationSerializer</span></tt></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="simulations.views.SimulationViewSet.suffix">
+<tt class="descname">suffix</tt><em class="property"> = None</em><a class="headerlink" href="#simulations.views.SimulationViewSet.suffix" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="simulations.views.TeamDetailView">
+<em class="property">class </em><tt class="descclassname">simulations.views.</tt><tt class="descname">TeamDetailView</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/simulations/views.html#TeamDetailView"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.views.TeamDetailView" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.detail.DetailView</span></tt></p>
+<dl class="method">
+<dt id="simulations.views.TeamDetailView.get_context_data">
+<tt class="descname">get_context_data</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/simulations/views.html#TeamDetailView.get_context_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.views.TeamDetailView.get_context_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="simulations.views.TeamDetailView.get_object">
+<tt class="descname">get_object</tt><big>(</big><em>queryset=None</em><big>)</big><a class="reference internal" href="../_modules/simulations/views.html#TeamDetailView.get_object"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.views.TeamDetailView.get_object" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="simulations.views.TeamDetailView.model">
+<tt class="descname">model</tt><a class="headerlink" href="#simulations.views.TeamDetailView.model" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">Team</span></tt></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="simulations.views.TeamJoinView">
+<em class="property">class </em><tt class="descclassname">simulations.views.</tt><tt class="descname">TeamJoinView</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/simulations/views.html#TeamJoinView"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.views.TeamJoinView" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">django.contrib.messages.views.SuccessMessageMixin</span></tt>, <tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.edit.FormView</span></tt></p>
+<dl class="attribute">
+<dt id="simulations.views.TeamJoinView.form_class">
+<tt class="descname">form_class</tt><a class="headerlink" href="#simulations.views.TeamJoinView.form_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">TeamJoinForm</span></tt></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="simulations.views.TeamJoinView.form_valid">
+<tt class="descname">form_valid</tt><big>(</big><em>form</em><big>)</big><a class="reference internal" href="../_modules/simulations/views.html#TeamJoinView.form_valid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.views.TeamJoinView.form_valid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="simulations.views.TeamJoinView.get_success_message">
+<tt class="descname">get_success_message</tt><big>(</big><em>cleaned_data</em><big>)</big><a class="reference internal" href="../_modules/simulations/views.html#TeamJoinView.get_success_message"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.views.TeamJoinView.get_success_message" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="simulations.views.TeamJoinView.get_success_url">
+<tt class="descname">get_success_url</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/simulations/views.html#TeamJoinView.get_success_url"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.views.TeamJoinView.get_success_url" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="simulations.views.TeamJoinView.success_message">
+<tt class="descname">success_message</tt><em class="property"> = &lt;django.utils.functional.lazy.&lt;locals&gt;.__proxy__ object at 0x2aec9a26ea90&gt;</em><a class="headerlink" href="#simulations.views.TeamJoinView.success_message" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="simulations.views.TeamJoinView.team_name">
+<tt class="descname">team_name</tt><em class="property"> = ''</em><a class="headerlink" href="#simulations.views.TeamJoinView.team_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="simulations.views.TeamJoinView.template_name">
+<tt class="descname">template_name</tt><em class="property"> = 'simulations/join_team_form.html'</em><a class="headerlink" href="#simulations.views.TeamJoinView.template_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="simulations.views.TeamViewSet">
+<em class="property">class </em><tt class="descclassname">simulations.views.</tt><tt class="descname">TeamViewSet</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/simulations/views.html#TeamViewSet"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.views.TeamViewSet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">rest_framework.viewsets.ModelViewSet</span></tt></p>
+<dl class="attribute">
+<dt id="simulations.views.TeamViewSet.permission_classes">
+<tt class="descname">permission_classes</tt><em class="property"> = (&lt;class 'rest_framework.permissions.IsAuthenticatedOrReadOnly'&gt;,)</em><a class="headerlink" href="#simulations.views.TeamViewSet.permission_classes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="simulations.views.TeamViewSet.queryset">
+<tt class="descname">queryset</tt><em class="property"> = [&lt;Team: ARC-1&gt;, &lt;Team: ARC-2&gt;, &lt;Team: ARC-3&gt;, &lt;Team: ARC-4&gt;, &lt;Team: ARC-5&gt;, &lt;Team: Liquidity trader ARC-1&gt;]</em><a class="headerlink" href="#simulations.views.TeamViewSet.queryset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="simulations.views.TeamViewSet.serializer_class">
+<tt class="descname">serializer_class</tt><a class="headerlink" href="#simulations.views.TeamViewSet.serializer_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">TeamSerializer</span></tt></p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="simulations.views.TeamViewSet.suffix">
+<tt class="descname">suffix</tt><em class="property"> = None</em><a class="headerlink" href="#simulations.views.TeamViewSet.suffix" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="simulations.views.TeamsSelectionView">
+<em class="property">class </em><tt class="descclassname">simulations.views.</tt><tt class="descname">TeamsSelectionView</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/simulations/views.html#TeamsSelectionView"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.views.TeamsSelectionView" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">django.contrib.messages.views.SuccessMessageMixin</span></tt>, <tt class="xref py py-class docutils literal"><span class="pre">django.views.generic.edit.FormView</span></tt></p>
+<dl class="attribute">
+<dt id="simulations.views.TeamsSelectionView.form_class">
+<tt class="descname">form_class</tt><a class="headerlink" href="#simulations.views.TeamsSelectionView.form_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">TeamsSelectionForm</span></tt></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="simulations.views.TeamsSelectionView.form_valid">
+<tt class="descname">form_valid</tt><big>(</big><em>form</em><big>)</big><a class="reference internal" href="../_modules/simulations/views.html#TeamsSelectionView.form_valid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.views.TeamsSelectionView.form_valid" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="simulations.views.TeamsSelectionView.get_context_data">
+<tt class="descname">get_context_data</tt><big>(</big><em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/simulations/views.html#TeamsSelectionView.get_context_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.views.TeamsSelectionView.get_context_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="simulations.views.TeamsSelectionView.get_form_kwargs">
+<tt class="descname">get_form_kwargs</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/simulations/views.html#TeamsSelectionView.get_form_kwargs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.views.TeamsSelectionView.get_form_kwargs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="simulations.views.TeamsSelectionView.get_success_url">
+<tt class="descname">get_success_url</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/simulations/views.html#TeamsSelectionView.get_success_url"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.views.TeamsSelectionView.get_success_url" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="simulations.views.TeamsSelectionView.success_message">
+<tt class="descname">success_message</tt><em class="property"> = &lt;django.utils.functional.lazy.&lt;locals&gt;.__proxy__ object at 0x2aec9a26e6a0&gt;</em><a class="headerlink" href="#simulations.views.TeamsSelectionView.success_message" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="simulations.views.TeamsSelectionView.template_name">
+<tt class="descname">template_name</tt><em class="property"> = 'simulations/manage_teams_form.html'</em><a class="headerlink" href="#simulations.views.TeamsSelectionView.template_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="simulations.views.manage_simulation">
+<tt class="descclassname">simulations.views.</tt><tt class="descname">manage_simulation</tt><big>(</big><em>request</em>, <em>simulation_id</em>, <em>next_state</em><big>)</big><a class="reference internal" href="../_modules/simulations/views.html#manage_simulation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.views.manage_simulation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Helper to change the current state of the simulation.</p>
+<p>Available states are READY -&gt; RUNNING &lt;-&gt; PAUSED -&gt; FINISHED -&gt; ARCHIVED.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>request</strong> &#8211; </li>
+<li><strong>simulation_id</strong> &#8211; </li>
+<li><strong>next_state</strong> &#8211; </li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">HttpResponseRedirect</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="simulations.views.remove_tz_from_date">
+<tt class="descclassname">simulations.views.</tt><tt class="descname">remove_tz_from_date</tt><big>(</big><em>date</em><big>)</big><a class="reference internal" href="../_modules/simulations/views.html#remove_tz_from_date"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.views.remove_tz_from_date" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="simulations.views.teams_export_xlsx">
+<tt class="descclassname">simulations.views.</tt><tt class="descname">teams_export_xlsx</tt><big>(</big><em>request</em>, <em>simulation_id=None</em>, <em>customer_id=None</em><big>)</big><a class="reference internal" href="../_modules/simulations/views.html#teams_export_xlsx"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.views.teams_export_xlsx" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-simulations.serializers">
+<span id="serializers"></span><h2>Serializers<a class="headerlink" href="#module-simulations.serializers" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="simulations.serializers.CurrencySerializer">
+<em class="property">class </em><tt class="descclassname">simulations.serializers.</tt><tt class="descname">CurrencySerializer</tt><big>(</big><em>instance=None</em>, <em>data=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/simulations/serializers.html#CurrencySerializer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.serializers.CurrencySerializer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">rest_framework.serializers.ModelSerializer</span></tt></p>
+<p>Currency serializer.</p>
+<dl class="class">
+<dt id="simulations.serializers.CurrencySerializer.Meta">
+<em class="property">class </em><tt class="descname">Meta</tt><a class="reference internal" href="../_modules/simulations/serializers.html#CurrencySerializer.Meta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.serializers.CurrencySerializer.Meta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">builtins.object</span></tt></p>
+<dl class="attribute">
+<dt id="simulations.serializers.CurrencySerializer.Meta.fields">
+<tt class="descname">fields</tt><em class="property"> = ('id', 'code', 'symbol')</em><a class="headerlink" href="#simulations.serializers.CurrencySerializer.Meta.fields" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="simulations.serializers.CurrencySerializer.Meta.model">
+<tt class="descname">model</tt><a class="headerlink" href="#simulations.serializers.CurrencySerializer.Meta.model" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">Currency</span></tt></p>
+</dd></dl>
+
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="simulations.serializers.SimulationSerializer">
+<em class="property">class </em><tt class="descclassname">simulations.serializers.</tt><tt class="descname">SimulationSerializer</tt><big>(</big><em>instance=None</em>, <em>data=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/simulations/serializers.html#SimulationSerializer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.serializers.SimulationSerializer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">rest_framework.serializers.ModelSerializer</span></tt></p>
+<p>Simulation serializer.</p>
+<dl class="class">
+<dt id="simulations.serializers.SimulationSerializer.Meta">
+<em class="property">class </em><tt class="descname">Meta</tt><a class="reference internal" href="../_modules/simulations/serializers.html#SimulationSerializer.Meta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.serializers.SimulationSerializer.Meta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">builtins.object</span></tt></p>
+<dl class="attribute">
+<dt id="simulations.serializers.SimulationSerializer.Meta.fields">
+<tt class="descname">fields</tt><em class="property"> = ('id', 'code', 'customer', 'user', 'simulation_type', 'teams', 'capital', 'currency', 'state', 'stocks')</em><a class="headerlink" href="#simulations.serializers.SimulationSerializer.Meta.fields" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="simulations.serializers.SimulationSerializer.Meta.model">
+<tt class="descname">model</tt><a class="headerlink" href="#simulations.serializers.SimulationSerializer.Meta.model" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">Simulation</span></tt></p>
+</dd></dl>
+
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="simulations.serializers.TeamSerializer">
+<em class="property">class </em><tt class="descclassname">simulations.serializers.</tt><tt class="descname">TeamSerializer</tt><big>(</big><em>instance=None</em>, <em>data=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/simulations/serializers.html#TeamSerializer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.serializers.TeamSerializer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">rest_framework.serializers.ModelSerializer</span></tt></p>
+<p>Team serializer.</p>
+<dl class="class">
+<dt id="simulations.serializers.TeamSerializer.Meta">
+<em class="property">class </em><tt class="descname">Meta</tt><a class="reference internal" href="../_modules/simulations/serializers.html#TeamSerializer.Meta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#simulations.serializers.TeamSerializer.Meta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">builtins.object</span></tt></p>
+<dl class="attribute">
+<dt id="simulations.serializers.TeamSerializer.Meta.fields">
+<tt class="descname">fields</tt><em class="property"> = ('id', 'simulation', 'login', 'password', 'name', 'team_type', 'locked', 'orders')</em><a class="headerlink" href="#simulations.serializers.TeamSerializer.Meta.fields" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="simulations.serializers.TeamSerializer.Meta.model">
+<tt class="descname">model</tt><a class="headerlink" href="#simulations.serializers.TeamSerializer.Meta.model" title="Permalink to this definition">¶</a></dt>
+<dd><p>alias of <tt class="xref py py-class docutils literal"><span class="pre">Team</span></tt></p>
+</dd></dl>
+
+</dd></dl>
+
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/marmix_200.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Simulations</a><ul>
+<li><a class="reference internal" href="#module-simulations.models">Models</a></li>
+<li><a class="reference internal" href="#module-simulations.tasks">Tasks</a></li>
+<li><a class="reference internal" href="#module-simulations.views">Views</a></li>
+<li><a class="reference internal" href="#module-simulations.serializers">Serializers</a></li>
+</ul>
+</li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/modules/simulations.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">MarMix 0.1.0 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2015, Cédric Gaspoz.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

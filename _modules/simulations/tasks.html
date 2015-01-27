@@ -1,0 +1,182 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>simulations.tasks &mdash; MarMix 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
+    <link rel="top" title="MarMix 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">MarMix 0.1.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for simulations.tasks</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: UTF-8 -*-</span>
+<span class="c"># tasks.py</span>
+<span class="c">#</span>
+<span class="c"># Copyright (C) 2014 HES-SO//HEG Arc</span>
+<span class="c">#</span>
+<span class="c"># Author(s): Cédric Gaspoz &lt;cedric.gaspoz@he-arc.ch&gt;</span>
+<span class="c">#</span>
+<span class="c"># This file is part of MarMix.</span>
+<span class="c">#</span>
+<span class="c"># MarMix is free software: you can redistribute it and/or modify</span>
+<span class="c"># it under the terms of the GNU General Public License as published by</span>
+<span class="c"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c"># (at your option) any later version.</span>
+<span class="c">#</span>
+<span class="c"># MarMix is distributed in the hope that it will be useful,</span>
+<span class="c"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c"># GNU General Public License for more details.</span>
+<span class="c">#</span>
+<span class="c"># You should have received a copy of the GNU General Public License</span>
+<span class="c"># along with MarMix. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+
+<span class="c"># Stdlib imports</span>
+
+<span class="c"># Core Django imports</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext</span> <span class="k">as</span> <span class="n">_</span>
+
+<span class="c"># Third-party app imports</span>
+<span class="kn">from</span> <span class="nn">async_messages</span> <span class="kn">import</span> <span class="n">messages</span>
+
+<span class="c"># MarMix imports</span>
+<span class="kn">from</span> <span class="nn">config.celery</span> <span class="kn">import</span> <span class="n">app</span>
+<span class="kn">from</span> <span class="nn">simulations.models</span> <span class="kn">import</span> <span class="n">Simulation</span><span class="p">,</span> <span class="n">Team</span><span class="p">,</span> <span class="n">create_liquidity_manager</span>
+<span class="kn">from</span> <span class="nn">tickers.models</span> <span class="kn">import</span> <span class="n">TickerTick</span>
+<span class="kn">from</span> <span class="nn">stocks.models</span> <span class="kn">import</span> <span class="n">create_generic_stocks</span><span class="p">,</span> <span class="n">process_opening_transactions</span>
+
+
+<span class="nd">@app.task</span>
+<div class="viewcode-block" id="initialize_simulation"><a class="viewcode-back" href="../../modules/simulations.html#simulations.tasks.initialize_simulation">[docs]</a><span class="k">def</span> <span class="nf">initialize_simulation</span><span class="p">(</span><span class="n">simulation</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Initialize the simulation (async Celery task).</span>
+
+<span class="sd">    -Creates stocks</span>
+<span class="sd">    -Creates a liquidity manager</span>
+<span class="sd">    -Initialize the ticker</span>
+<span class="sd">    -Creates opening transactions</span>
+
+<span class="sd">    :param simulation: Simulation object</span>
+<span class="sd">    :return: None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">msg_info</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+    <span class="n">msg_error</span> <span class="o">=</span> <span class="s">&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">simulation</span><span class="o">.</span><span class="n">simulation_type</span> <span class="o">==</span> <span class="n">Simulation</span><span class="o">.</span><span class="n">INTRO</span><span class="p">:</span>
+        <span class="n">msg_info</span> <span class="o">+=</span> <span class="n">_</span><span class="p">(</span><span class="s">&quot;Initialization of introductory simulation running...&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;&lt;br /&gt;&quot;</span>
+        <span class="c"># stocks creation</span>
+        <span class="n">stocks</span> <span class="o">=</span> <span class="n">create_generic_stocks</span><span class="p">(</span><span class="n">simulation</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">stocks</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">msg_info</span> <span class="o">+=</span> <span class="n">_</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> stocks were created...&quot;</span> <span class="o">%</span> <span class="n">stocks</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;&lt;br /&gt;&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">msg_error</span> <span class="o">+=</span> <span class="n">_</span><span class="p">(</span><span class="s">&quot;No stocks were created!&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;&lt;br /&gt;&quot;</span>
+        <span class="c"># liquidity traders creation</span>
+        <span class="n">liquidity_manager</span> <span class="o">=</span> <span class="n">create_liquidity_manager</span><span class="p">(</span><span class="n">simulation</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">liquidity_manager</span><span class="p">:</span>
+            <span class="n">msg_info</span> <span class="o">+=</span> <span class="n">_</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> was created...&quot;</span> <span class="o">%</span> <span class="n">liquidity_manager</span><span class="o">.</span><span class="n">name</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;&lt;br /&gt;&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">msg_error</span> <span class="o">+=</span> <span class="n">_</span><span class="p">(</span><span class="s">&quot;No liquidity manager was created!&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;&lt;br /&gt;&quot;</span>
+        <span class="c"># initialize ticker</span>
+        <span class="c"># TODO: Initialize ticker</span>
+        <span class="c"># opening transactions</span>
+        <span class="n">openings</span> <span class="o">=</span> <span class="n">process_opening_transactions</span><span class="p">(</span><span class="n">simulation</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">openings</span><span class="p">:</span>
+            <span class="n">msg_info</span> <span class="o">+=</span> <span class="n">_</span><span class="p">(</span><span class="s">&quot;Openings transactions were processed...&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;&lt;br /&gt;&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">msg_error</span> <span class="o">+=</span> <span class="n">_</span><span class="p">(</span><span class="s">&quot;Unable to process opening transactions!&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="s">&quot;&lt;br /&gt;&quot;</span>
+        <span class="k">if</span> <span class="n">msg_info</span> <span class="o">!=</span> <span class="s">&quot;&quot;</span><span class="p">:</span>
+            <span class="n">msg_info</span> <span class="o">+=</span> <span class="n">_</span><span class="p">(</span><span class="s">&quot;Initialization succeeded! You can start running the simulation.&quot;</span><span class="p">)</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">simulation</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="n">msg_info</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">msg_error</span> <span class="o">!=</span> <span class="s">&quot;&quot;</span><span class="p">:</span>
+            <span class="n">msg_error</span> <span class="o">+=</span> <span class="n">_</span><span class="p">(</span><span class="s">&quot;There were errors during the initialization process!&quot;</span><span class="p">)</span>
+            <span class="n">messages</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">simulation</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="n">msg_error</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">simulation</span><span class="o">.</span><span class="n">simulation_type</span> <span class="o">==</span> <span class="n">Simulation</span><span class="o">.</span><span class="n">ADVANCED</span><span class="p">:</span>
+        <span class="n">messages</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">simulation</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&quot;Initialization of advanced simulation running...&quot;</span><span class="p">))</span>
+    <span class="k">elif</span> <span class="n">simulation</span><span class="o">.</span><span class="n">simulation_type</span> <span class="o">==</span> <span class="n">Simulation</span><span class="o">.</span><span class="n">LIVE</span> <span class="ow">or</span> <span class="n">simulation</span><span class="o">.</span><span class="n">simulation_type</span> <span class="o">==</span> <span class="n">Simulation</span><span class="o">.</span><span class="n">INDEXED</span><span class="p">:</span>
+        <span class="n">messages</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">simulation</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&quot;Initialization of live or indexed simulations is not yet implemented! Sorry.&quot;</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">messages</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">simulation</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&quot;Initialization of simulation failed!&quot;</span><span class="p">))</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/marmix_200.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">MarMix 0.1.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2015, Cédric Gaspoz.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

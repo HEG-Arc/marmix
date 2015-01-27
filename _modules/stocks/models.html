@@ -1,0 +1,383 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>stocks.models &mdash; MarMix 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
+    <link rel="top" title="MarMix 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">MarMix 0.1.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for stocks.models</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: UTF-8 -*-</span>
+<span class="c"># models.py</span>
+<span class="c">#</span>
+<span class="c"># Copyright (C) 2014 HES-SO//HEG Arc</span>
+<span class="c">#</span>
+<span class="c"># Author(s): Cédric Gaspoz &lt;cedric.gaspoz@he-arc.ch&gt;</span>
+<span class="c">#</span>
+<span class="c"># This file is part of MarMix.</span>
+<span class="c">#</span>
+<span class="c"># MarMix is free software: you can redistribute it and/or modify</span>
+<span class="c"># it under the terms of the GNU General Public License as published by</span>
+<span class="c"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c"># (at your option) any later version.</span>
+<span class="c">#</span>
+<span class="c"># MarMix is distributed in the hope that it will be useful,</span>
+<span class="c"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c"># GNU General Public License for more details.</span>
+<span class="c">#</span>
+<span class="c"># You should have received a copy of the GNU General Public License</span>
+<span class="c"># along with MarMix. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+
+<span class="c"># Stdlib imports</span>
+<span class="kn">from</span> <span class="nn">django.utils</span> <span class="kn">import</span> <span class="n">timezone</span>
+<span class="c"># Core Django imports</span>
+<span class="kn">from</span> <span class="nn">django.db</span> <span class="kn">import</span> <span class="n">models</span><span class="p">,</span> <span class="n">transaction</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+
+<span class="c"># Third-party app imports</span>
+<span class="kn">from</span> <span class="nn">django_extensions.db.models</span> <span class="kn">import</span> <span class="n">TimeStampedModel</span>
+
+<span class="c"># MarMix imports</span>
+<span class="kn">from</span> <span class="nn">simulations.models</span> <span class="kn">import</span> <span class="n">Simulation</span><span class="p">,</span> <span class="n">Team</span>
+<span class="kn">from</span> <span class="nn">.tasks</span> <span class="kn">import</span> <span class="n">match_orders</span><span class="p">,</span> <span class="n">check_matching_orders</span>
+
+
+<div class="viewcode-block" id="Stock"><a class="viewcode-back" href="../../applications.html#stocks.models.Stock">[docs]</a><span class="k">class</span> <span class="nc">Stock</span><span class="p">(</span><span class="n">TimeStampedModel</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Stocks are shares of a company that are automatically generated during the simulation setup.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">simulation</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="n">Simulation</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;simulation&quot;</span><span class="p">),</span> <span class="n">related_name</span><span class="o">=</span><span class="s">&quot;stocks&quot;</span><span class="p">,</span> <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;Related simulation&quot;</span><span class="p">))</span>
+    <span class="n">symbol</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;symbol&quot;</span><span class="p">),</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;Symbol of the stock (4 chars)&quot;</span><span class="p">))</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;name&quot;</span><span class="p">),</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;Full name of the stock&quot;</span><span class="p">))</span>
+    <span class="n">description</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">TextField</span><span class="p">(</span><span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;description&quot;</span><span class="p">),</span> <span class="n">blank</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;Description of the stock (HTML)&quot;</span><span class="p">))</span>
+    <span class="n">quantity</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;quantity&quot;</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;Total quantity of stocks in circulation&quot;</span><span class="p">))</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;stock&#39;</span><span class="p">)</span>
+        <span class="n">verbose_name_plural</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;stocks&#39;</span><span class="p">)</span>
+        <span class="n">ordering</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;symbol&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_last_quote</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">last_quote</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">quotes</span><span class="o">.</span><span class="n">all</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+            <span class="n">last_quote</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="k">return</span> <span class="n">last_quote</span>
+    <span class="n">last_quote</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="n">_last_quote</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">symbol</span>
+
+</div>
+<div class="viewcode-block" id="Quote"><a class="viewcode-back" href="../../applications.html#stocks.models.Quote">[docs]</a><span class="k">class</span> <span class="nc">Quote</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Quotes are the price of a given stock at a certain time.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">stock</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="s">&#39;Stock&#39;</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;stock&quot;</span><span class="p">),</span> <span class="n">related_name</span><span class="o">=</span><span class="s">&quot;quotes&quot;</span><span class="p">,</span> <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;Related stock&quot;</span><span class="p">))</span>
+    <span class="n">price</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">DecimalField</span><span class="p">(</span><span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;stock price&quot;</span><span class="p">),</span> <span class="n">max_digits</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">decimal_places</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+                                          <span class="n">default</span><span class="o">=</span><span class="s">&#39;0.0000&#39;</span><span class="p">,</span> <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;Current stock price&quot;</span><span class="p">))</span>
+    <span class="n">timestamp</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">(</span><span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;timestamp&quot;</span><span class="p">),</span> <span class="n">auto_now_add</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;Timestamp of the quote&quot;</span><span class="p">))</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;quote&#39;</span><span class="p">)</span>
+        <span class="n">verbose_name_plural</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;quotes&#39;</span><span class="p">)</span>
+        <span class="n">ordering</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;-timestamp&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s"> - </span><span class="si">%s</span><span class="s"> (</span><span class="si">%s</span><span class="s">)&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stock</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">price</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">timestamp</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="Order"><a class="viewcode-back" href="../../applications.html#stocks.models.Order">[docs]</a><span class="k">class</span> <span class="nc">Order</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Orders are made by teams and posted in the order book. They are then processed by the order manager.</span>
+<span class="sd">    BID is the highest price that a buyer is willing to pay for a stock.</span>
+<span class="sd">    ASK is the lowest price that a seller is willing to accept for a stock.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">BID</span> <span class="o">=</span> <span class="s">&#39;BID&#39;</span>
+    <span class="n">ASK</span> <span class="o">=</span> <span class="s">&#39;ASK&#39;</span>
+    <span class="n">SIMULATION_TYPE_CHOICES</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="n">BID</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;bid&#39;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="n">ASK</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;ask&#39;</span><span class="p">)),</span>
+    <span class="p">)</span>
+
+    <span class="n">stock</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="s">&#39;Stock&#39;</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;stock&quot;</span><span class="p">),</span> <span class="n">related_name</span><span class="o">=</span><span class="s">&quot;orders&quot;</span><span class="p">,</span> <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;Related stock&quot;</span><span class="p">))</span>
+    <span class="n">team</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="n">Team</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;team&quot;</span><span class="p">),</span> <span class="n">related_name</span><span class="o">=</span><span class="s">&quot;orders&quot;</span><span class="p">,</span> <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;Team which placed the order&quot;</span><span class="p">))</span>
+    <span class="n">order_type</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;type of order&quot;</span><span class="p">),</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="n">SIMULATION_TYPE_CHOICES</span><span class="p">,</span>
+                                  <span class="n">default</span><span class="o">=</span><span class="n">BID</span><span class="p">,</span> <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;The type of order (bid/ask)&quot;</span><span class="p">))</span>
+    <span class="n">quantity</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;quantity ordered&quot;</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;Quantity ordered. If the total quantity can not be provided, a new order will be created with the balance&quot;</span><span class="p">))</span>
+    <span class="n">price</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">DecimalField</span><span class="p">(</span><span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;price tag&quot;</span><span class="p">),</span> <span class="n">max_digits</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">decimal_places</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+                                <span class="n">blank</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;Price tag for one stock. If NULL, best available price&quot;</span><span class="p">))</span>
+    <span class="n">created_at</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">(</span><span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;created&quot;</span><span class="p">),</span> <span class="n">auto_now_add</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;Creation of the order&quot;</span><span class="p">))</span>
+    <span class="n">transaction</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="s">&#39;Transaction&#39;</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;transaction&quot;</span><span class="p">),</span> <span class="n">related_name</span><span class="o">=</span><span class="s">&quot;orders&quot;</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                                    <span class="n">blank</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;Related transaction&quot;</span><span class="p">))</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;order&#39;</span><span class="p">)</span>
+        <span class="n">verbose_name_plural</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;orders&#39;</span><span class="p">)</span>
+        <span class="n">ordering</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;price&#39;</span><span class="p">,</span> <span class="s">&#39;created_at&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">order_type</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">BID</span><span class="p">:</span>
+            <span class="n">quantity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">quantity</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">quantity</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">quantity</span>
+        <span class="k">return</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">: </span><span class="si">%s</span><span class="s">@</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stock</span><span class="p">,</span> <span class="n">quantity</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">price</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Order.save"><a class="viewcode-back" href="../../applications.html#stocks.models.Order.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">force_insert</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">force_update</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">using</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">update_fields</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">transaction</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">force_insert</span><span class="p">,</span> <span class="n">force_update</span><span class="p">,</span> <span class="n">using</span><span class="p">,</span> <span class="n">update_fields</span><span class="p">)</span>
+            <span class="n">check_matching_orders</span><span class="o">.</span><span class="n">apply_async</span><span class="p">([</span><span class="bp">self</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">force_insert</span><span class="p">,</span> <span class="n">force_update</span><span class="p">,</span> <span class="n">using</span><span class="p">,</span> <span class="n">update_fields</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="Transaction"><a class="viewcode-back" href="../../applications.html#stocks.models.Transaction">[docs]</a><span class="k">class</span> <span class="nc">Transaction</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Transactions are the result of order placed that are fulfilled.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ORDER</span> <span class="o">=</span> <span class="s">&#39;ORDER&#39;</span>
+    <span class="n">EOR</span> <span class="o">=</span> <span class="s">&#39;EOR&#39;</span>
+    <span class="n">INITIAL</span> <span class="o">=</span> <span class="s">&#39;INITIAL&#39;</span>
+    <span class="n">EOS</span> <span class="o">=</span> <span class="s">&#39;EOS&#39;</span>
+    <span class="n">TRANSACTION_TYPE_CHOICES</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="n">ORDER</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;stocks order fulfillment&#39;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="n">EOR</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;end of round transactions&#39;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="n">INITIAL</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;initial transactions&#39;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="n">EOS</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;end of simulation transactions&#39;</span><span class="p">)),</span>
+    <span class="p">)</span>
+
+    <span class="n">simulation</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="n">Simulation</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;simulation&quot;</span><span class="p">),</span> <span class="n">related_name</span><span class="o">=</span><span class="s">&quot;transactions&quot;</span><span class="p">,</span>
+                                   <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;Related simulation&quot;</span><span class="p">))</span>
+    <span class="n">fulfilled_at</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">DateTimeField</span><span class="p">(</span><span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;fulfilled&quot;</span><span class="p">),</span> <span class="n">auto_now_add</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;Fulfillment date&quot;</span><span class="p">))</span>
+    <span class="n">transaction_type</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;type of transaction&quot;</span><span class="p">),</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+                                        <span class="n">choices</span><span class="o">=</span><span class="n">TRANSACTION_TYPE_CHOICES</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="n">ORDER</span><span class="p">,</span>
+                                        <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;The type of transaction&quot;</span><span class="p">))</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;transaction&#39;</span><span class="p">)</span>
+        <span class="n">verbose_name_plural</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;transactions&#39;</span><span class="p">)</span>
+        <span class="n">ordering</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;-fulfilled_at&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span>
+
+</div>
+<div class="viewcode-block" id="TransactionLine"><a class="viewcode-back" href="../../applications.html#stocks.models.TransactionLine">[docs]</a><span class="k">class</span> <span class="nc">TransactionLine</span><span class="p">(</span><span class="n">models</span><span class="o">.</span><span class="n">Model</span><span class="p">):</span>
+    <span class="n">STOCKS</span> <span class="o">=</span> <span class="s">&#39;STOCKS&#39;</span>
+    <span class="n">DIVIDENDS</span> <span class="o">=</span> <span class="s">&#39;DIVIDENDS&#39;</span>
+    <span class="n">TRANSACTIONS</span> <span class="o">=</span> <span class="s">&#39;TRANSACTIONS&#39;</span>
+    <span class="n">INTERESTS</span> <span class="o">=</span> <span class="s">&#39;INTERESTS&#39;</span>
+    <span class="n">CASH</span> <span class="o">=</span> <span class="s">&#39;CASH&#39;</span>
+    <span class="n">ASSET_TYPE_CHOICES</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="p">(</span><span class="n">STOCKS</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;stocks&#39;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="n">DIVIDENDS</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;dividends payment&#39;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="n">TRANSACTIONS</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;costs of transaction&#39;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="n">INTERESTS</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;interests payment&#39;</span><span class="p">)),</span>
+        <span class="p">(</span><span class="n">CASH</span><span class="p">,</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;cash deposit&#39;</span><span class="p">)),</span>
+    <span class="p">)</span>
+    <span class="n">transaction</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="s">&#39;Transaction&#39;</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;transaction&quot;</span><span class="p">),</span> <span class="n">related_name</span><span class="o">=</span><span class="s">&quot;lines&quot;</span><span class="p">,</span>
+                                    <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;Related transaction&quot;</span><span class="p">))</span>
+    <span class="n">stock</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="s">&#39;Stock&#39;</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;stock&quot;</span><span class="p">),</span> <span class="n">related_name</span><span class="o">=</span><span class="s">&quot;transactions&quot;</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">blank</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                              <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;Related stock&quot;</span><span class="p">))</span>
+    <span class="n">team</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">ForeignKey</span><span class="p">(</span><span class="n">Team</span><span class="p">,</span> <span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;team&quot;</span><span class="p">),</span> <span class="n">related_name</span><span class="o">=</span><span class="s">&quot;transactions&quot;</span><span class="p">,</span> <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;Team&quot;</span><span class="p">))</span>
+    <span class="n">quantity</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">IntegerField</span><span class="p">(</span><span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;quantity&quot;</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;Quantity&quot;</span><span class="p">))</span>
+    <span class="n">price</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">DecimalField</span><span class="p">(</span><span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;price tag&quot;</span><span class="p">),</span> <span class="n">max_digits</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">decimal_places</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+                                <span class="n">blank</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;Price tag for one stock&quot;</span><span class="p">))</span>
+    <span class="n">amount</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">DecimalField</span><span class="p">(</span><span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;amount&quot;</span><span class="p">),</span> <span class="n">max_digits</span><span class="o">=</span><span class="mi">14</span><span class="p">,</span> <span class="n">decimal_places</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+                                 <span class="n">blank</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">null</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;Total amount (signed)&quot;</span><span class="p">))</span>
+    <span class="n">asset_type</span> <span class="o">=</span> <span class="n">models</span><span class="o">.</span><span class="n">CharField</span><span class="p">(</span><span class="n">verbose_name</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;type of asset&quot;</span><span class="p">),</span> <span class="n">max_length</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="n">ASSET_TYPE_CHOICES</span><span class="p">,</span>
+                                  <span class="n">default</span><span class="o">=</span><span class="n">STOCKS</span><span class="p">,</span> <span class="n">help_text</span><span class="o">=</span><span class="n">_</span><span class="p">(</span><span class="s">&quot;The type of asset&quot;</span><span class="p">))</span>
+
+    <span class="k">class</span> <span class="nc">Meta</span><span class="p">:</span>
+        <span class="n">verbose_name</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;transaction line&#39;</span><span class="p">)</span>
+        <span class="n">verbose_name_plural</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&#39;transaction lines&#39;</span><span class="p">)</span>
+        <span class="n">ordering</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;-transaction_id&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s">&quot;</span><span class="si">%s</span><span class="s">-</span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transaction_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="create_generic_stocks"><a class="viewcode-back" href="../../applications.html#stocks.models.create_generic_stocks">[docs]</a><span class="k">def</span> <span class="nf">create_generic_stocks</span><span class="p">(</span><span class="n">simulation</span><span class="p">):</span>
+    <span class="n">char_shift</span> <span class="o">=</span> <span class="mi">65</span>
+    <span class="n">stocks_created</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">simulation</span><span class="o">.</span><span class="n">ticker</span><span class="o">.</span><span class="n">nb_companies</span><span class="p">):</span>
+        <span class="n">symbol</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="nb">chr</span><span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="n">char_shift</span><span class="p">)</span>
+        <span class="n">stock</span> <span class="o">=</span> <span class="n">Stock</span><span class="p">(</span><span class="n">simulation</span><span class="o">=</span><span class="n">simulation</span><span class="p">,</span> <span class="n">symbol</span><span class="o">=</span><span class="n">symbol</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&#39;Company </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">symbol</span><span class="p">,</span> <span class="n">quantity</span><span class="o">=</span><span class="mi">10000</span><span class="p">)</span>
+        <span class="n">stock</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+        <span class="n">stocks_created</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">stocks_created</span>
+
+</div>
+<div class="viewcode-block" id="process_opening_transactions"><a class="viewcode-back" href="../../applications.html#stocks.models.process_opening_transactions">[docs]</a><span class="k">def</span> <span class="nf">process_opening_transactions</span><span class="p">(</span><span class="n">simulation</span><span class="p">):</span>
+    <span class="c"># deposit cash</span>
+    <span class="n">cash_deposit</span> <span class="o">=</span> <span class="n">Transaction</span><span class="p">(</span><span class="n">simulation</span><span class="o">=</span><span class="n">simulation</span><span class="p">,</span> <span class="n">transaction_type</span><span class="o">=</span><span class="n">Transaction</span><span class="o">.</span><span class="n">INITIAL</span><span class="p">)</span>
+    <span class="n">cash_deposit</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">team</span> <span class="ow">in</span> <span class="n">simulation</span><span class="o">.</span><span class="n">teams</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">team</span><span class="o">.</span><span class="n">team_type</span> <span class="o">==</span> <span class="n">Team</span><span class="o">.</span><span class="n">PLAYERS</span><span class="p">:</span>
+            <span class="n">amount</span> <span class="o">=</span> <span class="n">simulation</span><span class="o">.</span><span class="n">capital</span>
+        <span class="k">elif</span> <span class="n">team</span><span class="o">.</span><span class="n">team_type</span> <span class="o">==</span> <span class="n">Team</span><span class="o">.</span><span class="n">LIQUIDITY_MANAGER</span><span class="p">:</span>
+            <span class="n">amount</span> <span class="o">=</span> <span class="mi">10000</span><span class="o">*</span><span class="n">simulation</span><span class="o">.</span><span class="n">capital</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">amount</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">deposit</span> <span class="o">=</span> <span class="n">TransactionLine</span><span class="p">(</span><span class="n">transaction</span><span class="o">=</span><span class="n">cash_deposit</span><span class="p">,</span> <span class="n">team</span><span class="o">=</span><span class="n">team</span><span class="p">,</span> <span class="n">quantity</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">price</span><span class="o">=</span><span class="n">amount</span><span class="p">,</span>
+                                  <span class="n">amount</span><span class="o">=</span><span class="n">amount</span><span class="p">,</span> <span class="n">asset_type</span><span class="o">=</span><span class="n">TransactionLine</span><span class="o">.</span><span class="n">CASH</span><span class="p">)</span>
+        <span class="n">deposit</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+    <span class="c"># deposit stocks</span>
+    <span class="c"># TODO: Calculate opening price!</span>
+    <span class="k">for</span> <span class="n">stock</span> <span class="ow">in</span> <span class="n">simulation</span><span class="o">.</span><span class="n">stocks</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+        <span class="n">stocks_deposit</span> <span class="o">=</span> <span class="n">Transaction</span><span class="p">(</span><span class="n">simulation</span><span class="o">=</span><span class="n">simulation</span><span class="p">,</span> <span class="n">transaction_type</span><span class="o">=</span><span class="n">Transaction</span><span class="o">.</span><span class="n">INITIAL</span><span class="p">)</span>
+        <span class="n">stocks_deposit</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+        <span class="n">stock_quantity</span> <span class="o">=</span> <span class="n">stock</span><span class="o">.</span><span class="n">quantity</span>
+        <span class="n">allocation</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">stock_quantity</span><span class="o">*.</span><span class="mi">1</span><span class="o">/</span><span class="p">(</span><span class="n">simulation</span><span class="o">.</span><span class="n">teams</span><span class="o">.</span><span class="n">count</span><span class="p">()</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">team</span> <span class="ow">in</span> <span class="n">simulation</span><span class="o">.</span><span class="n">teams</span><span class="o">.</span><span class="n">all</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">team</span><span class="o">.</span><span class="n">team_type</span> <span class="o">==</span> <span class="n">Team</span><span class="o">.</span><span class="n">PLAYERS</span><span class="p">:</span>
+                <span class="n">quantity</span> <span class="o">=</span> <span class="n">allocation</span>
+            <span class="k">elif</span> <span class="n">team</span><span class="o">.</span><span class="n">team_type</span> <span class="o">==</span> <span class="n">Team</span><span class="o">.</span><span class="n">LIQUIDITY_MANAGER</span><span class="p">:</span>
+                <span class="n">quantity</span> <span class="o">=</span> <span class="n">stock_quantity</span> <span class="o">-</span> <span class="p">((</span><span class="n">simulation</span><span class="o">.</span><span class="n">teams</span><span class="o">.</span><span class="n">count</span><span class="p">()</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">allocation</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">quantity</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">deposit</span> <span class="o">=</span> <span class="n">TransactionLine</span><span class="p">(</span><span class="n">transaction</span><span class="o">=</span><span class="n">stocks_deposit</span><span class="p">,</span> <span class="n">team</span><span class="o">=</span><span class="n">team</span><span class="p">,</span> <span class="n">quantity</span><span class="o">=</span><span class="n">quantity</span><span class="p">,</span> <span class="n">price</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">stock</span><span class="o">=</span><span class="n">stock</span><span class="p">,</span>
+                                      <span class="n">amount</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">asset_type</span><span class="o">=</span><span class="n">TransactionLine</span><span class="o">.</span><span class="n">STOCKS</span><span class="p">)</span>
+            <span class="n">deposit</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+    <span class="k">return</span> <span class="bp">True</span>
+
+</div>
+<span class="nd">@transaction.atomic</span>
+<div class="viewcode-block" id="process_order"><a class="viewcode-back" href="../../applications.html#stocks.models.process_order">[docs]</a><span class="k">def</span> <span class="nf">process_order</span><span class="p">(</span><span class="n">simulation</span><span class="p">,</span> <span class="n">sell_order</span><span class="p">,</span> <span class="n">buy_order</span><span class="p">,</span> <span class="n">quantity</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Fulfill two matching orders.</span>
+
+<span class="sd">    .. note:: This is called by :func:`check_matching_orders`</span>
+
+<span class="sd">    :param simulation: A simulation object.</span>
+<span class="sd">    :param sell_order: An order object (sell).</span>
+<span class="sd">    :param buy_order: An order object (buy).</span>
+<span class="sd">    :param quantity: The quantity to exchange (could be a partial fulfillment).</span>
+<span class="sd">    :return: Nothing.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">transaction</span> <span class="o">=</span> <span class="n">Transaction</span><span class="p">(</span><span class="n">simulation</span><span class="o">=</span><span class="n">simulation</span><span class="p">,</span> <span class="n">transaction_type</span><span class="o">=</span><span class="n">Transaction</span><span class="o">.</span><span class="n">ORDER</span><span class="p">)</span>
+    <span class="n">transaction</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+    <span class="n">price</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">if</span> <span class="n">sell_order</span><span class="o">.</span><span class="n">price</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">buy_order</span><span class="o">.</span><span class="n">price</span><span class="p">:</span>
+        <span class="n">price</span> <span class="o">=</span> <span class="n">sell_order</span><span class="o">.</span><span class="n">price</span>
+    <span class="k">elif</span> <span class="n">buy_order</span><span class="o">.</span><span class="n">price</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">sell_order</span><span class="o">.</span><span class="n">price</span><span class="p">:</span>
+        <span class="n">price</span> <span class="o">=</span> <span class="n">buy_order</span><span class="o">.</span><span class="n">price</span>
+    <span class="k">elif</span> <span class="n">buy_order</span><span class="o">.</span><span class="n">price</span> <span class="ow">and</span> <span class="n">sell_order</span><span class="o">.</span><span class="n">price</span><span class="p">:</span>
+        <span class="c">#  TODO: How to choose the price?</span>
+        <span class="k">if</span> <span class="n">buy_order</span><span class="o">.</span><span class="n">created_at</span> <span class="o">&lt;=</span> <span class="n">sell_order</span><span class="o">.</span><span class="n">created_at</span><span class="p">:</span>
+            <span class="n">price</span> <span class="o">=</span> <span class="n">sell_order</span><span class="o">.</span><span class="n">price</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">price</span> <span class="o">=</span> <span class="n">buy_order</span><span class="o">.</span><span class="n">price</span>
+    <span class="k">if</span> <span class="n">price</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">sell</span> <span class="o">=</span> <span class="n">TransactionLine</span><span class="p">(</span><span class="n">transaction</span><span class="o">=</span><span class="n">transaction</span><span class="p">,</span> <span class="n">stock</span><span class="o">=</span><span class="n">sell_order</span><span class="o">.</span><span class="n">stock</span><span class="p">,</span> <span class="n">team</span><span class="o">=</span><span class="n">sell_order</span><span class="o">.</span><span class="n">team</span><span class="p">,</span>
+                               <span class="n">quantity</span><span class="o">=-</span><span class="mi">1</span><span class="o">*</span><span class="n">quantity</span><span class="p">,</span> <span class="n">price</span><span class="o">=</span><span class="n">price</span><span class="p">,</span> <span class="n">amount</span><span class="o">=-</span><span class="mi">1</span><span class="o">*</span><span class="n">quantity</span><span class="o">*</span><span class="n">price</span><span class="p">,</span>
+                               <span class="n">asset_type</span><span class="o">=</span><span class="n">TransactionLine</span><span class="o">.</span><span class="n">STOCKS</span><span class="p">)</span>
+        <span class="n">buy</span> <span class="o">=</span> <span class="n">TransactionLine</span><span class="p">(</span><span class="n">transaction</span><span class="o">=</span><span class="n">transaction</span><span class="p">,</span> <span class="n">stock</span><span class="o">=</span><span class="n">buy_order</span><span class="o">.</span><span class="n">stock</span><span class="p">,</span> <span class="n">team</span><span class="o">=</span><span class="n">buy_order</span><span class="o">.</span><span class="n">team</span><span class="p">,</span>
+                              <span class="n">quantity</span><span class="o">=</span><span class="n">quantity</span><span class="p">,</span> <span class="n">price</span><span class="o">=</span><span class="n">price</span><span class="p">,</span> <span class="n">amount</span><span class="o">=</span><span class="n">quantity</span><span class="o">*</span><span class="n">price</span><span class="p">,</span>
+                              <span class="n">asset_type</span><span class="o">=</span><span class="n">TransactionLine</span><span class="o">.</span><span class="n">STOCKS</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">sell_order</span><span class="o">.</span><span class="n">quantity</span> <span class="o">!=</span> <span class="n">quantity</span><span class="p">:</span>
+            <span class="n">new_sell_order</span> <span class="o">=</span> <span class="n">Order</span><span class="p">(</span><span class="n">stock</span><span class="o">=</span><span class="n">sell_order</span><span class="o">.</span><span class="n">stock</span><span class="p">,</span> <span class="n">team</span><span class="o">=</span><span class="n">sell_order</span><span class="o">.</span><span class="n">team</span><span class="p">,</span> <span class="n">order_type</span><span class="o">=</span><span class="n">sell_order</span><span class="o">.</span><span class="n">order_type</span><span class="p">,</span>
+                                   <span class="n">quantity</span><span class="o">=</span><span class="n">sell_order</span><span class="o">.</span><span class="n">quantity</span><span class="o">-</span><span class="n">quantity</span><span class="p">,</span> <span class="n">price</span><span class="o">=</span><span class="n">sell_order</span><span class="o">.</span><span class="n">price</span><span class="p">,</span>
+                                   <span class="n">created_at</span><span class="o">=</span><span class="n">sell_order</span><span class="o">.</span><span class="n">created_at</span><span class="p">)</span>
+            <span class="n">new_sell_order</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+            <span class="n">sell_order</span><span class="o">.</span><span class="n">quantity</span> <span class="o">=</span> <span class="n">quantity</span>
+        <span class="k">if</span> <span class="n">buy_order</span><span class="o">.</span><span class="n">quantity</span> <span class="o">!=</span> <span class="n">quantity</span><span class="p">:</span>
+            <span class="n">new_buy_order</span> <span class="o">=</span> <span class="n">Order</span><span class="p">(</span><span class="n">stock</span><span class="o">=</span><span class="n">buy_order</span><span class="o">.</span><span class="n">stock</span><span class="p">,</span> <span class="n">team</span><span class="o">=</span><span class="n">buy_order</span><span class="o">.</span><span class="n">team</span><span class="p">,</span> <span class="n">order_type</span><span class="o">=</span><span class="n">buy_order</span><span class="o">.</span><span class="n">order_type</span><span class="p">,</span>
+                                  <span class="n">quantity</span><span class="o">=</span><span class="n">buy_order</span><span class="o">.</span><span class="n">quantity</span><span class="o">-</span><span class="n">quantity</span><span class="p">,</span> <span class="n">price</span><span class="o">=</span><span class="n">buy_order</span><span class="o">.</span><span class="n">price</span><span class="p">,</span>
+                                  <span class="n">created_at</span><span class="o">=</span><span class="n">buy_order</span><span class="o">.</span><span class="n">created_at</span><span class="p">)</span>
+            <span class="n">new_buy_order</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+            <span class="n">buy_order</span><span class="o">.</span><span class="n">quantity</span> <span class="o">=</span> <span class="n">quantity</span>
+        <span class="n">sell</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+        <span class="n">buy</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+        <span class="n">sell_order</span><span class="o">.</span><span class="n">transaction</span> <span class="o">=</span> <span class="n">transaction</span>
+        <span class="n">sell_order</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+        <span class="n">buy_order</span><span class="o">.</span><span class="n">transaction</span> <span class="o">=</span> <span class="n">transaction</span>
+        <span class="n">buy_order</span><span class="o">.</span><span class="n">save</span><span class="p">()</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/marmix_200.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">MarMix 0.1.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2015, Cédric Gaspoz.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>

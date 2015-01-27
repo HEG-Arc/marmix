@@ -1,0 +1,479 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>simulations.views &mdash; MarMix 0.1.0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="shortcut icon" href="../../_static/favicon.ico"/>
+    <link rel="top" title="MarMix 0.1.0 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">MarMix 0.1.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for simulations.views</h1><div class="highlight"><pre>
+<span class="c"># -*- coding: UTF-8 -*-</span>
+<span class="c"># views.py</span>
+<span class="c">#</span>
+<span class="c"># Copyright (C) 2014 HES-SO//HEG Arc</span>
+<span class="c">#</span>
+<span class="c"># Author(s): Cédric Gaspoz &lt;cedric.gaspoz@he-arc.ch&gt;</span>
+<span class="c">#</span>
+<span class="c"># This file is part of MarMix.</span>
+<span class="c">#</span>
+<span class="c"># MarMix is free software: you can redistribute it and/or modify</span>
+<span class="c"># it under the terms of the GNU General Public License as published by</span>
+<span class="c"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c"># (at your option) any later version.</span>
+<span class="c">#</span>
+<span class="c"># MarMix is distributed in the hope that it will be useful,</span>
+<span class="c"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the</span>
+<span class="c"># GNU General Public License for more details.</span>
+<span class="c">#</span>
+<span class="c"># You should have received a copy of the GNU General Public License</span>
+<span class="c"># along with MarMix. If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+
+<span class="c"># Stdlib imports</span>
+<span class="kn">from</span> <span class="nn">hashlib</span> <span class="kn">import</span> <span class="n">sha256</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">io</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+
+<span class="c"># Core Django imports</span>
+<span class="kn">from</span> <span class="nn">django.views.generic.detail</span> <span class="kn">import</span> <span class="n">DetailView</span>
+<span class="kn">from</span> <span class="nn">django.views.generic.list</span> <span class="kn">import</span> <span class="n">ListView</span>
+<span class="kn">from</span> <span class="nn">django.views.generic.edit</span> <span class="kn">import</span> <span class="n">FormView</span><span class="p">,</span> <span class="n">CreateView</span><span class="p">,</span> <span class="n">UpdateView</span><span class="p">,</span> <span class="n">DeleteView</span>
+<span class="kn">from</span> <span class="nn">django.core.urlresolvers</span> <span class="kn">import</span> <span class="n">reverse_lazy</span>
+<span class="kn">from</span> <span class="nn">django.contrib.messages.views</span> <span class="kn">import</span> <span class="n">SuccessMessageMixin</span>
+<span class="kn">from</span> <span class="nn">django.contrib</span> <span class="kn">import</span> <span class="n">messages</span>
+<span class="kn">from</span> <span class="nn">django.shortcuts</span> <span class="kn">import</span> <span class="n">render_to_response</span><span class="p">,</span> <span class="n">get_object_or_404</span>
+<span class="kn">from</span> <span class="nn">django.template.context</span> <span class="kn">import</span> <span class="n">RequestContext</span>
+<span class="kn">from</span> <span class="nn">django.http</span> <span class="kn">import</span> <span class="n">Http404</span><span class="p">,</span> <span class="n">HttpResponse</span>
+<span class="kn">from</span> <span class="nn">django.views.decorators.csrf</span> <span class="kn">import</span> <span class="n">csrf_exempt</span>
+<span class="kn">from</span> <span class="nn">django.conf</span> <span class="kn">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">django.http</span> <span class="kn">import</span> <span class="n">Http404</span>
+<span class="kn">from</span> <span class="nn">django.core.urlresolvers</span> <span class="kn">import</span> <span class="n">reverse</span>
+<span class="kn">from</span> <span class="nn">django.shortcuts</span> <span class="kn">import</span> <span class="n">redirect</span>
+<span class="kn">from</span> <span class="nn">django.utils.translation</span> <span class="kn">import</span> <span class="n">ugettext_lazy</span> <span class="k">as</span> <span class="n">_</span>
+<span class="kn">from</span> <span class="nn">django.forms.models</span> <span class="kn">import</span> <span class="n">modelform_factory</span>
+<span class="kn">from</span> <span class="nn">django.http</span> <span class="kn">import</span> <span class="n">HttpResponseRedirect</span>
+
+<span class="c"># Third-party app imports</span>
+<span class="kn">from</span> <span class="nn">rest_framework</span> <span class="kn">import</span> <span class="n">permissions</span><span class="p">,</span> <span class="n">viewsets</span>
+<span class="kn">from</span> <span class="nn">xlsxwriter.workbook</span> <span class="kn">import</span> <span class="n">Workbook</span>
+
+<span class="c"># MarMix imports</span>
+<span class="kn">from</span> <span class="nn">.models</span> <span class="kn">import</span> <span class="n">Simulation</span><span class="p">,</span> <span class="n">Currency</span><span class="p">,</span> <span class="n">Team</span>
+<span class="kn">from</span> <span class="nn">.serializers</span> <span class="kn">import</span> <span class="n">SimulationSerializer</span><span class="p">,</span> <span class="n">CurrencySerializer</span><span class="p">,</span> <span class="n">TeamSerializer</span>
+<span class="kn">from</span> <span class="nn">.forms</span> <span class="kn">import</span> <span class="n">TeamsSelectionForm</span><span class="p">,</span> <span class="n">TeamJoinForm</span>
+<span class="kn">from</span> <span class="nn">.tasks</span> <span class="kn">import</span> <span class="n">initialize_simulation</span>
+<span class="kn">from</span> <span class="nn">customers.models</span> <span class="kn">import</span> <span class="n">Customer</span>
+<span class="kn">from</span> <span class="nn">tickers.models</span> <span class="kn">import</span> <span class="n">Ticker</span>
+<span class="kn">from</span> <span class="nn">.permissions</span> <span class="kn">import</span> <span class="n">IsOwnerOrReadOnly</span><span class="p">,</span> <span class="n">IsAdminOrReadOnly</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="remove_tz_from_date"><a class="viewcode-back" href="../../modules/simulations.html#simulations.views.remove_tz_from_date">[docs]</a><span class="k">def</span> <span class="nf">remove_tz_from_date</span><span class="p">(</span><span class="n">date</span><span class="p">):</span>
+    <span class="n">naive_date</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="n">date</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="n">date</span><span class="o">.</span><span class="n">month</span><span class="p">,</span> <span class="n">date</span><span class="o">.</span><span class="n">day</span><span class="p">,</span> <span class="n">date</span><span class="o">.</span><span class="n">hour</span><span class="p">,</span> <span class="n">date</span><span class="o">.</span><span class="n">minute</span><span class="p">,</span> <span class="n">date</span><span class="o">.</span><span class="n">second</span><span class="p">,</span> <span class="n">date</span><span class="o">.</span><span class="n">microsecond</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">naive_date</span>
+
+</div>
+<div class="viewcode-block" id="SimulationViewSet"><a class="viewcode-back" href="../../modules/simulations.html#simulations.views.SimulationViewSet">[docs]</a><span class="k">class</span> <span class="nc">SimulationViewSet</span><span class="p">(</span><span class="n">viewsets</span><span class="o">.</span><span class="n">ModelViewSet</span><span class="p">):</span>
+    <span class="n">queryset</span> <span class="o">=</span> <span class="n">Simulation</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+    <span class="n">serializer_class</span> <span class="o">=</span> <span class="n">SimulationSerializer</span>
+    <span class="n">permission_classes</span> <span class="o">=</span> <span class="p">(</span><span class="n">permissions</span><span class="o">.</span><span class="n">IsAuthenticatedOrReadOnly</span><span class="p">,)</span>
+
+<div class="viewcode-block" id="SimulationViewSet.perform_create"><a class="viewcode-back" href="../../modules/simulations.html#simulations.views.SimulationViewSet.perform_create">[docs]</a>    <span class="k">def</span> <span class="nf">perform_create</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">serializer</span><span class="p">):</span>
+        <span class="n">serializer</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="CurrencyViewSet"><a class="viewcode-back" href="../../modules/simulations.html#simulations.views.CurrencyViewSet">[docs]</a><span class="k">class</span> <span class="nc">CurrencyViewSet</span><span class="p">(</span><span class="n">viewsets</span><span class="o">.</span><span class="n">ModelViewSet</span><span class="p">):</span>
+    <span class="n">queryset</span> <span class="o">=</span> <span class="n">Currency</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+    <span class="n">serializer_class</span> <span class="o">=</span> <span class="n">CurrencySerializer</span>
+    <span class="n">permission_classes</span> <span class="o">=</span> <span class="p">(</span><span class="n">permissions</span><span class="o">.</span><span class="n">IsAuthenticatedOrReadOnly</span><span class="p">,)</span>
+
+</div>
+<div class="viewcode-block" id="TeamViewSet"><a class="viewcode-back" href="../../modules/simulations.html#simulations.views.TeamViewSet">[docs]</a><span class="k">class</span> <span class="nc">TeamViewSet</span><span class="p">(</span><span class="n">viewsets</span><span class="o">.</span><span class="n">ModelViewSet</span><span class="p">):</span>
+    <span class="n">queryset</span> <span class="o">=</span> <span class="n">Team</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+    <span class="n">serializer_class</span> <span class="o">=</span> <span class="n">TeamSerializer</span>
+    <span class="n">permission_classes</span> <span class="o">=</span> <span class="p">(</span><span class="n">permissions</span><span class="o">.</span><span class="n">IsAuthenticatedOrReadOnly</span><span class="p">,)</span>
+
+</div>
+<div class="viewcode-block" id="SimulationListView"><a class="viewcode-back" href="../../modules/simulations.html#simulations.views.SimulationListView">[docs]</a><span class="k">class</span> <span class="nc">SimulationListView</span><span class="p">(</span><span class="n">ListView</span><span class="p">):</span>
+
+    <span class="n">model</span> <span class="o">=</span> <span class="n">Simulation</span>
+
+<div class="viewcode-block" id="SimulationListView.get_context_data"><a class="viewcode-back" href="../../modules/simulations.html#simulations.views.SimulationListView.get_context_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">SimulationListView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="c">#context[&#39;foo&#39;] = &quot;bar&quot;</span>
+        <span class="k">return</span> <span class="n">context</span>
+</div>
+<div class="viewcode-block" id="SimulationListView.get_queryset"><a class="viewcode-back" href="../../modules/simulations.html#simulations.views.SimulationListView.get_queryset">[docs]</a>    <span class="k">def</span> <span class="nf">get_queryset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_staff</span><span class="p">:</span>
+            <span class="n">simulations</span> <span class="o">=</span> <span class="n">Simulation</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">simulations</span> <span class="o">=</span> <span class="n">Simulation</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">user</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">simulations</span>
+
+</div></div>
+<div class="viewcode-block" id="SimulationDetailView"><a class="viewcode-back" href="../../modules/simulations.html#simulations.views.SimulationDetailView">[docs]</a><span class="k">class</span> <span class="nc">SimulationDetailView</span><span class="p">(</span><span class="n">DetailView</span><span class="p">):</span>
+
+    <span class="n">model</span> <span class="o">=</span> <span class="n">Simulation</span>
+
+<div class="viewcode-block" id="SimulationDetailView.get_context_data"><a class="viewcode-back" href="../../modules/simulations.html#simulations.views.SimulationDetailView.get_context_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">SimulationDetailView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">context</span><span class="p">[</span><span class="s">&#39;simulation_state&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Simulation</span><span class="o">.</span><span class="n">SIMULATION_STATE_DICT</span>
+        <span class="k">return</span> <span class="n">context</span>
+</div>
+<div class="viewcode-block" id="SimulationDetailView.get_object"><a class="viewcode-back" href="../../modules/simulations.html#simulations.views.SimulationDetailView.get_object">[docs]</a>    <span class="k">def</span> <span class="nf">get_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">queryset</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_staff</span><span class="p">:</span>
+            <span class="n">simulation</span> <span class="o">=</span> <span class="n">get_object_or_404</span><span class="p">(</span><span class="n">Simulation</span><span class="p">,</span> <span class="n">pk</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;pk&#39;</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">simulation</span> <span class="o">=</span> <span class="n">get_object_or_404</span><span class="p">(</span><span class="n">Simulation</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="n">pk</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;pk&#39;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">simulation</span>
+
+</div></div>
+<div class="viewcode-block" id="TeamsSelectionView"><a class="viewcode-back" href="../../modules/simulations.html#simulations.views.TeamsSelectionView">[docs]</a><span class="k">class</span> <span class="nc">TeamsSelectionView</span><span class="p">(</span><span class="n">SuccessMessageMixin</span><span class="p">,</span> <span class="n">FormView</span><span class="p">):</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s">&#39;simulations/manage_teams_form.html&#39;</span>
+    <span class="n">form_class</span> <span class="o">=</span> <span class="n">TeamsSelectionForm</span>
+    <span class="n">success_message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&quot;Participating teams were successfully updated&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="TeamsSelectionView.form_valid"><a class="viewcode-back" href="../../modules/simulations.html#simulations.views.TeamsSelectionView.form_valid">[docs]</a>    <span class="k">def</span> <span class="nf">form_valid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">form</span><span class="p">):</span>
+        <span class="c"># This method is called when valid form data has been POSTed.</span>
+        <span class="c"># It should return an HttpResponse.</span>
+        <span class="n">simulation</span> <span class="o">=</span> <span class="n">get_object_or_404</span><span class="p">(</span><span class="n">Simulation</span><span class="p">,</span> <span class="n">pk</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;pk&#39;</span><span class="p">])</span>
+        <span class="n">selected_teams</span> <span class="o">=</span> <span class="n">form</span><span class="o">.</span><span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;teams&#39;</span><span class="p">)</span>
+        <span class="n">all_teams</span> <span class="o">=</span> <span class="n">Team</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">customer</span><span class="o">=</span><span class="n">simulation</span><span class="o">.</span><span class="n">customer</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">team</span> <span class="ow">in</span> <span class="n">all_teams</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">team</span> <span class="ow">in</span> <span class="n">selected_teams</span><span class="p">:</span>
+                <span class="c"># Add to simulation</span>
+                <span class="n">team</span><span class="o">.</span><span class="n">simulations</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">simulation</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">team</span><span class="o">.</span><span class="n">simulations</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">simulation</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">TeamsSelectionView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">form_valid</span><span class="p">(</span><span class="n">form</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="TeamsSelectionView.get_context_data"><a class="viewcode-back" href="../../modules/simulations.html#simulations.views.TeamsSelectionView.get_context_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">TeamsSelectionView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">simulation</span> <span class="o">=</span> <span class="n">get_object_or_404</span><span class="p">(</span><span class="n">Simulation</span><span class="p">,</span> <span class="n">pk</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;pk&#39;</span><span class="p">])</span>
+        <span class="n">context</span><span class="p">[</span><span class="s">&#39;simulation_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">simulation</span><span class="o">.</span><span class="n">id</span>
+        <span class="k">return</span> <span class="n">context</span>
+</div>
+<div class="viewcode-block" id="TeamsSelectionView.get_success_url"><a class="viewcode-back" href="../../modules/simulations.html#simulations.views.TeamsSelectionView.get_success_url">[docs]</a>    <span class="k">def</span> <span class="nf">get_success_url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">reverse</span><span class="p">(</span><span class="s">&#39;simulations-detail-view&#39;</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;pk&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;pk&#39;</span><span class="p">]})</span>
+</div>
+<div class="viewcode-block" id="TeamsSelectionView.get_form_kwargs"><a class="viewcode-back" href="../../modules/simulations.html#simulations.views.TeamsSelectionView.get_form_kwargs">[docs]</a>    <span class="k">def</span> <span class="nf">get_form_kwargs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">TeamsSelectionView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_form_kwargs</span><span class="p">()</span>
+        <span class="n">simulation</span> <span class="o">=</span> <span class="n">get_object_or_404</span><span class="p">(</span><span class="n">Simulation</span><span class="p">,</span> <span class="n">pk</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;pk&#39;</span><span class="p">])</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;customer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">simulation</span><span class="o">.</span><span class="n">customer</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;simulation&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">simulation</span>
+        <span class="k">return</span> <span class="n">kwargs</span>
+
+</div></div>
+<div class="viewcode-block" id="SimulationCreate"><a class="viewcode-back" href="../../modules/simulations.html#simulations.views.SimulationCreate">[docs]</a><span class="k">class</span> <span class="nc">SimulationCreate</span><span class="p">(</span><span class="n">SuccessMessageMixin</span><span class="p">,</span> <span class="n">CreateView</span><span class="p">):</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">Simulation</span>
+    <span class="n">fields</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;code&#39;</span><span class="p">,</span> <span class="s">&#39;simulation_type&#39;</span><span class="p">,</span> <span class="s">&#39;capital&#39;</span><span class="p">,</span> <span class="s">&#39;currency&#39;</span><span class="p">]</span>
+    <span class="n">success_message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&quot;The simulation &lt;b&gt;</span><span class="si">%(code)s</span><span class="s">&lt;/b&gt; was successfully created. You can start using it right now!&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SimulationCreate.get_context_data"><a class="viewcode-back" href="../../modules/simulations.html#simulations.views.SimulationCreate.get_context_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">SimulationCreate</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">customer</span> <span class="o">=</span> <span class="n">get_object_or_404</span><span class="p">(</span><span class="n">Customer</span><span class="p">,</span> <span class="n">pk</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;customer_id&#39;</span><span class="p">])</span>
+        <span class="n">context</span><span class="p">[</span><span class="s">&#39;customer_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">customer</span><span class="o">.</span><span class="n">id</span>
+        <span class="n">context</span><span class="p">[</span><span class="s">&#39;action&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;create&#39;</span>
+        <span class="k">return</span> <span class="n">context</span>
+</div>
+<div class="viewcode-block" id="SimulationCreate.form_valid"><a class="viewcode-back" href="../../modules/simulations.html#simulations.views.SimulationCreate.form_valid">[docs]</a>    <span class="k">def</span> <span class="nf">form_valid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">form</span><span class="p">):</span>
+        <span class="n">form</span><span class="o">.</span><span class="n">instance</span><span class="o">.</span><span class="n">customer</span> <span class="o">=</span> <span class="n">get_object_or_404</span><span class="p">(</span><span class="n">Customer</span><span class="p">,</span> <span class="n">pk</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;customer_id&#39;</span><span class="p">])</span>
+        <span class="n">form</span><span class="o">.</span><span class="n">instance</span><span class="o">.</span><span class="n">user</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">SimulationCreate</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">form_valid</span><span class="p">(</span><span class="n">form</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="SimulationCreate.get_success_url"><a class="viewcode-back" href="../../modules/simulations.html#simulations.views.SimulationCreate.get_success_url">[docs]</a>    <span class="k">def</span> <span class="nf">get_success_url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">reverse</span><span class="p">(</span><span class="s">&#39;simulations-detail-view&#39;</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;pk&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">object</span><span class="o">.</span><span class="n">pk</span><span class="p">})</span>
+</div>
+<div class="viewcode-block" id="SimulationCreate.get_success_message"><a class="viewcode-back" href="../../modules/simulations.html#simulations.views.SimulationCreate.get_success_message">[docs]</a>    <span class="k">def</span> <span class="nf">get_success_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cleaned_data</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">success_message</span> <span class="o">%</span> <span class="p">{</span><span class="s">&#39;code&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">object</span><span class="o">.</span><span class="n">code</span><span class="p">,</span> <span class="p">}</span>
+
+</div></div>
+<div class="viewcode-block" id="SimulationUpdate"><a class="viewcode-back" href="../../modules/simulations.html#simulations.views.SimulationUpdate">[docs]</a><span class="k">class</span> <span class="nc">SimulationUpdate</span><span class="p">(</span><span class="n">SuccessMessageMixin</span><span class="p">,</span> <span class="n">UpdateView</span><span class="p">):</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">Simulation</span>
+    <span class="n">fields</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;code&#39;</span><span class="p">,</span> <span class="s">&#39;simulation_type&#39;</span><span class="p">,</span> <span class="s">&#39;capital&#39;</span><span class="p">,</span> <span class="s">&#39;currency&#39;</span><span class="p">]</span>
+    <span class="n">success_message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&quot;The simulation was successfully updated!&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SimulationUpdate.get_success_url"><a class="viewcode-back" href="../../modules/simulations.html#simulations.views.SimulationUpdate.get_success_url">[docs]</a>    <span class="k">def</span> <span class="nf">get_success_url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">reverse</span><span class="p">(</span><span class="s">&#39;simulations-detail-view&#39;</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;pk&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">object</span><span class="o">.</span><span class="n">pk</span><span class="p">})</span>
+</div>
+<div class="viewcode-block" id="SimulationUpdate.get_context_data"><a class="viewcode-back" href="../../modules/simulations.html#simulations.views.SimulationUpdate.get_context_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">SimulationUpdate</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">simulation</span> <span class="o">=</span> <span class="n">get_object_or_404</span><span class="p">(</span><span class="n">Simulation</span><span class="p">,</span> <span class="n">pk</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;pk&#39;</span><span class="p">])</span>
+        <span class="n">context</span><span class="p">[</span><span class="s">&#39;simulation_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">simulation</span><span class="o">.</span><span class="n">id</span>
+        <span class="n">context</span><span class="p">[</span><span class="s">&#39;action&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;update&#39;</span>
+        <span class="k">return</span> <span class="n">context</span>
+</div>
+<div class="viewcode-block" id="SimulationUpdate.get_object"><a class="viewcode-back" href="../../modules/simulations.html#simulations.views.SimulationUpdate.get_object">[docs]</a>    <span class="k">def</span> <span class="nf">get_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">queryset</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_staff</span><span class="p">:</span>
+            <span class="n">simulation</span> <span class="o">=</span> <span class="n">get_object_or_404</span><span class="p">(</span><span class="n">Simulation</span><span class="p">,</span> <span class="n">pk</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;pk&#39;</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">simulation</span> <span class="o">=</span> <span class="n">get_object_or_404</span><span class="p">(</span><span class="n">Simulation</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="n">pk</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;pk&#39;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">simulation</span>
+
+</div></div>
+<div class="viewcode-block" id="SimulationDelete"><a class="viewcode-back" href="../../modules/simulations.html#simulations.views.SimulationDelete">[docs]</a><span class="k">class</span> <span class="nc">SimulationDelete</span><span class="p">(</span><span class="n">SuccessMessageMixin</span><span class="p">,</span> <span class="n">DeleteView</span><span class="p">):</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">Simulation</span>
+    <span class="n">success_url</span> <span class="o">=</span> <span class="n">reverse_lazy</span><span class="p">(</span><span class="s">&#39;simulations-list-view&#39;</span><span class="p">)</span>
+    <span class="n">success_message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&quot;The simulation &lt;b&gt;</span><span class="si">%(code)s</span><span class="s">&lt;/b&gt; was successfully deleted!&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SimulationDelete.delete"><a class="viewcode-back" href="../../modules/simulations.html#simulations.views.SimulationDelete.delete">[docs]</a>    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">simulation</span> <span class="o">=</span> <span class="n">get_object_or_404</span><span class="p">(</span><span class="n">Simulation</span><span class="p">,</span> <span class="n">pk</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;pk&#39;</span><span class="p">])</span>
+        <span class="n">messages</span><span class="o">.</span><span class="n">success</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">success_message</span> <span class="o">%</span> <span class="p">{</span><span class="s">&#39;code&#39;</span><span class="p">:</span> <span class="n">simulation</span><span class="o">.</span><span class="n">code</span><span class="p">,</span> <span class="p">})</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">SimulationDelete</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="SimulationDelete.get_object"><a class="viewcode-back" href="../../modules/simulations.html#simulations.views.SimulationDelete.get_object">[docs]</a>    <span class="k">def</span> <span class="nf">get_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">queryset</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_staff</span><span class="p">:</span>
+            <span class="n">simulation</span> <span class="o">=</span> <span class="n">get_object_or_404</span><span class="p">(</span><span class="n">Simulation</span><span class="p">,</span> <span class="n">pk</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;pk&#39;</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">simulation</span> <span class="o">=</span> <span class="n">get_object_or_404</span><span class="p">(</span><span class="n">Simulation</span><span class="p">,</span> <span class="n">user</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="n">pk</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;pk&#39;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">simulation</span>
+
+</div></div>
+<div class="viewcode-block" id="TeamJoinView"><a class="viewcode-back" href="../../modules/simulations.html#simulations.views.TeamJoinView">[docs]</a><span class="k">class</span> <span class="nc">TeamJoinView</span><span class="p">(</span><span class="n">SuccessMessageMixin</span><span class="p">,</span> <span class="n">FormView</span><span class="p">):</span>
+    <span class="n">template_name</span> <span class="o">=</span> <span class="s">&#39;simulations/join_team_form.html&#39;</span>
+    <span class="n">form_class</span> <span class="o">=</span> <span class="n">TeamJoinForm</span>
+    <span class="n">success_message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&quot;You were successfully added to the team &lt;b&gt;</span><span class="si">%(team_name)s</span><span class="s">&lt;/b&gt;!&quot;</span><span class="p">)</span>
+    <span class="n">team_name</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
+
+<div class="viewcode-block" id="TeamJoinView.form_valid"><a class="viewcode-back" href="../../modules/simulations.html#simulations.views.TeamJoinView.form_valid">[docs]</a>    <span class="k">def</span> <span class="nf">form_valid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">form</span><span class="p">):</span>
+        <span class="c"># This method is called when valid form data has been POSTed.</span>
+        <span class="c"># It should return an HttpResponse.</span>
+        <span class="n">team</span> <span class="o">=</span> <span class="n">get_object_or_404</span><span class="p">(</span><span class="n">Team</span><span class="p">,</span> <span class="n">uuid</span><span class="o">=</span><span class="n">form</span><span class="o">.</span><span class="n">cleaned_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;uuid&#39;</span><span class="p">))</span>
+        <span class="n">user</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span>
+        <span class="n">team</span><span class="o">.</span><span class="n">users</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">user</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">team_name</span> <span class="o">=</span> <span class="n">team</span><span class="o">.</span><span class="n">name</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">TeamJoinView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">form_valid</span><span class="p">(</span><span class="n">form</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="TeamJoinView.get_success_url"><a class="viewcode-back" href="../../modules/simulations.html#simulations.views.TeamJoinView.get_success_url">[docs]</a>    <span class="k">def</span> <span class="nf">get_success_url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">reverse</span><span class="p">(</span><span class="s">&#39;users:detail&#39;</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s">&quot;username&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">username</span><span class="p">})</span>
+</div>
+<div class="viewcode-block" id="TeamJoinView.get_success_message"><a class="viewcode-back" href="../../modules/simulations.html#simulations.views.TeamJoinView.get_success_message">[docs]</a>    <span class="k">def</span> <span class="nf">get_success_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cleaned_data</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">success_message</span> <span class="o">%</span> <span class="p">{</span><span class="s">&#39;team_name&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">team_name</span><span class="p">,</span> <span class="p">}</span>
+
+</div></div>
+<div class="viewcode-block" id="TeamDetailView"><a class="viewcode-back" href="../../modules/simulations.html#simulations.views.TeamDetailView">[docs]</a><span class="k">class</span> <span class="nc">TeamDetailView</span><span class="p">(</span><span class="n">DetailView</span><span class="p">):</span>
+
+    <span class="n">model</span> <span class="o">=</span> <span class="n">Team</span>
+
+<div class="viewcode-block" id="TeamDetailView.get_context_data"><a class="viewcode-back" href="../../modules/simulations.html#simulations.views.TeamDetailView.get_context_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">TeamDetailView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="c">#context[&#39;foo&#39;] = &quot;bar&quot;</span>
+        <span class="k">return</span> <span class="n">context</span>
+</div>
+<div class="viewcode-block" id="TeamDetailView.get_object"><a class="viewcode-back" href="../../modules/simulations.html#simulations.views.TeamDetailView.get_object">[docs]</a>    <span class="k">def</span> <span class="nf">get_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">queryset</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="o">.</span><span class="n">is_staff</span><span class="p">:</span>
+            <span class="n">team</span> <span class="o">=</span> <span class="n">get_object_or_404</span><span class="p">(</span><span class="n">Team</span><span class="p">,</span> <span class="n">pk</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;pk&#39;</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">team</span> <span class="o">=</span> <span class="n">get_object_or_404</span><span class="p">(</span><span class="n">Team</span><span class="p">,</span> <span class="n">users</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">,</span> <span class="n">pk</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;pk&#39;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">team</span>
+
+</div></div>
+<div class="viewcode-block" id="teams_export_xlsx"><a class="viewcode-back" href="../../modules/simulations.html#simulations.views.teams_export_xlsx">[docs]</a><span class="k">def</span> <span class="nf">teams_export_xlsx</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">simulation_id</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">customer_id</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">simulation_id</span><span class="p">:</span>
+        <span class="n">simulation</span> <span class="o">=</span> <span class="n">get_object_or_404</span><span class="p">(</span><span class="n">Simulation</span><span class="p">,</span> <span class="n">pk</span><span class="o">=</span><span class="n">simulation_id</span><span class="p">)</span>
+        <span class="n">teams</span> <span class="o">=</span> <span class="n">simulation</span><span class="o">.</span><span class="n">teams</span><span class="o">.</span><span class="n">all</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="n">customer_id</span><span class="p">:</span>
+        <span class="n">customer</span> <span class="o">=</span> <span class="n">get_object_or_404</span><span class="p">(</span><span class="n">Customer</span><span class="p">,</span> <span class="n">pk</span><span class="o">=</span><span class="n">customer_id</span><span class="p">)</span>
+        <span class="n">teams</span> <span class="o">=</span> <span class="n">Team</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">customer</span><span class="o">=</span><span class="n">customer</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">customers</span> <span class="o">=</span> <span class="n">Customer</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">users</span><span class="o">=</span><span class="n">request</span><span class="o">.</span><span class="n">user</span><span class="p">)</span>
+        <span class="n">teams</span> <span class="o">=</span> <span class="n">Team</span><span class="o">.</span><span class="n">objects</span><span class="o">.</span><span class="n">all</span><span class="p">()</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="n">customer</span><span class="o">=</span><span class="n">customers</span><span class="p">)</span>
+
+    <span class="n">output</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">BytesIO</span><span class="p">()</span>
+    <span class="n">workbook</span> <span class="o">=</span> <span class="n">Workbook</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="p">{</span><span class="s">&#39;in_memory&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">})</span>
+    <span class="n">worksheet</span> <span class="o">=</span> <span class="n">workbook</span><span class="o">.</span><span class="n">add_worksheet</span><span class="p">(</span><span class="s">&#39;Teams&#39;</span><span class="p">)</span>
+    <span class="n">bold</span> <span class="o">=</span> <span class="n">workbook</span><span class="o">.</span><span class="n">add_format</span><span class="p">({</span><span class="s">&#39;bold&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">})</span>
+    <span class="n">date_format</span> <span class="o">=</span> <span class="n">workbook</span><span class="o">.</span><span class="n">add_format</span><span class="p">({</span><span class="s">&#39;num_format&#39;</span><span class="p">:</span> <span class="s">&#39;yyyy-MM-dd&#39;</span><span class="p">})</span>
+    <span class="n">worksheet</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s">&#39;Team&#39;</span><span class="p">,</span> <span class="n">bold</span><span class="p">)</span>
+    <span class="n">worksheet</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&#39;Registration key&#39;</span><span class="p">,</span> <span class="n">bold</span><span class="p">)</span>
+    <span class="n">worksheet</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&#39;Type&#39;</span><span class="p">,</span> <span class="n">bold</span><span class="p">)</span>
+    <span class="n">worksheet</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="s">&#39;# Members&#39;</span><span class="p">,</span> <span class="n">bold</span><span class="p">)</span>
+    <span class="n">worksheet</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="s">&#39;Locked&#39;</span><span class="p">,</span> <span class="n">bold</span><span class="p">)</span>
+    <span class="n">worksheet</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="s">&#39;Created&#39;</span><span class="p">,</span> <span class="n">bold</span><span class="p">)</span>
+    <span class="n">worksheet</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="s">&#39;Modified&#39;</span><span class="p">,</span> <span class="n">bold</span><span class="p">)</span>
+    <span class="n">worksheet</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="s">&#39;Organization&#39;</span><span class="p">,</span> <span class="n">bold</span><span class="p">)</span>
+    <span class="n">row</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">for</span> <span class="n">team</span> <span class="ow">in</span> <span class="n">teams</span><span class="p">:</span>
+        <span class="n">worksheet</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">team</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">worksheet</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">team</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
+        <span class="n">worksheet</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">team</span><span class="o">.</span><span class="n">get_team_type_display</span><span class="p">())</span>
+        <span class="n">worksheet</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">team</span><span class="o">.</span><span class="n">get_members</span><span class="p">)</span>
+        <span class="n">worksheet</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="n">team</span><span class="o">.</span><span class="n">locked</span><span class="p">)</span>
+        <span class="n">worksheet</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="n">remove_tz_from_date</span><span class="p">(</span><span class="n">team</span><span class="o">.</span><span class="n">created</span><span class="p">),</span> <span class="n">date_format</span><span class="p">)</span>
+        <span class="n">worksheet</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="n">remove_tz_from_date</span><span class="p">(</span><span class="n">team</span><span class="o">.</span><span class="n">modified</span><span class="p">),</span> <span class="n">date_format</span><span class="p">)</span>
+        <span class="n">worksheet</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">row</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="n">team</span><span class="o">.</span><span class="n">customer</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">row</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="n">workbook</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="n">output</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="n">response</span> <span class="o">=</span> <span class="n">HttpResponse</span><span class="p">(</span><span class="n">output</span><span class="o">.</span><span class="n">read</span><span class="p">(),</span> <span class="n">content_type</span><span class="o">=</span><span class="s">&quot;application/vnd.openxmlformats-officedocument.spreadsheetml.sheet&quot;</span><span class="p">)</span>
+    <span class="n">response</span><span class="p">[</span><span class="s">&#39;Content-Disposition&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&quot;attachment; filename=marmix_teams.xlsx&quot;</span>
+
+    <span class="k">return</span> <span class="n">response</span>
+
+</div>
+<div class="viewcode-block" id="SimulationInitializeView"><a class="viewcode-back" href="../../modules/simulations.html#simulations.views.SimulationInitializeView">[docs]</a><span class="k">class</span> <span class="nc">SimulationInitializeView</span><span class="p">(</span><span class="n">SuccessMessageMixin</span><span class="p">,</span> <span class="n">UpdateView</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Update/Create the simulation. It calls initialize_simulation after form validation.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">Ticker</span>
+    <span class="n">fields</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;nb_companies&#39;</span><span class="p">,</span> <span class="s">&#39;initial_value&#39;</span><span class="p">,</span> <span class="s">&#39;fixed_interest_rate&#39;</span><span class="p">]</span>
+    <span class="n">success_message</span> <span class="o">=</span> <span class="n">_</span><span class="p">(</span><span class="s">&quot;The simulation &lt;b&gt;</span><span class="si">%(code)s</span><span class="s">&lt;/b&gt; was successfully initialized. You can play the simulation right now!&quot;</span><span class="p">)</span>
+    <span class="n">simulation</span> <span class="o">=</span> <span class="bp">None</span>
+
+<div class="viewcode-block" id="SimulationInitializeView.get_object"><a class="viewcode-back" href="../../modules/simulations.html#simulations.views.SimulationInitializeView.get_object">[docs]</a>    <span class="k">def</span> <span class="nf">get_object</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">queryset</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">simulation</span> <span class="o">=</span> <span class="n">get_object_or_404</span><span class="p">(</span><span class="n">Simulation</span><span class="p">,</span> <span class="n">pk</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">kwargs</span><span class="p">[</span><span class="s">&#39;pk&#39;</span><span class="p">])</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">ticker</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation</span><span class="o">.</span><span class="n">ticker</span>
+        <span class="k">except</span> <span class="n">Ticker</span><span class="o">.</span><span class="n">DoesNotExist</span><span class="p">:</span>
+            <span class="n">ticker</span> <span class="o">=</span> <span class="n">Ticker</span><span class="p">(</span><span class="n">simulation</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">simulation</span><span class="p">)</span>
+            <span class="n">ticker</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">ticker</span>
+</div>
+<div class="viewcode-block" id="SimulationInitializeView.get_context_data"><a class="viewcode-back" href="../../modules/simulations.html#simulations.views.SimulationInitializeView.get_context_data">[docs]</a>    <span class="k">def</span> <span class="nf">get_context_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">context</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">SimulationInitializeView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_context_data</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">context</span><span class="p">[</span><span class="s">&#39;simulation_id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation</span><span class="o">.</span><span class="n">id</span>
+        <span class="k">return</span> <span class="n">context</span>
+</div>
+<div class="viewcode-block" id="SimulationInitializeView.form_valid"><a class="viewcode-back" href="../../modules/simulations.html#simulations.views.SimulationInitializeView.form_valid">[docs]</a>    <span class="k">def</span> <span class="nf">form_valid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">form</span><span class="p">):</span>
+        <span class="n">simulation</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation</span>
+        <span class="k">if</span> <span class="n">simulation</span><span class="o">.</span><span class="n">simulation_type</span> <span class="o">==</span> <span class="n">Simulation</span><span class="o">.</span><span class="n">ADVANCED</span><span class="p">:</span>
+            <span class="n">form</span><span class="o">.</span><span class="n">instance</span><span class="o">.</span><span class="n">with_drift</span> <span class="o">=</span> <span class="bp">True</span>
+        <span class="n">form</span><span class="o">.</span><span class="n">instance</span><span class="o">.</span><span class="n">simulation</span> <span class="o">=</span> <span class="n">simulation</span>
+        <span class="n">form</span><span class="o">.</span><span class="n">instance</span><span class="o">.</span><span class="n">user</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">user</span>
+        <span class="n">simulation</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">Simulation</span><span class="o">.</span><span class="n">READY</span>
+        <span class="n">simulation</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+        <span class="c"># .apply_async([args,], queue=&#39;xxx&#39;, countdown=NN)</span>
+        <span class="n">initialize_simulation</span><span class="o">.</span><span class="n">apply_async</span><span class="p">([</span><span class="n">simulation</span><span class="p">])</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">SimulationInitializeView</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">form_valid</span><span class="p">(</span><span class="n">form</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="SimulationInitializeView.get_success_url"><a class="viewcode-back" href="../../modules/simulations.html#simulations.views.SimulationInitializeView.get_success_url">[docs]</a>    <span class="k">def</span> <span class="nf">get_success_url</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">reverse</span><span class="p">(</span><span class="s">&#39;simulations-detail-view&#39;</span><span class="p">,</span> <span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;pk&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation</span><span class="o">.</span><span class="n">id</span><span class="p">})</span>
+</div>
+<div class="viewcode-block" id="SimulationInitializeView.get_success_message"><a class="viewcode-back" href="../../modules/simulations.html#simulations.views.SimulationInitializeView.get_success_message">[docs]</a>    <span class="k">def</span> <span class="nf">get_success_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cleaned_data</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">success_message</span> <span class="o">%</span> <span class="p">{</span><span class="s">&#39;code&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">object</span><span class="o">.</span><span class="n">simulation</span><span class="o">.</span><span class="n">code</span><span class="p">,</span> <span class="p">}</span>
+</div>
+<div class="viewcode-block" id="SimulationInitializeView.get_form_class"><a class="viewcode-back" href="../../modules/simulations.html#simulations.views.SimulationInitializeView.get_form_class">[docs]</a>    <span class="k">def</span> <span class="nf">get_form_class</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">fields</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;nb_rounds&#39;</span><span class="p">,</span> <span class="s">&#39;nb_days&#39;</span><span class="p">,</span> <span class="s">&#39;day_duration&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation</span><span class="o">.</span><span class="n">simulation_type</span> <span class="o">==</span> <span class="n">Simulation</span><span class="o">.</span><span class="n">INTRO</span><span class="p">:</span>
+            <span class="n">fields</span> <span class="o">+=</span> <span class="p">[</span><span class="s">&#39;nb_companies&#39;</span><span class="p">,</span> <span class="s">&#39;initial_value&#39;</span><span class="p">,</span> <span class="s">&#39;fixed_interest_rate&#39;</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulation</span><span class="o">.</span><span class="n">simulation_type</span> <span class="o">==</span> <span class="n">Simulation</span><span class="o">.</span><span class="n">ADVANCED</span><span class="p">:</span>
+            <span class="n">fields</span> <span class="o">+=</span> <span class="p">[</span><span class="s">&#39;nb_companies&#39;</span><span class="p">,</span> <span class="s">&#39;initial_value&#39;</span><span class="p">,</span> <span class="s">&#39;dividend_payoff_rate&#39;</span><span class="p">,</span> <span class="s">&#39;transaction_costs&#39;</span><span class="p">,</span> <span class="s">&#39;interest_rate&#39;</span><span class="p">,</span> <span class="s">&#39;fixed_interest_rate&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">modelform_factory</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">Ticker</span><span class="p">,</span> <span class="n">fields</span><span class="o">=</span><span class="n">fields</span><span class="p">)</span>
+
+</div></div>
+<div class="viewcode-block" id="manage_simulation"><a class="viewcode-back" href="../../modules/simulations.html#simulations.views.manage_simulation">[docs]</a><span class="k">def</span> <span class="nf">manage_simulation</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="n">simulation_id</span><span class="p">,</span> <span class="n">next_state</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Helper to change the current state of the simulation.</span>
+
+<span class="sd">    Available states are READY -&gt; RUNNING &lt;-&gt; PAUSED -&gt; FINISHED -&gt; ARCHIVED.</span>
+
+<span class="sd">    :param request:</span>
+<span class="sd">    :param simulation_id:</span>
+<span class="sd">    :param next_state:</span>
+<span class="sd">    :return: HttpResponseRedirect</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">simulation</span> <span class="o">=</span> <span class="n">get_object_or_404</span><span class="p">(</span><span class="n">Simulation</span><span class="p">,</span> <span class="n">pk</span><span class="o">=</span><span class="n">simulation_id</span><span class="p">)</span>
+    <span class="n">next_state</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">next_state</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">next_state</span> <span class="o">==</span> <span class="n">Simulation</span><span class="o">.</span><span class="n">RUNNING</span> <span class="ow">and</span> <span class="n">simulation</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">Simulation</span><span class="o">.</span><span class="n">READY</span><span class="p">:</span>
+        <span class="n">simulation</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">Simulation</span><span class="o">.</span><span class="n">RUNNING</span>
+    <span class="k">elif</span> <span class="n">next_state</span> <span class="o">==</span> <span class="n">Simulation</span><span class="o">.</span><span class="n">PAUSED</span> <span class="ow">and</span> <span class="n">simulation</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">Simulation</span><span class="o">.</span><span class="n">RUNNING</span><span class="p">:</span>
+        <span class="n">simulation</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">Simulation</span><span class="o">.</span><span class="n">PAUSED</span>
+    <span class="k">elif</span> <span class="n">next_state</span> <span class="o">==</span> <span class="n">Simulation</span><span class="o">.</span><span class="n">RUNNING</span> <span class="ow">and</span> <span class="n">simulation</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">Simulation</span><span class="o">.</span><span class="n">PAUSED</span><span class="p">:</span>
+        <span class="n">simulation</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">Simulation</span><span class="o">.</span><span class="n">RUNNING</span>
+    <span class="k">elif</span> <span class="n">next_state</span> <span class="o">==</span> <span class="n">Simulation</span><span class="o">.</span><span class="n">ARCHIVED</span> <span class="ow">and</span> <span class="n">simulation</span><span class="o">.</span><span class="n">state</span> <span class="o">==</span> <span class="n">Simulation</span><span class="o">.</span><span class="n">FINISHED</span><span class="p">:</span>
+        <span class="n">simulation</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="n">Simulation</span><span class="o">.</span><span class="n">ARCHIVED</span>
+    <span class="n">simulation</span><span class="o">.</span><span class="n">save</span><span class="p">()</span>
+    <span class="n">messages</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">request</span><span class="p">,</span> <span class="s">&#39;The simulation is now &lt;b&gt;</span><span class="si">%s</span><span class="s">&lt;/b&gt;&#39;</span> <span class="o">%</span> <span class="n">simulation</span><span class="o">.</span><span class="n">get_state_display</span><span class="p">())</span>
+    <span class="k">return</span> <span class="n">HttpResponseRedirect</span><span class="p">(</span><span class="n">reverse</span><span class="p">(</span><span class="s">&#39;simulations-detail-view&#39;</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="n">simulation</span><span class="o">.</span><span class="n">id</span><span class="p">]))</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/marmix_200.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">MarMix 0.1.0 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2015, Cédric Gaspoz.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    </div>
+  </body>
+</html>
