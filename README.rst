@@ -1,7 +1,9 @@
 MarMix
-==============================
+======
 
-A stock market serious game for higher education
+**MarMix** is a serious game for higher education based on a stock market simulation. Various game designs are built in the
+simulation in order to stepwise increase the difficulty of the game. The most advanced scenarios are developed to be
+run in parallel of an `ERPsim <http://erpsim.hec.ca/>`_ simulation.
 
 
 .. image:: https://travis-ci.org/HEG-Arc/marmix.svg
@@ -20,78 +22,62 @@ A stock market serious game for higher education
     :target: http://www.gnu.org/licenses/gpl-3.0.html
     :alt: GNU General Public License
 
+Game design
+-----------
 
-Settings
+Currently, **MarMix** support 4 game designs:
+
+- Introduction
+- Advanced
+- Live
+- Indexed
+
+Introduction
+************
+
+The *introduction game* is designed to introduce the players to the platform. A certain number of companies' profits is
+simulated, whose stocks are available on the stock market. Players are asked to place orders (ASK/BID) based on the
+variations of the profit. Optional transaction costs or payment of dividends can be added to the game.
+
+Advanced
+********
+
+The *advanced game* is the same as the *`introduction`_* one but with more information revealed concerning the variations
+of the companies profits. In this games players are asked to develop a strategy based on the information they get from
+the market. Optional transaction costs or payment of dividends can be added to the game.
+
+Live
+****
+
+The *live game* is specifically designed to be run in parallel of an `ERPsim <http://erpsim.hec.ca/>`_ simulation. The
+stock market hosts stocks for all companies active in the `ERPsim <http://erpsim.hec.ca/>`_ simulation. Players are the
+asked to place their orders based on their own valuation of the `ERPsim <http://erpsim.hec.ca/>`_ simulation companies.
+There are some simple interfaces that are built in **MarMix** in order to ease running each simulation in parallel.
+Integration is planned but not yet implemented.
+
+Indexed
+*******
+
+The *indexed game* is based on data from historic `ERPsim <http://erpsim.hec.ca/>`_ simulations. This is still under
+development.
+
+Documentation
+-------------
+
+The **MarMix** documentation is available `online <http://heg-arc.github.io/marmix/>`_ or as a
+`PDF document <https://github.com/HEG-Arc/marmix/blob/master/MarMix3-Manual.pdf?raw=true>`_. You can also build the
+documentation by yourself from the `docs <https://github.com/HEG-Arc/marmix/tree/master/docs>`_ directory.
+
+Installation
 ------------
 
-MarMix relies extensively on environment settings which **will not work with Apache/mod_wsgi setups**. It has been deployed successfully with both Gunicorn/Nginx and even uWSGI/Nginx.
+There is currently no installer for **MarMix** but you can install it following these steps:
 
-For configuration purposes, the following table maps the 'MarMix' environment variables to their Django setting:
+- Install Python 3 on your system
+- Create a virtualenv
+- Checkout from GitHub
+- Install the requirements: ``$ pip install -r requirements/local.txt``
+- Configure your database (Postgresql is recommended)
+- Start the server: ``$ manage.py runserver``
 
-======================================= =========================== ============================================== ===========================================
-Environment Variable                    Django Setting              Development Default                            Production Default
-======================================= =========================== ============================================== ===========================================
-DJANGO_AWS_ACCESS_KEY_ID                AWS_ACCESS_KEY_ID           n/a                                            raises error
-DJANGO_AWS_SECRET_ACCESS_KEY            AWS_SECRET_ACCESS_KEY       n/a                                            raises error
-DJANGO_AWS_STORAGE_BUCKET_NAME          AWS_STORAGE_BUCKET_NAME     n/a                                            raises error
-DJANGO_CACHES                           CACHES                      locmem                                         memcached
-DJANGO_DATABASES                        DATABASES                   See code                                       See code
-DJANGO_DEBUG                            DEBUG                       True                                           False
-DJANGO_EMAIL_BACKEND                    EMAIL_BACKEND               django.core.mail.backends.console.EmailBackend django.core.mail.backends.smtp.EmailBackend
-DJANGO_SECRET_KEY                       SECRET_KEY                  CHANGEME!!!                                    raises error
-DJANGO_SECURE_BROWSER_XSS_FILTER        SECURE_BROWSER_XSS_FILTER   n/a                                            True
-DJANGO_SECURE_SSL_REDIRECT              SECURE_SSL_REDIRECT         n/a                                            True
-DJANGO_SECURE_CONTENT_TYPE_NOSNIFF      SECURE_CONTENT_TYPE_NOSNIFF n/a                                            True
-DJANGO_SECURE_FRAME_DENY                SECURE_FRAME_DENY           n/a                                            True
-DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS   HSTS_INCLUDE_SUBDOMAINS     n/a                                            True
-DJANGO_SESSION_COOKIE_HTTPONLY          SESSION_COOKIE_HTTPONLY     n/a                                            True
-DJANGO_SESSION_COOKIE_SECURE            SESSION_COOKIE_SECURE       n/a                                            False
-======================================= =========================== ============================================== ===========================================
-
-* TODO: Add vendor-added settings in another table
-
-Getting up and running
-----------------------
-
-The steps below will get you up and running with a local development environment. We assume you have the following installed:
-
-* pip
-* virtualenv
-* PostgreSQL
-
-First make sure to create and activate a virtualenv_, then open a terminal at the project root and install the requirements for local development::
-
-    $ pip install -r requirements/local.txt
-
-.. _virtualenv: http://docs.python-guide.org/en/latest/dev/virtualenvs/
-
-You can now run the usual Django ``runserver`` command (replace ``yourapp`` with the name of the directory containing the Django project)::
-
-    $ python yourapp/manage.py runserver
-
-The base app will run but you'll need to carry out a few steps to make the sign-up and login forms work. These are currently detailed in `issue #39`_.
-
-.. _issue #39: https://github.com/pydanny/cookiecutter-django/issues/39
-
-**Live reloading and Sass CSS compilation**
-
-If you'd like to take advantage of live reloading and Sass / Compass CSS compilation you can do so with the included Grunt task.
-
-Make sure that nodejs_ is installed. Then in the project root run::
-
-    $ npm install grunt
-
-.. _nodejs: http://nodejs.org/download/
-
-Now you just need::
-
-    $ grunt serve
-
-The base app will now run as it would with the usual ``manage.py runserver`` but with live reloading and Sass compilation enabled.
-
-To get live reloading to work you'll probably need to install an `appropriate browser extension`_
-
-.. _appropriate browser extension: http://feedback.livereload.com/knowledgebase/articles/86242-how-do-i-install-and-use-the-browser-extensions-
-
-It's time to write the code!!!
-
+You can find more information on the initial setup in the `wiki <https://github.com/HEG-Arc/marmix/wiki/Developper%27s-setup>`_.
