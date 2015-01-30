@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Welcome to MarMix’s documentation! &mdash; MarMix 0.1.0 documentation</title>
+    <title>MarMix documentation &mdash; MarMix 0.1.0 documentation</title>
     
     <link rel="stylesheet" href="_static/default.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -49,10 +49,49 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="welcome-to-marmix-s-documentation">
-<h1>Welcome to MarMix&#8217;s documentation!<a class="headerlink" href="#welcome-to-marmix-s-documentation" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="marmix-documentation">
+<h1>MarMix documentation<a class="headerlink" href="#marmix-documentation" title="Permalink to this headline">¶</a></h1>
 <a class="reference internal image-reference" href="_images/marmix_200.png"><img alt="MarMix logo" src="_images/marmix_200.png" style="width: 200px;" /></a>
-<p>Contents:</p>
+<p><strong>MarMix</strong> is a serious game for higher education based on a stock market simulation. Various game designs are built in the
+simulation in order to stepwise increase the difficulty of the game. The most advanced scenarios are developed to be
+run in parallel of an <a class="reference external" href="http://erpsim.hec.ca/">ERPsim</a> simulation.</p>
+<div class="section" id="game-design">
+<h2>Game design<a class="headerlink" href="#game-design" title="Permalink to this headline">¶</a></h2>
+<p>Currently, <strong>MarMix</strong> support 4 game designs:</p>
+<ul class="simple">
+<li>Introduction</li>
+<li>Advanced</li>
+<li>Live</li>
+<li>Indexed</li>
+</ul>
+<div class="section" id="introduction">
+<h3>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h3>
+<p>The <em>introduction game</em> is designed to introduce the players to the platform. A certain number of companies&#8217; profits is
+simulated, whose stocks are available on the stock market. Players are asked to place orders (ASK/BID) based on the
+variations of the profit. Optional transaction costs or payment of dividends can be added to the game.</p>
+</div>
+<div class="section" id="advanced">
+<h3>Advanced<a class="headerlink" href="#advanced" title="Permalink to this headline">¶</a></h3>
+<p>The <em>advanced game</em> is the same as the <em>`introduction`_</em> one but with more information revealed concerning the variations
+of the companies profits. In this games players are asked to develop a strategy based on the information they get from
+the market. Optional transaction costs or payment of dividends can be added to the game.</p>
+</div>
+<div class="section" id="live">
+<h3>Live<a class="headerlink" href="#live" title="Permalink to this headline">¶</a></h3>
+<p>The <em>live game</em> is specifically designed to be run in parallel of an <a class="reference external" href="http://erpsim.hec.ca/">ERPsim</a> simulation. The
+stock market hosts stocks for all companies active in the <a class="reference external" href="http://erpsim.hec.ca/">ERPsim</a> simulation. Players are the
+asked to place their orders based on their own valuation of the <a class="reference external" href="http://erpsim.hec.ca/">ERPsim</a> simulation companies.
+There are some simple interfaces that are built in <strong>MarMix</strong> in order to ease running each simulation in parallel.
+Integration is planned but not yet implemented.</p>
+</div>
+<div class="section" id="indexed">
+<h3>Indexed<a class="headerlink" href="#indexed" title="Permalink to this headline">¶</a></h3>
+<p>The <em>indexed game</em> is based on data from historic <a class="reference external" href="http://erpsim.hec.ca/">ERPsim</a> simulations. This is still under
+development.</p>
+</div>
+</div>
+<div class="section" id="contents">
+<h2>Contents<a class="headerlink" href="#contents" title="Permalink to this headline">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="install.html">Install</a></li>
@@ -66,6 +105,7 @@
 </ul>
 </li>
 </ul>
+</div>
 </div>
 </div>
 <div class="section" id="indices-and-tables">
@@ -88,7 +128,17 @@
             </a></p>
   <h3><a href="#">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Welcome to MarMix&#8217;s documentation!</a></li>
+<li><a class="reference internal" href="#">MarMix documentation</a><ul>
+<li><a class="reference internal" href="#game-design">Game design</a><ul>
+<li><a class="reference internal" href="#introduction">Introduction</a></li>
+<li><a class="reference internal" href="#advanced">Advanced</a></li>
+<li><a class="reference internal" href="#live">Live</a></li>
+<li><a class="reference internal" href="#indexed">Indexed</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#contents">Contents</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
 </ul>
 
