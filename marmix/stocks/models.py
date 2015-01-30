@@ -31,7 +31,7 @@ from django_extensions.db.models import TimeStampedModel
 
 # MarMix imports
 from simulations.models import Simulation, Team
-from .tasks import match_orders, check_matching_orders
+from .tasks import check_matching_orders, set_stock_quote
 
 
 class Stock(TimeStampedModel):
@@ -247,41 +247,51 @@ def process_order(simulation, sell_order, buy_order, quantity):
     :param quantity: The quantity to exchange (could be a partial fulfillment).
     :return: Nothing.
     """
-    transaction = Transaction(simulation=simulation, transaction_type=Transaction.ORDER)
-    transaction.save()
+    new_transaction = Transaction(simulation=simulation, transaction_type=Transaction.ORDER)
+    new_transaction.save()
     price = 0
+    new_sell_order = None
+    new_buy_order = None
     if sell_order.price and not buy_order.price:
         price = sell_order.price
     elif buy_order.price and not sell_order.price:
         price = buy_order.price
-    elif buy_order.price and sell_order.price:
+    elif buy_order.price == sell_order.price:
+        price = sell_order.price
+    else:
+        #  Should not happens
         #  TODO: How to choose the price?
         if buy_order.created_at <= sell_order.created_at:
             price = sell_order.price
         else:
             price = buy_order.price
+
     if price > 0:
-        sell = TransactionLine(transaction=transaction, stock=sell_order.stock, team=sell_order.team,
+        sell = TransactionLine(transaction=new_transaction, stock=sell_order.stock, team=sell_order.team,
                                quantity=-1*quantity, price=price, amount=-1*quantity*price,
                                asset_type=TransactionLine.STOCKS)
-        buy = TransactionLine(transaction=transaction, stock=buy_order.stock, team=buy_order.team,
+        buy = TransactionLine(transaction=new_transaction, stock=buy_order.stock, team=buy_order.team,
                               quantity=quantity, price=price, amount=quantity*price,
                               asset_type=TransactionLine.STOCKS)
         if sell_order.quantity != quantity:
             new_sell_order = Order(stock=sell_order.stock, team=sell_order.team, order_type=sell_order.order_type,
                                    quantity=sell_order.quantity-quantity, price=sell_order.price,
                                    created_at=sell_order.created_at)
-            new_sell_order.save()
             sell_order.quantity = quantity
         if buy_order.quantity != quantity:
             new_buy_order = Order(stock=buy_order.stock, team=buy_order.team, order_type=buy_order.order_type,
                                   quantity=buy_order.quantity-quantity, price=buy_order.price,
                                   created_at=buy_order.created_at)
-            new_buy_order.save()
             buy_order.quantity = quantity
         sell.save()
         buy.save()
-        sell_order.transaction = transaction
+
+        sell_order.transaction = new_transaction
         sell_order.save()
-        buy_order.transaction = transaction
+        buy_order.transaction = new_transaction
         buy_order.save()
+        set_stock_quote.apply_async([sell_order.stock, price])
+        if new_sell_order:
+            new_sell_order.save()
+        if new_buy_order:
+            new_buy_order.save()
