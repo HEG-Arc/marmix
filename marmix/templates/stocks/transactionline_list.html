@@ -6,6 +6,7 @@
 
 {% block content %}
 <h1>Holdings</h1>
+{% with lists=team.get_stocks_list %}
 <table class="table table-striped">
 <thead>
 <tr>
@@ -16,10 +17,11 @@
     <th>Purchase Value</th>
     <th>Gain</th>
     <th>Gain %</th>
+    <th></th>
 </tr>
 </thead>
 <tbody>
-{% for stock in team.get_stocks_list %}
+{% for stock in lists.stocks %}
     <tr>
         <td>
             {% if stock.asset_type == 'STOCKS' %}
@@ -34,12 +36,34 @@
         <td>{{ stock.amount|stringformat:".2f" }}</td>
         <td{% if stock.gain > 0 %} class="gain"{% elif stock.gain < 0 %} class="loss"{% endif %}>{{ stock.gain|stringformat:".2f" }}</td>
         <td{% if stock.gain > 0 %} class="gain"{% elif stock.gain < 0 %} class="loss"{% endif %}>{{ stock.gain_p|stringformat:".1f" }}%</td>
+        <td></td>
     </tr>
 {% empty %}
-    <tr><td colspan="5">No stocks yet.</td></tr>
+    <tr><td colspan="8">No stocks yet.</td></tr>
 {% endfor %}
+{% for cash in lists.cash %}
+    <tr>
+        <td colspan="3">{{ cash.asset|capfirst }}</td>
+        <td>{{ cash.value|stringformat:".2f" }}</td>
+        <td>{{ cash.amount|stringformat:".2f" }}</td>
+        <td></td>
+        <td></td>
+        <td></td>
+    </tr>
+{% empty %}
+    <tr><td colspan="8">No cash yet.</td></tr>
+{% endfor %}
+    <tr>
+        <td colspan="3">Balance</td>
+        <td>{{ lists.balance.market_value|stringformat:".2f" }}</td>
+        <td>{{ lists.balance.purchase_value|stringformat:".2f" }}</td>
+        <td{% if lists.balance.gain > 0 %} class="gain"{% elif stock.gain < 0 %} class="loss"{% endif %}>{{ lists.balance.gain|stringformat:".2f" }}</td>
+        <td{% if lists.balance.gain > 0 %} class="gain"{% elif stock.gain < 0 %} class="loss"{% endif %}>{{ lists.balance.gain_p|stringformat:".1f" }}%</td>
+        <td></td>
+    </tr>
 </tbody>
 </table>
+{% endwith %}
 
 <h1>Orders</h1>
 <a class="btn btn-primary" href="{% url 'order-create-view' %}"><i class="fa fa-plus-square-o fa-lg"></i> Create order</a>

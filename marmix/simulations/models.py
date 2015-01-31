@@ -190,21 +190,36 @@ class Team(TimeStampedModel):
 
     def _get_stocks_list(self):
         from stocks.models import TransactionLine
-        stocks_list = []
+        stocks_list = {'stocks': [], 'cash': [], 'balance': {'market_value': 0, 'purchase_value': 0, 'gain': 0, 'gain_p': 0}}
         tl = TransactionLine.objects.filter(team=self).values('stock__symbol', 'stock__price', 'asset_type', 'stock__id').annotate(
             quantity=Sum('quantity'), amount=Sum('amount')).order_by('stock__symbol')
         for stock in tl:
             asset = dict(TransactionLine.ASSET_TYPE_CHOICES).get(stock['asset_type'])
-            value = stock['quantity']*stock['stock__price']
-            gain = value-stock['amount']
-            try:
-                gain_p = (value/stock['amount']-1)*100
-            except ZeroDivisionError:
-                gain_p = 0
-            stocks_list.append({'symbol': stock['stock__symbol'], 'asset_type': stock['asset_type'],
-                                'quantity': stock['quantity'], 'amount': stock['amount'], 'asset': asset,
-                                'gain': gain, 'gain_p': gain_p, 'value': value,
-                                'price': stock['stock__price'], 'stock': stock['stock__id']})
+            if stock['asset_type'] == TransactionLine.STOCKS:
+                price = stock['stock__price']
+                value = stock['quantity']*price
+                gain = value-stock['amount']
+                try:
+                    gain_p = (value/stock['amount']-1)*100
+                except:
+                    gain_p = 0
+
+                stocks_list['stocks'].append({'symbol': stock['stock__symbol'], 'asset_type': stock['asset_type'],
+                                             'quantity': stock['quantity'], 'amount': stock['amount'], 'asset': asset,
+                                             'gain': gain, 'gain_p': gain_p, 'value': value,
+                                             'price': price, 'stock': stock['stock__id']})
+                stocks_list['balance']['market_value'] += value
+                stocks_list['balance']['purchase_value'] += stock['amount']
+            else:
+                stocks_list['cash'].append({'asset_type': stock['asset_type'], 'quantity': stock['quantity'],
+                                            'amount': stock['amount'], 'asset': asset, 'value': stock['amount']})
+                stocks_list['balance']['market_value'] += stock['amount']
+                stocks_list['balance']['purchase_value'] += stock['amount']
+        stocks_list['balance']['gain'] = stocks_list['balance']['market_value'] - stocks_list['balance']['purchase_value']
+        try:
+            stocks_list['balance']['gain_p'] = (stocks_list['balance']['market_value']/stocks_list['balance']['purchase_value']-1)*100
+        except:
+            stocks_list['balance']['gain_p'] = 0
         return stocks_list
     get_stocks_list = property(_get_stocks_list)
 
