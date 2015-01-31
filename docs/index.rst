@@ -58,6 +58,7 @@ Contents
    deploy
    applications
    tests
+   database
 
 
 Indices and tables

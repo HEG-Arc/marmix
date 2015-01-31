@@ -39,7 +39,7 @@ from django.http import Http404, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 from django.contrib import messages
-from django.db.models import Sum
+
 
 # Third-party app imports
 from rest_framework import permissions, viewsets
