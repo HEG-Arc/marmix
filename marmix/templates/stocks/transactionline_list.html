@@ -9,27 +9,31 @@
 <table class="table table-striped">
 <thead>
 <tr>
-    <th>Transaction</th>
-    <th>Asset</th>
-    <th>Price</th>
+    <th>Stock</th>
     <th>Quantity</th>
-    <th>Amount</th>
+    <th>Quote</th>
+    <th>Market value</th>
+    <th>Purchase Value</th>
+    <th>Gain</th>
+    <th>Gain %</th>
 </tr>
 </thead>
 <tbody>
-{% for trans in object_list %}
+{% for stock in team.get_stocks_list %}
     <tr>
-        <td>{{ trans.transaction }}</td>
         <td>
-            {% if trans.asset_type == 'STOCKS' %}
-                {{ trans.stock.symbol }}
+            {% if stock.asset_type == 'STOCKS' %}
+                <a href="{% url 'stocks-detail-view' stock.stock %}">{{ stock.symbol }}</a>
             {% else %}
-                {{ trans.get_asset_type_display|capfirst }}
+                {{ stock.asset|capfirst }}
             {% endif %}
         </td>
-        <td>{{ trans.price|stringformat:".2f" }}</td>
-        <td>{{ trans.quantity }}</td>
-        <td>{{ trans.amount|stringformat:".2f" }}</td>
+        <td>{{ stock.quantity }}</td>
+        <td>{{ stock.price|stringformat:".2f" }}</td>
+        <td>{{ stock.value|stringformat:".2f" }}</td>
+        <td>{{ stock.amount|stringformat:".2f" }}</td>
+        <td{% if stock.gain > 0 %} class="gain"{% elif stock.gain < 0 %} class="loss"{% endif %}>{{ stock.gain|stringformat:".2f" }}</td>
+        <td{% if stock.gain > 0 %} class="gain"{% elif stock.gain < 0 %} class="loss"{% endif %}>{{ stock.gain_p|stringformat:".1f" }}%</td>
     </tr>
 {% empty %}
     <tr><td colspan="5">No stocks yet.</td></tr>

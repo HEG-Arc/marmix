@@ -23,11 +23,13 @@
 # Stdlib imports
 import random
 import uuid
+import decimal
 
 # Core Django imports
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django.core.cache import cache
+from django.db.models import Sum
 
 # Third-party app imports
 from django_extensions.db.models import TimeStampedModel
@@ -185,6 +187,26 @@ class Team(TimeStampedModel):
     def _get_members(self):
         return self.users.all().count()
     get_members = property(_get_members)
+
+    def _get_stocks_list(self):
+        from stocks.models import TransactionLine
+        stocks_list = []
+        tl = TransactionLine.objects.filter(team=self).values('stock__symbol', 'stock__price', 'asset_type', 'stock__id').annotate(
+            quantity=Sum('quantity'), amount=Sum('amount')).order_by('stock__symbol')
+        for stock in tl:
+            asset = dict(TransactionLine.ASSET_TYPE_CHOICES).get(stock['asset_type'])
+            value = stock['quantity']*stock['stock__price']
+            gain = value-stock['amount']
+            try:
+                gain_p = (value/stock['amount']-1)*100
+            except ZeroDivisionError:
+                gain_p = 0
+            stocks_list.append({'symbol': stock['stock__symbol'], 'asset_type': stock['asset_type'],
+                                'quantity': stock['quantity'], 'amount': stock['amount'], 'asset': asset,
+                                'gain': gain, 'gain_p': gain_p, 'value': value,
+                                'price': stock['stock__price'], 'stock': stock['stock__id']})
+        return stocks_list
+    get_stocks_list = property(_get_stocks_list)
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         if self.uuid is None:

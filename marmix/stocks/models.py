@@ -43,6 +43,8 @@ class Stock(TimeStampedModel):
     name = models.CharField(verbose_name=_("name"), max_length=100, help_text=_("Full name of the stock"))
     description = models.TextField(verbose_name=_("description"), blank=True, help_text=_("Description of the stock (HTML)"))
     quantity = models.IntegerField(verbose_name=_("quantity"), default=1, help_text=_("Total quantity of stocks in circulation"))
+    price = models.DecimalField(verbose_name=_("stock price"), max_digits=14, decimal_places=4,
+                                default='0.0000', help_text=_("Current stock price"))
 
     class Meta:
         verbose_name = _('stock')
@@ -290,7 +292,7 @@ def process_order(simulation, sell_order, buy_order, quantity):
         sell_order.save()
         buy_order.transaction = new_transaction
         buy_order.save()
-        set_stock_quote.apply_async([sell_order.stock, price])
+        set_stock_quote.apply_async([sell_order])
         if new_sell_order:
             new_sell_order.save()
         if new_buy_order:

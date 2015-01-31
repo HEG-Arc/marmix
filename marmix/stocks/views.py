@@ -29,6 +29,7 @@ import logging
 from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
 from django.views.generic.edit import FormView, CreateView, UpdateView, DeleteView
+from django.views.generic import View
 from django.contrib.messages.views import SuccessMessageMixin
 from django.utils.translation import ugettext_lazy as _
 from django.core.urlresolvers import reverse, reverse_lazy
@@ -38,6 +39,7 @@ from django.http import Http404, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 from django.contrib import messages
+from django.db.models import Sum
 
 # Third-party app imports
 from rest_framework import permissions, viewsets
@@ -70,17 +72,12 @@ class StockDetailView(DetailView):
         return context
 
 
-class HoldingsListView(ListView):
+class HoldingsView(View):
 
-    def get_context_data(self, **kwargs):
-        context = super(HoldingsListView, self).get_context_data(**kwargs)
-        orders = Order.objects.all()
-        context['orders'] = orders
-        return context
-
-    def get_queryset(self):
+    def get(self, request, *args, **kwargs):
         team = self.request.user.get_team
-        return TransactionLine.objects.filter(team=team)
+        orders = Order.objects.all().filter(team=team).select_related('stock', 'transaction')
+        return render(request, 'stocks/transactionline_list.html', {'orders': orders, 'team': team})
 
 
 class OrderListView(ListView):
