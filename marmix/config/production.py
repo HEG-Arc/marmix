@@ -74,4 +74,5 @@ class Production(Common):
     CACHES = values.CacheURLValue(default="memcached://127.0.0.1:11211", environ_prefix='MARMIX')
     # END CACHING
 
+    ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
     # Your production stuff: Below this line define 3rd party libary settings
