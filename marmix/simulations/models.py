@@ -30,6 +30,7 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django.core.cache import cache
 from django.db.models import Sum
+from django.db import connection
 
 # Third-party app imports
 from django_extensions.db.models import TimeStampedModel
@@ -179,9 +180,14 @@ class Team(TimeStampedModel):
                             help_text=_("A unique registration key that is automatically created"))
 
     def _get_holdings(self):
-        # TODO: Compute it for real ;-)
-        holdings = random.randint(10000, 99999)
-        return holdings
+        from stocks.models import TransactionLine
+        cursor = connection.cursor()
+        cursor.execute('SELECT SUM(CASE WHEN tl.asset_type=%s THEN s.price*tl.quantity ELSE tl.amount END) as balance FROM stocks_transactionline tl LEFT JOIN stocks_stock s ON tl.stock_id=s.id WHERE tl.team_id=%s', [TransactionLine.STOCKS, self.id])
+        row = cursor.fetchone()
+        try:
+            return row[0]
+        except IndexError:
+            return None
     get_holdings = property(_get_holdings)
 
     def _get_members(self):
