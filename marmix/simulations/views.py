@@ -31,10 +31,11 @@ import datetime
 from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
 from django.views.generic.edit import FormView, CreateView, UpdateView, DeleteView
+from django.views.generic import View
 from django.core.urlresolvers import reverse_lazy
 from django.contrib.messages.views import SuccessMessageMixin
 from django.contrib import messages
-from django.shortcuts import render_to_response, get_object_or_404
+from django.shortcuts import render_to_response, get_object_or_404, render
 from django.template.context import RequestContext
 from django.http import Http404, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -45,6 +46,7 @@ from django.shortcuts import redirect
 from django.utils.translation import ugettext_lazy as _
 from django.forms.models import modelform_factory
 from django.http import HttpResponseRedirect
+
 
 # Third-party app imports
 from rest_framework import permissions, viewsets
@@ -57,6 +59,7 @@ from .forms import TeamsSelectionForm, TeamJoinForm
 from .tasks import initialize_simulation
 from customers.models import Customer
 from tickers.models import Ticker
+from stocks.models import Stock
 from .permissions import IsOwnerOrReadOnly, IsAdminOrReadOnly
 
 logger = logging.getLogger(__name__)
@@ -112,6 +115,7 @@ class SimulationDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super(SimulationDetailView, self).get_context_data(**kwargs)
         context['simulation_state'] = Simulation.SIMULATION_STATE_DICT
+        context['teams'] = Team.objects.filter(simulations=self.kwargs['pk']).select_related('user')
         return context
 
     def get_object(self, queryset=None):
@@ -355,6 +359,13 @@ class SimulationInitializeView(SuccessMessageMixin, UpdateView):
         elif self.simulation.simulation_type == Simulation.ADVANCED:
             fields += ['nb_companies', 'initial_value', 'dividend_payoff_rate', 'transaction_costs', 'interest_rate', 'fixed_interest_rate']
         return modelform_factory(model=Ticker, fields=fields)
+
+
+class MarketView(View):
+
+    def get(self, request, *args, **kwargs):
+        simulation = get_object_or_404(Simulation, pk=self.kwargs['pk'])
+        return render(request, 'simulations/market.html', {'simulation': simulation,})
 
 
 def manage_simulation(request, simulation_id, next_state):

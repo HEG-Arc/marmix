@@ -41,6 +41,20 @@ from customers.models import Customer
 from users.models import User
 
 
+def dictfetchall(cursor):
+    """
+    Returns all rows from a cursor as a dict
+
+    :param cursor:
+    :return:
+    """
+    desc = cursor.description
+    return [
+        dict(zip([col[0] for col in desc], row))
+        for row in cursor.fetchall()
+    ]
+
+
 def short_code_encode(sim_id, cust_code):
     encoded_id = baseconv.base32.from_decimal(sim_id)
     return "%s-%s" % (cust_code.upper(), encoded_id)
@@ -121,6 +135,35 @@ class Simulation(TimeStampedModel):
         teams = self.teams.all().count()
         return teams
     nb_teams = property(_nb_teams)
+
+    def _get_rank_list(self):
+        from stocks.models import TransactionLine
+        cursor = connection.cursor()
+        cursor.execute('SELECT tl.team_id, t.name, SUM(CASE WHEN tl.asset_type=%s THEN s.price*tl.quantity ELSE tl.amount END) '
+                       'as balance FROM stocks_transactionline tl LEFT JOIN stocks_stock s ON tl.stock_id=s.id '
+                       'LEFT JOIN simulations_team t ON t.id=tl.team_id L'
+                       'EFT JOIN simulations_team_simulations si ON si.team_id=tl.team_id '
+                       'WHERE t.team_type=%s AND si.simulation_id=%s '
+                       'GROUP BY tl.team_id, t.name '
+                       'ORDER BY balance DESC', [TransactionLine.STOCKS, Team.PLAYERS, self.id])
+        rank_list = dictfetchall(cursor)
+        return rank_list
+    get_rank_list = property(_get_rank_list)
+
+    def _get_stocks_list(self):
+        # TODO: Set right timestamp for intra-day values
+        cursor = connection.cursor()
+        cursor.execute('SELECT s.symbol, s.price, s1.min AS min_day, s1.max AS max_day, s2.min AS min_life, s2.max AS max_life FROM stocks_stock s '
+                       'LEFT JOIN (SELECT stock_id, MIN(price) AS min, MAX(price) AS max FROM stocks_quote '
+                       'WHERE timestamp>%s AND timestamp<%s GROUP BY stock_id) s1 '
+                       'ON s.id=s1.stock_id '
+                       'LEFT JOIN (SELECT stock_id, MIN(price) AS min, MAX(price) AS max FROM stocks_quote '
+                       'GROUP BY stock_id) s2 '
+                       'ON s.id=s2.stock_id '
+                       'WHERE s.simulation_id=%s ORDER BY s.symbol', ['2015-01-31', '2015-02-01', self.id])
+        stocks_list = dictfetchall(cursor)
+        return stocks_list
+    get_stocks_list = property(_get_stocks_list)
 
     class Meta:
         verbose_name = _("simulation")

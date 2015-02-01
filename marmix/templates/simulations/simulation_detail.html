@@ -43,7 +43,7 @@
 <a class="btn btn-primary" href="{% url 'teams-selection-view' object.id %}"><i class="fa fa-plus-square-o fa-lg"></i> Manage teams for this simulation</a>
 <a class="btn btn-info" href="{% url 'teams-export-xlsx-simulation' object.id %}"><i class="fa fa-file-excel-o fa-lg"></i> Export teams</a>
 
-{% include "simulations/includes/teams_table.html" with teams=object.teams.all %}
+{% include "simulations/includes/teams_table.html" with teams=teams %}
 
 <h2>Stocks</h2>
 

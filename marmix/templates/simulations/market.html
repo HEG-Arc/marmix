@@ -1,0 +1,44 @@
+{%  extends "base.html" %}
+
+{% block title %}
+    {{ block.super }} > Simulation detail
+{% endblock title %}
+
+{% block content %}
+<h1>Market {{ simulation.code }}</h1>
+
+<h2>Ranking</h2>
+
+{% include "simulations/includes/ranking_table.html" with teams=simulation.get_rank_list %}
+
+<h2>Stocks</h2>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Symbol</th>
+            <th>Current</th>
+            <th>Day min</th>
+            <th>Day max</th>
+            <th>Lifetime min</th>
+            <th>Lifetime max</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for stock in simulation.get_stocks_list %}
+        <tr>
+            <td>{{ stock.symbol }}</td>
+            <td>{{ stock.price|stringformat:".2f" }}</td>
+            <td>{{ stock.min_day|stringformat:".2f" }}</td>
+            <td>{{ stock.max_day|stringformat:".2f" }}</td>
+            <td>{{ stock.min_life|stringformat:".2f" }}</td>
+            <td>{{ stock.max_life|stringformat:".2f" }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="3">No team available for this market!</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock content %}
