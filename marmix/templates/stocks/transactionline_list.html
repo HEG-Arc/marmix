@@ -53,6 +53,7 @@
 {% empty %}
     <tr><td colspan="8">No cash yet.</td></tr>
 {% endfor %}
+{% if lists.cash or lists.stocks %}
     <tr>
         <td colspan="3">Balance</td>
         <td>{{ lists.balance.market_value|stringformat:".2f" }}</td>
@@ -61,6 +62,7 @@
         <td{% if lists.balance.gain > 0 %} class="gain"{% elif stock.gain < 0 %} class="loss"{% endif %}>{{ lists.balance.gain_p|stringformat:".1f" }}%</td>
         <td></td>
     </tr>
+{% endif %}
 </tbody>
 </table>
 {% endwith %}
