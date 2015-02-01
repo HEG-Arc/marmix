@@ -21,7 +21,7 @@ class Production(Common):
     # END INSTALLED_APPS
 
     # SECRET KEY
-    SECRET_KEY = values.SecretValue()
+    SECRET_KEY = values.SecretValue(environ_prefix='MARMIX')
     # END SECRET KEY
 
     # django-secure
@@ -44,14 +44,11 @@ class Production(Common):
     ALLOWED_HOSTS = ["*"]
     # END SITE CONFIGURATION
 
-    # See: https://docs.djangoproject.com/en/dev/ref/settings/#static-url
-    STATIC_URL = 'https://s3.amazonaws.com/%s/'
-    # END STORAGE CONFIGURATION
-
     # EMAIL
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
     DEFAULT_FROM_EMAIL = values.Value('MarMix <m3@marmix.ch>')
     EMAIL_HOST = values.Value('mx.ga-fl.net')
-    EMAIL_SUBJECT_PREFIX = values.Value('[MarMix] ', environ_name="EMAIL_SUBJECT_PREFIX")
+    EMAIL_SUBJECT_PREFIX = values.Value('[MarMix] ', environ_prefix='MARMIX')
     EMAIL_USE_TLS = True
     # END EMAIL
 
@@ -68,7 +65,7 @@ class Production(Common):
     # CACHING
     # Only do this here because thanks to django-pylibmc-sasl and pylibmc
     # memcacheify is painful to install on windows.
-    CACHES = values.CacheURLValue(default="memcached://127.0.0.1:11211")
+    CACHES = values.CacheURLValue(default="memcached://127.0.0.1:11211", environ_prefix='MARMIX')
     # END CACHING
 
     # Your production stuff: Below this line define 3rd party libary settings
