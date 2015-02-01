@@ -30,6 +30,7 @@
     {% block angular %}
       <script src="{% static 'angularjs/js/angular.min.js' %}"></script>
     {% endblock %}
+    <link rel="icon" type="image/ico" href="{% static 'images/favicon.ico' %}">
 
   </head>
 
@@ -37,7 +38,7 @@
 
     <div class="header navbar">
       <div class="container">
-        <a class="navbar-brand" href="/">MarMix</a>
+        <a class="navbar-brand" href="{% url 'home' %}"><img src="{% static 'images/marmix_200.png' %}"></a>
         <ul class="nav navbar-nav">
           <li class="active"><a href="{% url 'home' %}">Home</a></li>
           <li><a href="{% url 'about' %}">About</a></li>
