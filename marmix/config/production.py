@@ -20,6 +20,10 @@ class Production(Common):
     INSTALLED_APPS = Common.INSTALLED_APPS
     # END INSTALLED_APPS
 
+    # DATABASE
+    DATABASES = values.DatabaseURLValue('postgres://marmix:marmix@localhost/marmix', environ_prefix='MARMIX')
+    # END DATABASE
+
     # SECRET KEY
     SECRET_KEY = values.SecretValue(environ_prefix='MARMIX')
     # END SECRET KEY

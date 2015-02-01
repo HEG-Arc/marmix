@@ -66,3 +66,6 @@ numpy==1.9.1
 
 # Memcached
 python3-memcached==1.51
+
+# Async messages
+django-async-messages==0.3.1
