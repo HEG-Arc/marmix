@@ -3,19 +3,9 @@
 Production Configurations
 
 - Use djangosecure
-- Use Amazon's S3 for storing static files and uploaded media
-- Use sendgrid to send emails
-- Use MEMCACHIER on Heroku
 '''
 from configurations import values
 
-# See: http://django-storages.readthedocs.org/en/latest/backends/amazon-S3.html#settings
-try:
-    from S3 import CallingFormat
-    AWS_CALLING_FORMAT = CallingFormat.SUBDOMAIN
-except ImportError:
-    # TODO: Fix this where even if in Dev this class is called.
-    pass
 
 from .common import Common
 
@@ -54,48 +44,15 @@ class Production(Common):
     ALLOWED_HOSTS = ["*"]
     # END SITE CONFIGURATION
 
-    INSTALLED_APPS += ("gunicorn", )
-
-    # STORAGE CONFIGURATION
-    # See: http://django-storages.readthedocs.org/en/latest/index.html
-    INSTALLED_APPS += (
-        'storages',
-    )
-
-    # See: http://django-storages.readthedocs.org/en/latest/backends/amazon-S3.html#settings
-    STATICFILES_STORAGE = DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
-
-    # See: http://django-storages.readthedocs.org/en/latest/backends/amazon-S3.html#settings
-    AWS_ACCESS_KEY_ID = values.SecretValue()
-    AWS_SECRET_ACCESS_KEY = values.SecretValue()
-    AWS_STORAGE_BUCKET_NAME = values.SecretValue()
-    AWS_AUTO_CREATE_BUCKET = True
-    AWS_QUERYSTRING_AUTH = False
-
-    # see: https://github.com/antonagestam/collectfast
-    AWS_PRELOAD_METADATA = True
-    INSTALLED_APPS += ('collectfast', )
-
-    # AWS cache settings, don't change unless you know what you're doing:
-    AWS_EXPIRY = 60 * 60 * 24 * 7
-    AWS_HEADERS = {
-        'Cache-Control': 'max-age=%d, s-maxage=%d, must-revalidate' % (
-            AWS_EXPIRY, AWS_EXPIRY)
-    }
-
     # See: https://docs.djangoproject.com/en/dev/ref/settings/#static-url
-    STATIC_URL = 'https://s3.amazonaws.com/%s/' % AWS_STORAGE_BUCKET_NAME
+    STATIC_URL = 'https://s3.amazonaws.com/%s/'
     # END STORAGE CONFIGURATION
 
     # EMAIL
-    DEFAULT_FROM_EMAIL = values.Value('MarMix <noreply@marmix.ch>')
-    EMAIL_HOST = values.Value('smtp.sendgrid.com')
-    EMAIL_HOST_PASSWORD = values.SecretValue(environ_prefix="", environ_name="SENDGRID_PASSWORD")
-    EMAIL_HOST_USER = values.SecretValue(environ_prefix="", environ_name="SENDGRID_USERNAME")
-    EMAIL_PORT = values.IntegerValue(587, environ_prefix="", environ_name="EMAIL_PORT")
+    DEFAULT_FROM_EMAIL = values.Value('MarMix <m3@marmix.ch>')
+    EMAIL_HOST = values.Value('mx.ga-fl.net')
     EMAIL_SUBJECT_PREFIX = values.Value('[MarMix] ', environ_name="EMAIL_SUBJECT_PREFIX")
     EMAIL_USE_TLS = True
-    SERVER_EMAIL = EMAIL_HOST_USER
     # END EMAIL
 
     # TEMPLATE CONFIGURATION
@@ -111,12 +68,7 @@ class Production(Common):
     # CACHING
     # Only do this here because thanks to django-pylibmc-sasl and pylibmc
     # memcacheify is painful to install on windows.
-    try:
-        # See: https://github.com/rdegges/django-heroku-memcacheify
-        from memcacheify import memcacheify
-        CACHES = memcacheify()
-    except ImportError:
-        CACHES = values.CacheURLValue(default="memcached://127.0.0.1:11211")
+    CACHES = values.CacheURLValue(default="memcached://127.0.0.1:11211")
     # END CACHING
 
     # Your production stuff: Below this line define 3rd party libary settings
