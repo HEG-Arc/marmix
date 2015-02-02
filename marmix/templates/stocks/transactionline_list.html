@@ -28,7 +28,7 @@
     <tr>
         <td>
             {% if stock.asset_type == 'STOCKS' %}
-                <a href="{% url 'stocks-detail-view' stock.stock %}">{{ stock.symbol }}</a>
+                <a href="{% url 'stocks-detail-view' stock.stock_id %}">{{ stock.symbol }}</a>
             {% else %}
                 {{ stock.asset|capfirst }}
             {% endif %}
