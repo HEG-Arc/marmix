@@ -65,6 +65,61 @@ def generate_uuid(length):
     return str(uuid.uuid4().hex.upper()[0:length])
 
 
+def current_sim_day(simulation_id):
+    cached = cache.get('sim-day-%s' % simulation_id)
+    if not cached:
+        current_day = SimDay.objects.filter(simulation_id=simulation_id)[0]
+        if current_day:
+            cached = {'sim_round': current_day.sim_round, 'sim_day': current_day.sim_day,
+                      'timestamp': current_day.timestamp}
+            cache.set('sim-day-%s' % simulation_id, cached)
+    return cached
+
+
+def current_holdings(team_id, simulation_id):
+    from stocks.models import TransactionLine
+    cursor = connection.cursor()
+    cursor.execute('SELECT SUM(CASE WHEN tl.asset_type=%s THEN s.price*tl.quantity ELSE tl.amount END) as balance '
+                   'FROM stocks_transactionline tl '
+                   'LEFT JOIN stocks_stock s ON tl.stock_id=s.id '
+                   'LEFT JOIN stocks_transaction st ON tl.transaction_id=st.id '
+                   'WHERE tl.team_id=%s AND st.simulation_id=%s', [TransactionLine.STOCKS, team_id, simulation_id])
+    row = cursor.fetchone()
+    try:
+        return row[0]
+    except IndexError:
+        return None
+
+
+def rank_list(simulation_id):
+    from stocks.models import TransactionLine
+    cursor = connection.cursor()
+    cursor.execute('SELECT tl.team_id, t.name, SUM(CASE WHEN tl.asset_type=%s THEN s.price*tl.quantity ELSE tl.amount END) '
+                   'as balance FROM stocks_transactionline tl LEFT JOIN stocks_stock s ON tl.stock_id=s.id '
+                   'LEFT JOIN simulations_team t ON t.id=tl.team_id L'
+                   'EFT JOIN simulations_team_simulations si ON si.team_id=tl.team_id '
+                   'WHERE t.team_type=%s AND si.simulation_id=%s '
+                   'GROUP BY tl.team_id, t.name '
+                   'ORDER BY balance DESC', [TransactionLine.STOCKS, Team.PLAYERS, simulation_id])
+    rank_list = dictfetchall(cursor)
+    return rank_list
+
+
+def stocks_list(simulation_id):
+    # TODO: Set right timestamp for intra-day values
+    cursor = connection.cursor()
+    cursor.execute('SELECT s.symbol, s.price, s1.min AS min_day, s1.max AS max_day, s2.min AS min_life, s2.max AS max_life FROM stocks_stock s '
+                   'LEFT JOIN (SELECT stock_id, MIN(price) AS min, MAX(price) AS max FROM stocks_quote '
+                   'WHERE timestamp>%s AND timestamp<%s GROUP BY stock_id) s1 '
+                   'ON s.id=s1.stock_id '
+                   'LEFT JOIN (SELECT stock_id, MIN(price) AS min, MAX(price) AS max FROM stocks_quote '
+                   'GROUP BY stock_id) s2 '
+                   'ON s.id=s2.stock_id '
+                   'WHERE s.simulation_id=%s ORDER BY s.symbol', ['2015-01-31', '2015-02-01', simulation_id])
+    stocks_list = dictfetchall(cursor)
+    return stocks_list
+
+
 class Simulation(TimeStampedModel):
     """
     A simulation hold all configuration parameters used to setup and run a simulation.
@@ -137,33 +192,16 @@ class Simulation(TimeStampedModel):
     nb_teams = property(_nb_teams)
 
     def _get_rank_list(self):
-        from stocks.models import TransactionLine
-        cursor = connection.cursor()
-        cursor.execute('SELECT tl.team_id, t.name, SUM(CASE WHEN tl.asset_type=%s THEN s.price*tl.quantity ELSE tl.amount END) '
-                       'as balance FROM stocks_transactionline tl LEFT JOIN stocks_stock s ON tl.stock_id=s.id '
-                       'LEFT JOIN simulations_team t ON t.id=tl.team_id L'
-                       'EFT JOIN simulations_team_simulations si ON si.team_id=tl.team_id '
-                       'WHERE t.team_type=%s AND si.simulation_id=%s '
-                       'GROUP BY tl.team_id, t.name '
-                       'ORDER BY balance DESC', [TransactionLine.STOCKS, Team.PLAYERS, self.id])
-        rank_list = dictfetchall(cursor)
-        return rank_list
+        return rank_list(self.id)
     get_rank_list = property(_get_rank_list)
 
     def _get_stocks_list(self):
-        # TODO: Set right timestamp for intra-day values
-        cursor = connection.cursor()
-        cursor.execute('SELECT s.symbol, s.price, s1.min AS min_day, s1.max AS max_day, s2.min AS min_life, s2.max AS max_life FROM stocks_stock s '
-                       'LEFT JOIN (SELECT stock_id, MIN(price) AS min, MAX(price) AS max FROM stocks_quote '
-                       'WHERE timestamp>%s AND timestamp<%s GROUP BY stock_id) s1 '
-                       'ON s.id=s1.stock_id '
-                       'LEFT JOIN (SELECT stock_id, MIN(price) AS min, MAX(price) AS max FROM stocks_quote '
-                       'GROUP BY stock_id) s2 '
-                       'ON s.id=s2.stock_id '
-                       'WHERE s.simulation_id=%s ORDER BY s.symbol', ['2015-01-31', '2015-02-01', self.id])
-        stocks_list = dictfetchall(cursor)
-        return stocks_list
+        return stocks_list(self.id)
     get_stocks_list = property(_get_stocks_list)
+
+    def _get_sim_day(self):
+        return current_sim_day(self.id)
+    get_sim_day = property(_get_sim_day)
 
     class Meta:
         verbose_name = _("simulation")
@@ -221,16 +259,12 @@ class Team(TimeStampedModel):
                                    help_text=_("The users belonging to the team"))
     uuid = models.CharField(verbose_name=_("registration key"), max_length=8, blank=True, null=True, unique=True,
                             help_text=_("A unique registration key that is automatically created"))
+    current_simulation = models.ForeignKey('Simulation', verbose_name=_('current simulation'),
+                                           related_name=_('current_teams'), null=True, blank=True,
+                                           help_text=_("The current simulation the team belongs to"))
 
     def _get_holdings(self):
-        from stocks.models import TransactionLine
-        cursor = connection.cursor()
-        cursor.execute('SELECT SUM(CASE WHEN tl.asset_type=%s THEN s.price*tl.quantity ELSE tl.amount END) as balance FROM stocks_transactionline tl LEFT JOIN stocks_stock s ON tl.stock_id=s.id WHERE tl.team_id=%s', [TransactionLine.STOCKS, self.id])
-        row = cursor.fetchone()
-        try:
-            return row[0]
-        except IndexError:
-            return None
+        return current_holdings(self.id, self.current_simulation_id)
     get_holdings = property(_get_holdings)
 
     def _get_members(self):
@@ -285,6 +319,31 @@ class Team(TimeStampedModel):
 
     def __str__(self):
         return self.name
+
+
+class SimDay(models.Model):
+    """
+    A simulation day matched to a real-time timestamp.
+    """
+    simulation = models.ForeignKey(Simulation, verbose_name=_('simulation'), related_name=_('sim_days'),
+                                   help_text=_("The simulation the sim day belongs to"))
+    sim_round = models.IntegerField(verbose_name=_("round"), default=0, help_text=_("Current round"))
+    sim_day = models.IntegerField(verbose_name=_("day"), default=0, help_text=_("Current day"))
+    timestamp = models.DateTimeField(verbose_name=_("timestamp"), auto_now_add=True,
+                                     help_text=_("Timestamp of the tick"))
+
+    class Meta:
+        verbose_name = _("simulation day")
+        verbose_name_plural = _("simulations days")
+        ordering = ['-sim_round', '-sim_day']
+
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        models.Model.save(self, force_insert, force_update, using, update_fields)
+        cached = {'sim_round': self.sim_round, 'sim_day': self.sim_day, 'timestamp': self.timestamp}
+        cache.set('sim-day-%s' % self.simulation_id, cached)
+
+    def __str__(self):
+        return "R%s/D%s" % (self.sim_round, self.sim_day)
 
 
 def create_liquidity_manager(simulation):

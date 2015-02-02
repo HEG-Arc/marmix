@@ -28,7 +28,7 @@ from django.contrib import admin
 # Third-party app imports
 
 # MarMix imports
-from .models import Simulation, Currency, Team
+from .models import Simulation, Currency, Team, SimDay
 
 
 class SimulationAdmin(admin.ModelAdmin):
@@ -43,6 +43,11 @@ class TeamAdmin(admin.ModelAdmin):
     pass
 
 
+class SimDayAdmin(admin.ModelAdmin):
+    pass
+
+
 admin.site.register(Simulation, SimulationAdmin)
 admin.site.register(Currency, CurrencyAdmin)
 admin.site.register(Team, TeamAdmin)
+admin.site.register(SimDay, SimDayAdmin)
