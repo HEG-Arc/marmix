@@ -59,7 +59,10 @@ class TeamSerializer(serializers.ModelSerializer):
     Team serializer.
     """
     orders = serializers.HyperlinkedRelatedField(many=True, read_only=True, view_name='order-detail')
+    simulations = serializers.HyperlinkedRelatedField(many=True, read_only=True, view_name='simulation-detail')
+    users = serializers.HyperlinkedRelatedField(many=True, read_only=True, view_name='user-detail')
 
     class Meta:
         model = Team
-        fields = ('id', 'simulation', 'login', 'password', 'name', 'team_type', 'locked', 'orders')
+        fields = ('id', 'simulations', 'name', 'team_type', 'locked', 'users', 'uuid', 'current_simulation', 'orders', 'get_balance', 'get_holdings')
+

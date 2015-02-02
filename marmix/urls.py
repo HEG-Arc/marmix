@@ -49,10 +49,10 @@ router = DefaultRouter()
 router.register(r'simulations', SimulationViewSet)
 router.register(r'currencies', CurrencyViewSet)
 router.register(r'users', UserViewSet)
-router.register(r'stocks', StockViewSet)
+router.register(r'stocks', StockViewSet, base_name='stock')
 router.register(r'quotes', QuoteViewSet)
 router.register(r'teams', TeamViewSet)
-router.register(r'orders', OrderViewSet)
+router.register(r'orders', OrderViewSet, base_name='order')
 router.register(r'holdings', HoldingsViewSet, base_name='holdings')
 
 # The API URLs are now determined automatically by the router.

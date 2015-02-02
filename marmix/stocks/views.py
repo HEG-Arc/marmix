@@ -95,9 +95,15 @@ class OrderListView(ListView):
 
 
 class StockViewSet(viewsets.ModelViewSet):
-    queryset = Stock.objects.all()
     serializer_class = StockSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+
+    def get_queryset(self):
+        """
+        This view should return a list of all the stocks for the simulation of the authenticated user.
+        """
+        user = self.request.user
+        return Stock.objects.filter(simulation=user.get_team.current_simulation)
 
 
 class QuoteViewSet(viewsets.ModelViewSet):
@@ -107,9 +113,15 @@ class QuoteViewSet(viewsets.ModelViewSet):
 
 
 class OrderViewSet(viewsets.ModelViewSet):
-    queryset = Order.objects.all()
     serializer_class = OrderSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+
+    def get_queryset(self):
+        """
+        This view should return a list of all the orders for the authenticated user.
+        """
+        user = self.request.user
+        return Order.objects.filter(team=user.get_team)
 
 
 class OrderCreateView(SuccessMessageMixin, CreateView):

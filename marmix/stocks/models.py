@@ -213,6 +213,8 @@ def process_opening_transactions(simulation):
             amount = 10000*simulation.capital
         else:
             amount = 0
+        team.current_simulation = simulation
+        team.save()
         deposit = TransactionLine(transaction=cash_deposit, team=team, quantity=1, price=amount,
                                   amount=amount, asset_type=TransactionLine.CASH)
         deposit.save()
