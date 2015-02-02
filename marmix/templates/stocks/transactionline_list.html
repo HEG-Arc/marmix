@@ -6,6 +6,9 @@
 
 {% block content %}
 <h1>Holdings</h1>
+
+{% include "simulations/includes/clock.html" with clock=clock %}
+
 {% with lists=team.get_stocks_list %}
 <table class="table table-striped">
 <thead>

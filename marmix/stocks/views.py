@@ -47,7 +47,7 @@ from rest_framework import permissions, viewsets
 # MarMix imports
 from .models import Stock, Quote, Order, TransactionLine
 from .serializers import StockSerializer, QuoteSerializer, OrderSerializer
-
+from simulations.models import current_sim_day
 
 logger = logging.getLogger(__name__)
 
@@ -77,7 +77,8 @@ class HoldingsView(View):
     def get(self, request, *args, **kwargs):
         team = self.request.user.get_team
         orders = Order.objects.all().filter(team=team).select_related('stock', 'transaction')
-        return render(request, 'stocks/transactionline_list.html', {'orders': orders, 'team': team})
+        clock = current_sim_day(team.current_simulation)
+        return render(request, 'stocks/transactionline_list.html', {'orders': orders, 'team': team, 'clock': clock})
 
 
 class OrderListView(ListView):

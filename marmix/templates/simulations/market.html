@@ -6,7 +6,9 @@
 
 {% block content %}
 <h1>Market {{ simulation.code }}</h1>
-<h2>Clock: R{{ simulation.get_sim_day.sim_round }}/D{{ simulation.get_sim_day.sim_day }}</h2>
+
+{% include "simulations/includes/clock.html" with clock=simulation.get_sim_day %}
+
 <h2>Ranking</h2>
 
 {% include "simulations/includes/ranking_table.html" with teams=simulation.get_rank_list %}

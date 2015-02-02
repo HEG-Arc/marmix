@@ -364,8 +364,9 @@ class SimulationInitializeView(SuccessMessageMixin, UpdateView):
 class MarketView(View):
 
     def get(self, request, *args, **kwargs):
-        simulation = get_object_or_404(Simulation, pk=self.kwargs['pk'])
-        return render(request, 'simulations/market.html', {'simulation': simulation,})
+        team = self.request.user.get_team
+        simulation = get_object_or_404(Simulation, pk=team.current_simulation_id)
+        return render(request, 'simulations/market.html', {'simulation': simulation, })
 
 
 def manage_simulation(request, simulation_id, next_state):
