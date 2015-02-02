@@ -31,6 +31,8 @@ from django.utils.translation import ugettext_lazy as _
 from django.core.cache import cache
 from django.db.models import Sum
 from django.db import connection
+from django.utils import timezone
+
 
 # Third-party app imports
 from django_extensions.db.models import TimeStampedModel
@@ -68,11 +70,15 @@ def generate_uuid(length):
 def current_sim_day(simulation_id):
     cached = cache.get('sim-day-%s' % simulation_id)
     if not cached:
-        current_day = SimDay.objects.filter(simulation_id=simulation_id)[0]
+        try:
+            current_day = SimDay.objects.filter(simulation_id=simulation_id)[0]
+        except IndexError:
+            current_day = None
         if current_day:
-            cached = {'sim_round': current_day.sim_round, 'sim_day': current_day.sim_day,
-                      'timestamp': current_day.timestamp}
-            cache.set('sim-day-%s' % simulation_id, cached)
+            cached = {'sim_round': current_day.sim_round, 'sim_day': current_day.sim_day, 'timestamp': current_day.timestamp}
+        else:
+            cached = {'sim_round': 0, 'sim_day': 0, 'timestamp': timezone.now()}
+        cache.set('sim-day-%s' % simulation_id, cached)
     return cached
 
 

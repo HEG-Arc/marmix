@@ -33,5 +33,5 @@ node_modules/
 
 # Django stuff:
 *.log
+!migrations/__init__.py
 #migrations/
-#!migrations/__init__.py
