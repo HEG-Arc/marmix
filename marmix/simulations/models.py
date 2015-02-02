@@ -82,7 +82,7 @@ def current_sim_day(simulation_id):
     return cached
 
 
-def current_holdings(team_id, simulation_id):
+def current_balance(team_id, simulation_id):
     from stocks.models import TransactionLine
     cursor = connection.cursor()
     cursor.execute('SELECT SUM(CASE WHEN tl.asset_type=%s THEN s.price*tl.quantity ELSE tl.amount END) as balance '
@@ -92,9 +92,44 @@ def current_holdings(team_id, simulation_id):
                    'WHERE tl.team_id=%s AND st.simulation_id=%s', [TransactionLine.STOCKS, team_id, simulation_id])
     row = cursor.fetchone()
     try:
-        return row[0]
+        return {'balance': row[0]}
     except IndexError:
-        return None
+        return {'balance': None}
+
+
+def current_holdings(team_id, simulation_id):
+    from stocks.models import TransactionLine
+    stocks_list = {'stocks': [], 'cash': [], 'balance': {'market_value': 0, 'purchase_value': 0, 'gain': 0, 'gain_p': 0}, 'clock': current_sim_day(simulation_id)}
+    tl = TransactionLine.objects.filter(transaction__simulation_id=simulation_id).filter(team_id=team_id).values('stock__symbol', 'stock__price', 'asset_type', 'stock__id').annotate(
+        quantity=Sum('quantity'), amount=Sum('amount')).order_by('stock__symbol')
+    for stock in tl:
+        asset = dict(TransactionLine.ASSET_TYPE_CHOICES).get(stock['asset_type'])
+        if stock['asset_type'] == TransactionLine.STOCKS:
+            price = stock['stock__price']
+            value = stock['quantity']*price
+            gain = value-stock['amount']
+            try:
+                gain_p = (value/stock['amount']-1)*100
+            except:
+                gain_p = 0
+
+            stocks_list['stocks'].append({'symbol': stock['stock__symbol'], 'asset_type': stock['asset_type'],
+                                         'quantity': stock['quantity'], 'amount': stock['amount'], 'asset': asset,
+                                         'gain': gain, 'gain_p': gain_p, 'value': value,
+                                         'price': price, 'stock_id': stock['stock__id']})
+            stocks_list['balance']['market_value'] += value
+            stocks_list['balance']['purchase_value'] += stock['amount']
+        else:
+            stocks_list['cash'].append({'asset_type': stock['asset_type'], 'quantity': stock['quantity'],
+                                        'amount': stock['amount'], 'asset': asset, 'value': stock['amount']})
+            stocks_list['balance']['market_value'] += stock['amount']
+            stocks_list['balance']['purchase_value'] += stock['amount']
+    stocks_list['balance']['gain'] = stocks_list['balance']['market_value'] - stocks_list['balance']['purchase_value']
+    try:
+        stocks_list['balance']['gain_p'] = (stocks_list['balance']['market_value']/stocks_list['balance']['purchase_value']-1)*100
+    except:
+        stocks_list['balance']['gain_p'] = 0
+    return stocks_list
 
 
 def rank_list(simulation_id):
@@ -269,48 +304,17 @@ class Team(TimeStampedModel):
                                            related_name=_('current_teams'), null=True, blank=True,
                                            help_text=_("The current simulation the team belongs to"))
 
-    def _get_holdings(self):
-        return current_holdings(self.id, self.current_simulation_id)
-    get_holdings = property(_get_holdings)
+    def _get_balance(self):
+        return current_balance(self.id, self.current_simulation_id)
+    get_balance = property(_get_balance)
 
     def _get_members(self):
         return self.users.all().count()
     get_members = property(_get_members)
 
-    def _get_stocks_list(self):
-        from stocks.models import TransactionLine
-        stocks_list = {'stocks': [], 'cash': [], 'balance': {'market_value': 0, 'purchase_value': 0, 'gain': 0, 'gain_p': 0}}
-        tl = TransactionLine.objects.filter(team=self).values('stock__symbol', 'stock__price', 'asset_type', 'stock__id').annotate(
-            quantity=Sum('quantity'), amount=Sum('amount')).order_by('stock__symbol')
-        for stock in tl:
-            asset = dict(TransactionLine.ASSET_TYPE_CHOICES).get(stock['asset_type'])
-            if stock['asset_type'] == TransactionLine.STOCKS:
-                price = stock['stock__price']
-                value = stock['quantity']*price
-                gain = value-stock['amount']
-                try:
-                    gain_p = (value/stock['amount']-1)*100
-                except:
-                    gain_p = 0
-
-                stocks_list['stocks'].append({'symbol': stock['stock__symbol'], 'asset_type': stock['asset_type'],
-                                             'quantity': stock['quantity'], 'amount': stock['amount'], 'asset': asset,
-                                             'gain': gain, 'gain_p': gain_p, 'value': value,
-                                             'price': price, 'stock': stock['stock__id']})
-                stocks_list['balance']['market_value'] += value
-                stocks_list['balance']['purchase_value'] += stock['amount']
-            else:
-                stocks_list['cash'].append({'asset_type': stock['asset_type'], 'quantity': stock['quantity'],
-                                            'amount': stock['amount'], 'asset': asset, 'value': stock['amount']})
-                stocks_list['balance']['market_value'] += stock['amount']
-                stocks_list['balance']['purchase_value'] += stock['amount']
-        stocks_list['balance']['gain'] = stocks_list['balance']['market_value'] - stocks_list['balance']['purchase_value']
-        try:
-            stocks_list['balance']['gain_p'] = (stocks_list['balance']['market_value']/stocks_list['balance']['purchase_value']-1)*100
-        except:
-            stocks_list['balance']['gain_p'] = 0
-        return stocks_list
-    get_stocks_list = property(_get_stocks_list)
+    def _get_holdings(self):
+        return current_holdings(self.id, self.current_simulation_id)
+    get_holdings = property(_get_holdings)
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         if self.uuid is None:

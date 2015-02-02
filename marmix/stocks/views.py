@@ -42,12 +42,15 @@ from django.contrib import messages
 
 
 # Third-party app imports
-from rest_framework import permissions, viewsets
+from rest_framework import permissions, viewsets, status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
 
 # MarMix imports
 from .models import Stock, Quote, Order, TransactionLine
 from .serializers import StockSerializer, QuoteSerializer, OrderSerializer
-from simulations.models import current_sim_day
+from simulations.models import current_sim_day, current_holdings
 
 logger = logging.getLogger(__name__)
 
@@ -161,3 +164,15 @@ class OrderDeleteView(SuccessMessageMixin, DeleteView):
         order = get_object_or_404(Order, pk=self.kwargs['pk'])
         messages.success(self.request, self.success_message % {'code': order.id, })
         return super(OrderDeleteView, self).delete(request, *args, **kwargs)
+
+
+class HoldingsViewSet(viewsets.ViewSet):
+    """
+    Current portfolio of the request.user.
+    """
+
+    def list(self, request, *args, **kw):
+        trader = request.user.get_team
+        holdings = current_holdings(trader.id, trader.current_simulation_id)
+        response = Response(holdings, status=status.HTTP_200_OK)
+        return response
