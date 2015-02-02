@@ -64,6 +64,13 @@ class StockListView(ListView):
         #context['foo'] = "bar"
         return context
 
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            stocks = Stock.objects.all()
+        else:
+            stocks = Stock.objects.all().filter(simulation=self.request.user.get_team.current_simulation)
+        return stocks
+
 
 class StockDetailView(DetailView):
 

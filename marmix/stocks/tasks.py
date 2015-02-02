@@ -47,6 +47,7 @@ def check_matching_orders(order):
     :param order: An order object
     :return : None
     """
+    # TODO: Check if balance is sufficient!
     from .models import Order, process_order
     logger.debug("Starting a new order matching cycle...")
     if order.order_type == Order.ASK:
