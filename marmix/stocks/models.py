@@ -87,8 +87,9 @@ class Quote(models.Model):
         return "%s@%s R%sD%s (%s)" % (self.stock, self.price, self.sim_round, self.sim_day, self.timestamp)
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
-        self.sim_round = current_sim_day(self.stock.simulation_id)['sim_round']
-        self.sim_day = current_sim_day(self.stock.simulation_id)['sim_day']
+        current = current_sim_day(self.stock.simulation_id)
+        self.sim_round = current['sim_round']
+        self.sim_day = current['sim_day']
         models.Model.save(self, force_insert, force_update, using, update_fields)
 
 
