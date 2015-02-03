@@ -34,7 +34,7 @@ from .models import Stock, Quote, Order
 class NestedQuoteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Quote
-        fields = ('id', 'price', 'timestamp')
+        fields = ('id', 'price', 'timestamp', 'sim_round', 'sim_day')
 
 
 class StockSerializer(serializers.ModelSerializer):
@@ -49,11 +49,11 @@ class QuoteSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Quote
-        fields = ('id', 'stock', 'price', 'timestamp')
+        fields = ('id', 'stock', 'price', 'timestamp', 'sim_round', 'sim_day')
 
 
 class OrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ('id', 'stock', 'team', 'order_type', 'quantity', 'price', 'created_at', 'transaction')
+        fields = ('id', 'stock', 'team', 'order_type', 'quantity', 'price', 'created_at', 'sim_round', 'sim_day', 'transaction')

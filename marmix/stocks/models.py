@@ -71,6 +71,8 @@ class Quote(models.Model):
     price = models.DecimalField(verbose_name=_("stock price"), max_digits=14, decimal_places=4,
                                 default='0.0000', help_text=_("Current stock price"))
     timestamp = models.DateTimeField(verbose_name=_("timestamp"), auto_now_add=True, help_text=_("Timestamp of the quote"))
+    sim_round = models.IntegerField(verbose_name=_("round"), default=0, help_text=_("Current round"))
+    sim_day = models.IntegerField(verbose_name=_("day"), default=0, help_text=_("Current day"))
 
     class Meta:
         verbose_name = _('quote')
@@ -78,7 +80,12 @@ class Quote(models.Model):
         ordering = ['-timestamp']
 
     def __str__(self):
-        return "%s - %s (%s)" % (self.stock, self.price, self.timestamp)
+        return "%s@%s R%sD%s (%s)" % (self.stock, self.price, self.sim_round, self.sim_day, self.timestamp)
+
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        self.sim_round = current_sim_day(self.stock.simulation_id)['sim_round']
+        self.sim_day = current_sim_day(self.stock.simulation_id)['sim_day']
+        models.Model.save(self, force_insert, force_update, using, update_fields)
 
 
 class Order(models.Model):
