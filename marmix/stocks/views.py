@@ -45,6 +45,7 @@ from django.contrib import messages
 from rest_framework import permissions, viewsets, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
 
 
 # MarMix imports
@@ -103,7 +104,7 @@ class OrderListView(ListView):
 
 class StockViewSet(viewsets.ModelViewSet):
     serializer_class = StockSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    permission_classes = (permissions.IsAuthenticated,)
 
     def get_queryset(self):
         """
@@ -116,12 +117,12 @@ class StockViewSet(viewsets.ModelViewSet):
 class QuoteViewSet(viewsets.ModelViewSet):
     queryset = Quote.objects.all()
     serializer_class = QuoteSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    permission_classes = (permissions.IsAuthenticated,)
 
 
 class OrderViewSet(viewsets.ModelViewSet):
     serializer_class = OrderSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    permission_classes = (permissions.IsAuthenticated,)
 
     def get_queryset(self):
         """
@@ -189,6 +190,7 @@ class HoldingsViewSet(viewsets.ViewSet):
     """
     Current portfolio of the request.user.
     """
+    permission_classes = (IsAuthenticated, )
 
     def list(self, request, *args, **kw):
         trader = request.user.get_team

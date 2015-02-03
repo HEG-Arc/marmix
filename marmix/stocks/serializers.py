@@ -31,8 +31,14 @@ from rest_framework import serializers
 from .models import Stock, Quote, Order
 
 
+class NestedQuoteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Quote
+        fields = ('id', 'price', 'timestamp')
+
+
 class StockSerializer(serializers.ModelSerializer):
-    quotes = serializers.HyperlinkedRelatedField(many=True, read_only=True, view_name='quote-detail')
+    quotes = NestedQuoteSerializer(many=True, read_only=True)
 
     class Meta:
         model = Stock
@@ -40,7 +46,6 @@ class StockSerializer(serializers.ModelSerializer):
 
 
 class QuoteSerializer(serializers.ModelSerializer):
-    stock = serializers.HyperlinkedRelatedField(read_only=True, view_name='stock-detail')
 
     class Meta:
         model = Quote
