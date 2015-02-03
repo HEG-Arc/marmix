@@ -30,7 +30,7 @@ from django.utils.translation import ugettext_lazy as _
 from django_extensions.db.models import TimeStampedModel
 
 # MarMix imports
-from simulations.models import Simulation, Team
+from simulations.models import Simulation, Team, current_sim_day
 from .tasks import check_matching_orders, set_stock_quote
 
 
@@ -104,6 +104,8 @@ class Order(models.Model):
     created_at = models.DateTimeField(verbose_name=_("created"), auto_now_add=True, help_text=_("Creation of the order"))
     transaction = models.ForeignKey('Transaction', verbose_name=_("transaction"), related_name="orders", null=True,
                                     blank=True, help_text=_("Related transaction"))
+    sim_round = models.IntegerField(verbose_name=_("round"), default=0, help_text=_("Current round"))
+    sim_day = models.IntegerField(verbose_name=_("day"), default=0, help_text=_("Current day"))
 
     class Meta:
         verbose_name = _('order')
@@ -118,6 +120,8 @@ class Order(models.Model):
         return "%s: %s@%s" % (self.stock, quantity, self.price)
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        self.sim_round = current_sim_day(self.stock.simulation_id)['sim_round']
+        self.sim_day = current_sim_day(self.stock.simulation_id)['sim_day']
         if self.transaction is None:
             models.Model.save(self, force_insert, force_update, using, update_fields)
             check_matching_orders.apply_async([self])
@@ -146,11 +150,18 @@ class Transaction(models.Model):
     transaction_type = models.CharField(verbose_name=_("type of transaction"), max_length=20,
                                         choices=TRANSACTION_TYPE_CHOICES, default=ORDER,
                                         help_text=_("The type of transaction"))
+    sim_round = models.IntegerField(verbose_name=_("round"), default=0, help_text=_("Current round"))
+    sim_day = models.IntegerField(verbose_name=_("day"), default=0, help_text=_("Current day"))
 
     class Meta:
         verbose_name = _('transaction')
         verbose_name_plural = _('transactions')
         ordering = ['-fulfilled_at']
+
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        self.sim_round = current_sim_day(self.simulation_id)['sim_round']
+        self.sim_day = current_sim_day(self.simulation_id)['sim_day']
+        models.Model.save(self, force_insert, force_update, using, update_fields)
 
     def __str__(self):
         return "%s" % self.id
