@@ -42,7 +42,7 @@ class StockSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Stock
-        fields = ('id', 'simulation', 'symbol', 'name', 'description', 'quantity', 'quotes')
+        fields = ('id', 'simulation', 'symbol', 'name', 'description', 'quantity', 'price', 'quotes')
 
 
 class QuoteSerializer(serializers.ModelSerializer):

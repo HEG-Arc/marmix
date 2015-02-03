@@ -69,7 +69,7 @@ class Quote(models.Model):
     """
     stock = models.ForeignKey('Stock', verbose_name=_("stock"), related_name="quotes", help_text=_("Related stock"))
     price = models.DecimalField(verbose_name=_("stock price"), max_digits=14, decimal_places=4,
-                                          default='0.0000', help_text=_("Current stock price"))
+                                default='0.0000', help_text=_("Current stock price"))
     timestamp = models.DateTimeField(verbose_name=_("timestamp"), auto_now_add=True, help_text=_("Timestamp of the quote"))
 
     class Meta:

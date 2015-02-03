@@ -49,11 +49,13 @@ from django.http import HttpResponseRedirect
 
 
 # Third-party app imports
-from rest_framework import permissions, viewsets
+from rest_framework import permissions, viewsets, status
 from xlsxwriter.workbook import Workbook
+from rest_framework.response import Response
+
 
 # MarMix imports
-from .models import Simulation, Currency, Team
+from .models import Simulation, Currency, Team, current_sim_day
 from .serializers import SimulationSerializer, CurrencySerializer, TeamSerializer
 from .forms import TeamsSelectionForm, TeamJoinForm
 from .tasks import initialize_simulation
@@ -367,6 +369,19 @@ class MarketView(View):
         team = self.request.user.get_team
         simulation = get_object_or_404(Simulation, pk=team.current_simulation_id)
         return render(request, 'simulations/market.html', {'simulation': simulation, })
+
+
+class ClockViewSet(viewsets.ViewSet):
+    """
+    Current clock of the simulation.
+    """
+    permission_classes = (permissions.IsAuthenticated, )
+
+    def list(self, request, *args, **kw):
+        trader = request.user.get_team
+        clock = current_sim_day(trader.current_simulation_id)
+        response = Response(clock, status=status.HTTP_200_OK)
+        return response
 
 
 def manage_simulation(request, simulation_id, next_state):

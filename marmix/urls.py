@@ -38,7 +38,7 @@ urlpatterns = patterns('',
 ) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 from django.conf.urls import url, include
-from simulations.views import SimulationViewSet, CurrencyViewSet, TeamViewSet
+from simulations.views import SimulationViewSet, CurrencyViewSet, TeamViewSet, ClockViewSet
 from stocks.views import StockViewSet, QuoteViewSet, OrderViewSet, HoldingsViewSet
 from users.views import UserViewSet
 from rest_framework.routers import DefaultRouter
@@ -54,6 +54,7 @@ router.register(r'quotes', QuoteViewSet)
 router.register(r'teams', TeamViewSet)
 router.register(r'orders', OrderViewSet, base_name='order')
 router.register(r'holdings', HoldingsViewSet, base_name='holdings')
+router.register(r'clock', ClockViewSet, base_name='clock')
 
 # The API URLs are now determined automatically by the router.
 # Additionally, we include the login URLs for the browsable API.
