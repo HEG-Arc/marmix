@@ -55,7 +55,7 @@ from rest_framework.response import Response
 
 
 # MarMix imports
-from .models import Simulation, Currency, Team, current_sim_day
+from .models import Simulation, Currency, Team, current_sim_day, SimDay
 from .serializers import SimulationSerializer, CurrencySerializer, TeamSerializer
 from .forms import TeamsSelectionForm, TeamJoinForm
 from .tasks import initialize_simulation
@@ -401,8 +401,20 @@ def manage_simulation(request, simulation_id, next_state):
         simulation.state = Simulation.RUNNING
     elif next_state == Simulation.PAUSED and simulation.state == Simulation.RUNNING:
         simulation.state = Simulation.PAUSED
+        try:
+            sim_day = SimDay.objects.filter(simulation=simulation).order_by('-sim_round', '-sim_day')[0]
+            sim_day.state = Simulation.PAUSED
+            sim_day.save()
+        except:
+            pass
     elif next_state == Simulation.RUNNING and simulation.state == Simulation.PAUSED:
         simulation.state = Simulation.RUNNING
+        try:
+            sim_day = SimDay.objects.filter(simulation=simulation).order_by('-sim_round', '-sim_day')[0]
+            sim_day.state = Simulation.RUNNING
+            sim_day.save()
+        except:
+            pass
     elif next_state == Simulation.ARCHIVED and simulation.state == Simulation.FINISHED:
         simulation.state = Simulation.ARCHIVED
     simulation.save()
