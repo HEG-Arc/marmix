@@ -30,7 +30,7 @@ from django.utils.translation import ugettext_lazy as _
 from django_extensions.db.models import TimeStampedModel
 
 # MarMix imports
-from simulations.models import Simulation, Team, current_sim_day
+from simulations.models import Simulation, Team, current_sim_day, stock_historical_prices
 from .tasks import check_matching_orders, set_stock_quote
 
 
@@ -59,6 +59,10 @@ class Stock(TimeStampedModel):
         return last_quote
     last_quote = property(_last_quote)
 
+    def _historical_prices(self):
+        return stock_historical_prices(self.id)
+    historical_prices = property(_historical_prices)
+
     def __str__(self):
         return self.symbol
 
@@ -81,6 +85,37 @@ class Quote(models.Model):
 
     def __str__(self):
         return "%s@%s R%sD%s (%s)" % (self.stock, self.price, self.sim_round, self.sim_day, self.timestamp)
+
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        self.sim_round = current_sim_day(self.stock.simulation_id)['sim_round']
+        self.sim_day = current_sim_day(self.stock.simulation_id)['sim_day']
+        models.Model.save(self, force_insert, force_update, using, update_fields)
+
+
+class HistoricalPrice(models.Model):
+    """
+    A summary of the quotes, updated each sim_day.
+    """
+    stock = models.ForeignKey('Stock', verbose_name=_("stock"), related_name="history", help_text=_("Related stock"))
+    price_open = models.DecimalField(verbose_name=_("open"), max_digits=14, decimal_places=4,
+                                     default='0.0000', help_text=_("Current stock price"))
+    price_high = models.DecimalField(verbose_name=_("high"), max_digits=14, decimal_places=4,
+                                     default='0.0000', help_text=_("Current stock price"))
+    price_low = models.DecimalField(verbose_name=_("low"), max_digits=14, decimal_places=4,
+                                    default='0.0000', help_text=_("Current stock price"))
+    price_close = models.DecimalField(verbose_name=_("close"), max_digits=14, decimal_places=4,
+                                      default='0.0000', help_text=_("Current stock price"))
+    volume = models.IntegerField(verbose_name=_("volume"), help_text=_("Day volume"))
+    sim_round = models.IntegerField(verbose_name=_("round"), default=0, help_text=_("Current round"))
+    sim_day = models.IntegerField(verbose_name=_("day"), default=0, help_text=_("Current day"))
+
+    class Meta:
+        verbose_name = _('historical price')
+        verbose_name_plural = _('historical prices')
+        ordering = ['-sim_round', '-sim_day']
+
+    def __str__(self):
+        return "%s R%sD%s O:%s | H:%s | L:%s | C:%s | V:%s" % (self.stock, self.sim_round, self.sim_day, self.price_open, self.price_high, self.price_low, self.price_close, self.volume)
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         self.sim_round = current_sim_day(self.stock.simulation_id)['sim_round']
@@ -157,8 +192,8 @@ class Transaction(models.Model):
     transaction_type = models.CharField(verbose_name=_("type of transaction"), max_length=20,
                                         choices=TRANSACTION_TYPE_CHOICES, default=ORDER,
                                         help_text=_("The type of transaction"))
-    sim_round = models.IntegerField(verbose_name=_("round"), default=0, help_text=_("Current round"))
-    sim_day = models.IntegerField(verbose_name=_("day"), default=0, help_text=_("Current day"))
+    sim_round = models.IntegerField(verbose_name=_("round"), default=0, null=True, help_text=_("Current round"))
+    sim_day = models.IntegerField(verbose_name=_("day"), default=0, null=True, help_text=_("Current day"))
 
     class Meta:
         verbose_name = _('transaction')

@@ -157,8 +157,36 @@ def stocks_list(simulation_id):
                    'GROUP BY stock_id) s2 '
                    'ON s.id=s2.stock_id '
                    'WHERE s.simulation_id=%s ORDER BY s.symbol', ['2015-01-31', '2015-02-01', simulation_id])
-    stocks_list = dictfetchall(cursor)
-    return stocks_list
+    q_stocks_list = dictfetchall(cursor)
+    return q_stocks_list
+
+
+def historical_prices(simulation_id):
+    cursor = connection.cursor()
+    cursor.execute('SELECT DISTINCT tl.stock_id, s.symbol, t.sim_round, t.sim_day, min(tl.price) OVER w AS low, '
+                   'max(tl.price) OVER w AS high, first_value(tl.price) OVER w AS open, '
+                   'last_value(tl.price) OVER w AS close, '
+                   'sum(CASE WHEN tl.quantity > 0 THEN tl.quantity ELSE 0 END) OVER w AS volume '
+                   'FROM stocks_transactionline tl, stocks_transaction t, stocks_stock s '
+                   'WHERE tl.transaction_id = t.id AND tl.stock_id = s.id AND t.sim_round > 0 AND t.simulation_id = %s '
+                   'WINDOW w AS (PARTITION BY t.sim_round, t.sim_day) '
+                   'ORDER BY 1,3,4', [simulation_id])
+    q_stocks_historical = dictfetchall(cursor)
+    return q_stocks_historical
+
+
+def stock_historical_prices(stock_id):
+    cursor = connection.cursor()
+    cursor.execute('SELECT DISTINCT tl.stock_id, s.symbol, t.sim_round, t.sim_day, min(tl.price) OVER w AS price_low, '
+                   'max(tl.price) OVER w AS price_high, first_value(tl.price) OVER w AS price_open, '
+                   'last_value(tl.price) OVER w AS price_close, '
+                   'sum(CASE WHEN tl.quantity > 0 THEN tl.quantity ELSE 0 END) OVER w AS volume '
+                   'FROM stocks_transactionline tl, stocks_transaction t, stocks_stock s '
+                   'WHERE tl.transaction_id = t.id AND tl.stock_id = s.id AND t.sim_round > 0 AND tl.stock_id = %s '
+                   'WINDOW w AS (PARTITION BY t.sim_round, t.sim_day) '
+                   'ORDER BY 1,3,4', [stock_id])
+    q_stocks_historical = dictfetchall(cursor)
+    return q_stocks_historical
 
 
 class Simulation(TimeStampedModel):

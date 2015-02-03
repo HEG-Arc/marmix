@@ -14,21 +14,33 @@
 </dl>
 <p>{{ object.description|safe }}</p>
 
-<table>
+<table class="table table-striped">
+<thead>
 <tr>
-    <th>Price</th>
-    <th>Timestamp</th>
+    <th>Day</th>
+    <th>Open</th>
+    <th>High</th>
+    <th>Low</th>
+    <th>Close</th>
+    <th>Volume</th>
 </tr>
-{% for quote in object.quotes.all %}
+</thead>
+<tbody>
+{% for day in object.historical_prices %}
 <tr>
-    <td>{{ quote.price }}</td>
-    <td>{{ quote.timestamp|date:"SHORT_DATE_FORMAT" }} {{ quote.timestamp|time:"H:i:s" }}</td>
+    <td>R{{ day.sim_round }}D{{ day.sim_day }}</td>
+    <td>{{ day.price_open|stringformat:".2f" }}</td>
+    <td>{{ day.price_high|stringformat:".2f" }}</td>
+    <td>{{ day.price_low|stringformat:".2f" }}</td>
+    <td>{{ day.price_close|stringformat:".2f" }}</td>
+    <td>{{ day.volume }}</td>
 </tr>
 {% empty %}
 <tr>
     <td colspan="2">No current quote for this stock</td>
 </tr>
 {% endfor %}
+</tbody>
 </table>
 
 <a href="{% url 'stocks-list-view' %}">Back</a>

@@ -28,13 +28,14 @@
 from rest_framework import serializers
 
 # MarMix imports
-from .models import Stock, Quote, Order
+from .models import Stock, Quote, Order, HistoricalPrice
+from simulations.models import stock_historical_prices
 
 
-class NestedQuoteSerializer(serializers.ModelSerializer):
+class NestedHistoricalPrice(serializers.ModelSerializer):
     class Meta:
-        model = Quote
-        fields = ('id', 'price', 'timestamp', 'sim_round', 'sim_day')
+        model = HistoricalPrice
+        fields = ('id', 'sim_round', 'sim_day', 'price_open', 'price_high', 'price_low', 'price_close', 'volume')
 
 
 class NestedOrderSerializer(serializers.ModelSerializer):
@@ -44,16 +45,21 @@ class NestedOrderSerializer(serializers.ModelSerializer):
 
 
 class StockSerializer(serializers.ModelSerializer):
-    quotes = NestedQuoteSerializer(many=True, read_only=True)
     orders = serializers.SerializerMethodField()
+    history = serializers.SerializerMethodField()
 
     class Meta:
         model = Stock
-        fields = ('id', 'simulation', 'symbol', 'name', 'description', 'quantity', 'price', 'quotes', 'orders')
+        fields = ('id', 'simulation', 'symbol', 'name', 'description', 'quantity', 'price', 'orders', 'history')
 
     def get_orders(self, obj):
         open_orders = Order.objects.filter(stock=obj, price__isnull=False, transaction__isnull=True)
         serializer = NestedOrderSerializer(open_orders, many=True)
+        return serializer.data
+
+    def get_history(self, obj):
+        history = stock_historical_prices(obj.id)
+        serializer = NestedHistoricalPrice(history, many=True)
         return serializer.data
 
 
