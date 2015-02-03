@@ -22,15 +22,17 @@
 
 # Stdlib imports
 from __future__ import absolute_import
+import datetime
 
 # Core Django imports
 from django.core.cache import cache
+from django.utils import timezone
 
 # Third-party app imports
 
 # MarMix imports
 from config.celery import app
-from simulations.models import Simulation
+from simulations.models import Simulation, SimDay, current_sim_day
 from tickers.models import TickerTick
 
 
@@ -45,21 +47,31 @@ def main_ticker_task():
 
 @app.task
 def next_tick(simulation):
-    if simulation.ticker.last_tick:
-        current_day = simulation.ticker.last_tick.sim_day
-        current_round = simulation.ticker.last_tick.sim_round
-        if current_day == simulation.ticker.nb_days:
-            if current_round == simulation.ticker.nb_rounds:
-                simulation.state = Simulation.FINISHED
+    current = current_sim_day(simulation.id)
+    if current['sim_round'] != 0:
+        if current['timestamp'] < timezone.now()-datetime.timedelta(seconds=simulation.ticker.day_duration):
+            # Simulation was already started, we continue
+            current_day = current['sim_day']
+            current_round = current['sim_round']
+            if current_day == simulation.ticker.nb_days:
+                if current_round == simulation.ticker.nb_rounds:
+                    simulation.state = Simulation.FINISHED
+                    sim_day = SimDay.objects.filter(simulation_id=simulation.id)[0]
+                    sim_day.state = Simulation.FINISHED
+                    sim_day.save()
+                else:
+                    simulation.state = Simulation.PAUSED
+                    sim_day = SimDay(simulation=simulation, sim_round=current_round+1, sim_day=0, state=simulation.state)
+                    sim_day.save()
+                simulation.save()
             else:
-                simulation.state = Simulation.PAUSED
-                ticker = TickerTick(ticker=simulation.ticker, sim_round=current_round+1, sim_day=0)
-                ticker.save()
-            simulation.save()
+                sim_day = SimDay(simulation=simulation, sim_round=current_round, sim_day=current_day+1, state=simulation.state)
+                sim_day.save()
+            print("Next tick processed: SIM: %s - R%sD%s @ %s" %
+                  (sim_day.simulation_id, sim_day.sim_round, sim_day.sim_day, sim_day.timestamp))
         else:
-            ticker = TickerTick(ticker=simulation.ticker, sim_round=current_round, sim_day=current_day+1)
-            ticker.save()
+            print("Not yet time...")
     else:
-        ticker = TickerTick(ticker=simulation.ticker, sim_round=1, sim_day=1)
-        ticker.save()
-    return ticker
+        # First start of the simulation
+        sim_day = SimDay(simulation=simulation, sim_round=1, sim_day=1, state=simulation.state)
+        sim_day.save()

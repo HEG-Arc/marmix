@@ -12,7 +12,7 @@
     {% for team in teams %}
         <tr>
             <td>{{ team.name }}</td>
-            <td>{{ team.get_holdings|stringformat:".2f" }}</td>
+            <td>{{ team.get_balance|stringformat:".2f" }}</td>
             <td>{% if team.locked %}<a title="Team account locked"><i class="fa fa-lock"></i></a>{% else %}<a title="Team account not locked"><i class="fa fa-unlock"></i></a>{% endif %}</td>
             <td>{{ team.uuid }}</td>
             <td>

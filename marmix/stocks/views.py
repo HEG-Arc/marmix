@@ -88,7 +88,7 @@ class HoldingsView(View):
     def get(self, request, *args, **kwargs):
         team = self.request.user.get_team
         orders = Order.objects.all().filter(team=team).select_related('stock', 'transaction')
-        clock = current_sim_day(team.current_simulation)
+        clock = current_sim_day(team.current_simulation_id)
         return render(request, 'stocks/transactionline_list.html', {'orders': orders, 'team': team, 'clock': clock})
 
 
@@ -152,6 +152,11 @@ class OrderCreateView(SuccessMessageMixin, CreateView):
 
     def get_success_message(self, cleaned_data):
         return self.success_message % {'order_id': self.object.id, }
+
+    def get_form(self, form_class):
+        form = super(OrderCreateView, self).get_form(form_class)
+        form.fields['stock'].queryset = Stock.objects.filter(simulation_id=self.request.user.get_team.current_simulation_id)
+        return form
 
 
 class OrderUpdateView(SuccessMessageMixin, UpdateView):

@@ -75,9 +75,9 @@ def current_sim_day(simulation_id):
         except IndexError:
             current_day = None
         if current_day:
-            cached = {'sim_round': current_day.sim_round, 'sim_day': current_day.sim_day, 'timestamp': current_day.timestamp}
+            cached = {'sim_round': current_day.sim_round, 'sim_day': current_day.sim_day, 'timestamp': current_day.timestamp, 'state': current_day.get_state_display()}
         else:
-            cached = {'sim_round': 0, 'sim_day': 0, 'timestamp': timezone.now()}
+            cached = {'sim_round': 0, 'sim_day': 0, 'timestamp': timezone.now(), 'state': Simulation.INITIALIZING}
         cache.set('sim-day-%s' % simulation_id, cached)
     return cached
 
@@ -92,9 +92,9 @@ def current_balance(team_id, simulation_id):
                    'WHERE tl.team_id=%s AND st.simulation_id=%s', [TransactionLine.STOCKS, team_id, simulation_id])
     row = cursor.fetchone()
     try:
-        return {'balance': row[0]}
+        return row[0]
     except IndexError:
-        return {'balance': None}
+        return None
 
 
 def current_holdings(team_id, simulation_id):
@@ -341,6 +341,9 @@ class SimDay(models.Model):
     sim_day = models.IntegerField(verbose_name=_("day"), default=0, help_text=_("Current day"))
     timestamp = models.DateTimeField(verbose_name=_("timestamp"), auto_now_add=True,
                                      help_text=_("Timestamp of the tick"))
+    state = models.IntegerField(verbose_name=_("state of the simulation"),
+                                choices=Simulation.SIMULATION_STATE_CHOICES, default=Simulation.CONFIGURING,
+                                help_text=_("The current state of the simulation"))
 
     class Meta:
         verbose_name = _("simulation day")
@@ -349,7 +352,7 @@ class SimDay(models.Model):
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         models.Model.save(self, force_insert, force_update, using, update_fields)
-        cached = {'sim_round': self.sim_round, 'sim_day': self.sim_day, 'timestamp': self.timestamp}
+        cached = {'sim_round': self.sim_round, 'sim_day': self.sim_day, 'timestamp': self.timestamp, 'state': self.get_state_display()}
         cache.set('sim-day-%s' % self.simulation_id, cached)
 
     def __str__(self):
