@@ -353,10 +353,10 @@ def process_order(simulation, sell_order, buy_order, quantity):
         if new_buy_order:
             new_buy_order.save()
         if simulation.transaction_cost > 0:
-            tc_sell = TransactionLine(transaction=new_transaction, stock=sell_order.stock, team=sell_order.team,
+            tc_sell = TransactionLine(transaction=new_transaction, team=sell_order.team,
                                       quantity=-1, price=simulation.transaction_cost,
                                       amount=-1*simulation.transaction_cost, asset_type=TransactionLine.TRANSACTIONS)
-            tc_buy = TransactionLine(transaction=new_transaction, stock=buy_order.stock, team=buy_order.team,
+            tc_buy = TransactionLine(transaction=new_transaction, team=buy_order.team,
                                      quantity=-1, price=simulation.transaction_cost,
                                      amount=-1*simulation.transaction_cost, asset_type=TransactionLine.TRANSACTIONS)
             tc_sell.save()
