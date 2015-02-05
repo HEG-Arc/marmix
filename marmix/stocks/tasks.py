@@ -35,6 +35,7 @@ from config.celery import app
 from simulations.models import Simulation, Team, create_liquidity_manager
 from tickers.models import TickerTick
 
+
 # Get an instance of a logger
 logger = get_task_logger(__name__)
 
@@ -154,4 +155,22 @@ def set_stock_quote(stock, price):
     from .models import Quote
     new_quote = Quote(stock=stock, price=price)
     new_quote.save()
+    stock.price = price
+    stock.save()
     return new_quote
+
+
+@app.task
+def set_opening_price(stock_id, price):
+    from .models import Stock, Transaction, TransactionLine
+    stock = Stock.objects.get(pk=stock_id)
+    transactions = TransactionLine.objects.filter(stock=stock, transaction__transaction_type=Transaction.INITIAL)
+    for transaction_line in transactions:
+        amount = price * transaction_line.quantity
+        transaction_line.amount = amount
+        transaction_line.price = price
+        transaction_line.save()
+        # We add the same amount of cash
+        #cash = TransactionLine(transaction=transaction_line.transaction, team=transaction_line.team, quantity=1,
+        #                       price=amount, amount=amount, asset_type=TransactionLine.CASH)
+        #cash.save()

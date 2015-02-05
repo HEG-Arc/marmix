@@ -31,7 +31,7 @@ from django_extensions.db.models import TimeStampedModel
 
 # MarMix imports
 from simulations.models import Simulation, Team, current_sim_day, stock_historical_prices
-from .tasks import check_matching_orders, set_stock_quote
+from .tasks import check_matching_orders, set_stock_quote, set_opening_price
 
 
 class Stock(TimeStampedModel):
@@ -45,6 +45,8 @@ class Stock(TimeStampedModel):
     quantity = models.IntegerField(verbose_name=_("quantity"), default=1, help_text=_("Total quantity of stocks in circulation"))
     price = models.DecimalField(verbose_name=_("stock price"), max_digits=14, decimal_places=4,
                                 default='0.0000', help_text=_("Current stock price"))
+    opening_price = models.DecimalField(verbose_name=_("opening price"), max_digits=14, decimal_places=4,
+                                        null=True, blank=True, help_text=_("Opening price"))
 
     class Meta:
         verbose_name = _('stock')
@@ -62,6 +64,15 @@ class Stock(TimeStampedModel):
     def _historical_prices(self):
         return stock_historical_prices(self.id)
     historical_prices = property(_historical_prices)
+
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
+        if self.price != 0 and not self.opening_price:
+            # It's an update and we have the first quotation for this stock
+            self.opening_price = self.price
+            models.Model.save(self, force_insert, force_update, using, update_fields)
+            set_opening_price.apply_async([self.id, self.price])
+        else:
+            models.Model.save(self, force_insert, force_update, using, update_fields)
 
     def __str__(self):
         return self.symbol
@@ -221,7 +232,7 @@ class TransactionLine(models.Model):
         (DIVIDENDS, _('dividends payment')),
         (TRANSACTIONS, _('costs of transaction')),
         (INTERESTS, _('interests payment')),
-        (CASH, _('cash deposit')),
+        (CASH, _('cash')),
     )
     transaction = models.ForeignKey('Transaction', verbose_name=_("transaction"), related_name="lines",
                                     help_text=_("Related transaction"))
@@ -320,17 +331,23 @@ def process_order(simulation, sell_order, buy_order, quantity):
         #  Should not happens
         #  TODO: How to choose the price?
         if buy_order.created_at <= sell_order.created_at:
-            price = sell_order.price
-        else:
             price = buy_order.price
+        else:
+            price = sell_order.price
 
     if price > 0:
         sell = TransactionLine(transaction=new_transaction, stock=sell_order.stock, team=sell_order.team,
                                quantity=-1*quantity, price=price, amount=-1*quantity*price,
                                asset_type=TransactionLine.STOCKS)
+        sell_revenue = TransactionLine(transaction=new_transaction, team=sell_order.team,
+                                       quantity=1, price=quantity*price, amount=quantity*price,
+                                       asset_type=TransactionLine.CASH)
         buy = TransactionLine(transaction=new_transaction, stock=buy_order.stock, team=buy_order.team,
                               quantity=quantity, price=price, amount=quantity*price,
                               asset_type=TransactionLine.STOCKS)
+        buy_cost = TransactionLine(transaction=new_transaction, team=buy_order.team,
+                                   quantity=quantity, price=-1*quantity*price, amount=-1*quantity*price,
+                                   asset_type=TransactionLine.CASH)
         if sell_order.quantity != quantity:
             new_sell_order = Order(stock=sell_order.stock, team=sell_order.team, order_type=sell_order.order_type,
                                    quantity=sell_order.quantity-quantity, price=sell_order.price,
@@ -342,7 +359,9 @@ def process_order(simulation, sell_order, buy_order, quantity):
                                   created_at=buy_order.created_at)
             buy_order.quantity = quantity
         sell.save()
+        sell_revenue.save()
         buy.save()
+        buy_cost.save()
         sell_order.transaction = new_transaction
         sell_order.save()
         buy_order.transaction = new_transaction
