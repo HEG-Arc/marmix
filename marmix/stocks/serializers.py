@@ -70,7 +70,15 @@ class QuoteSerializer(serializers.ModelSerializer):
         fields = ('id', 'stock', 'price', 'timestamp', 'sim_round', 'sim_day')
 
 
+class NestedStockSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Stock
+        fields = ('id', 'symbol', 'name', 'description', 'quantity', 'price')
+
+
 class OrderSerializer(serializers.ModelSerializer):
+    stock = NestedStockSerializer(many=False, read_only=True)
 
     class Meta:
         model = Order
