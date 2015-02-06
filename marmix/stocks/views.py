@@ -39,6 +39,7 @@ from django.http import Http404, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 from django.contrib import messages
+from django.utils.decorators import method_decorator
 
 
 # Third-party app imports
@@ -120,10 +121,13 @@ class QuoteViewSet(viewsets.ModelViewSet):
     permission_classes = (permissions.IsAuthenticated,)
 
 
-@csrf_exempt
 class OrderViewSet(viewsets.ModelViewSet):
     serializer_class = OrderSerializer
     permission_classes = (permissions.IsAuthenticated,)
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, *args, **kwargs):
+        return super(OrderViewSet, self).dispatch(*args, **kwargs)
 
     def get_queryset(self):
         """
