@@ -78,7 +78,7 @@ from rest_framework.response import Response
 class LoginView(views.APIView):
 
     def post(self, request, format=None):
-        data = json.loads(request.body)
+        data = json.loads(request.body.decode('utf-8'))
 
         username = data.get('username', None)
         password = data.get('password', None)
