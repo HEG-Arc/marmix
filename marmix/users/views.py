@@ -76,13 +76,14 @@ from rest_framework.response import Response
 
 
 class LoginView(views.APIView):
+
     def post(self, request, format=None):
         data = json.loads(request.body)
 
-        email = data.get('email', None)
+        username = data.get('username', None)
         password = data.get('password', None)
 
-        account = authenticate(email=email, password=password)
+        account = authenticate(username=username, password=password)
 
         if account is not None:
             if account.is_active:
