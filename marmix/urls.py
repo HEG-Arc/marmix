@@ -40,7 +40,7 @@ urlpatterns = patterns('',
 from django.conf.urls import url, include
 from simulations.views import SimulationViewSet, CurrencyViewSet, TeamViewSet, ClockViewSet
 from stocks.views import StockViewSet, QuoteViewSet, OrderViewSet, HoldingsViewSet
-from users.views import UserViewSet
+from users.views import UserViewSet, LoginView
 from rest_framework.routers import DefaultRouter
 
 
@@ -61,4 +61,5 @@ router.register(r'clock', ClockViewSet, base_name='clock')
 urlpatterns += [
     url(r'^api/v1/', include(router.urls)),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    url(r'^api/v1/auth/login/$', LoginView.as_view(), name='login'),
 ]

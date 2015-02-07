@@ -17,7 +17,7 @@ from .forms import UserForm
 
 # Import the customized User model
 from .models import User
-from .serializers import UserSerializer
+from .serializers import UserSerializer, AccountSerializer
 
 
 class UserDetailView(LoginRequiredMixin, DetailView):
@@ -65,3 +65,39 @@ class UserViewSet(viewsets.ReadOnlyModelViewSet):
     """
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
+
+import json
+
+from django.contrib.auth import authenticate, login
+
+from rest_framework import status, views
+from rest_framework.response import Response
+
+
+class LoginView(views.APIView):
+    def post(self, request, format=None):
+        data = json.loads(request.body)
+
+        email = data.get('email', None)
+        password = data.get('password', None)
+
+        account = authenticate(email=email, password=password)
+
+        if account is not None:
+            if account.is_active:
+                login(request, account)
+
+                serialized = AccountSerializer(account)
+
+                return Response(serialized.data)
+            else:
+                return Response({
+                    'status': 'Unauthorized',
+                    'message': 'This account has been disabled.'
+                }, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            return Response({
+                'status': 'Unauthorized',
+                'message': 'Username/password combination invalid.'
+            }, status=status.HTTP_401_UNAUTHORIZED)
