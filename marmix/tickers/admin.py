@@ -28,19 +28,16 @@ from django.contrib import admin
 # Third-party app imports
 
 # MarMix imports
-from .models import Ticker, TickerStock, TickerQuote, TickerTick
+from .models import Ticker, TickerCompany, TickerTick
 
 
 class TickerAdmin(admin.ModelAdmin):
     pass
 
 
-class TickerStockAdmin(admin.ModelAdmin):
+class TickerCompanyAdmin(admin.ModelAdmin):
     pass
 
-
-class TickerQuoteAdmin(admin.ModelAdmin):
-    pass
 
 
 class TickerTickAdmin(admin.ModelAdmin):
@@ -48,6 +45,5 @@ class TickerTickAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Ticker, TickerAdmin)
-admin.site.register(TickerStock, TickerStockAdmin)
-admin.site.register(TickerQuote, TickerQuoteAdmin)
+admin.site.register(TickerCompany, TickerCompanyAdmin)
 admin.site.register(TickerTick, TickerTickAdmin)

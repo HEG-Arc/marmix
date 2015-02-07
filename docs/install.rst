@@ -1,4 +1,6 @@
 Install
-=========
+=======
 
-This is where you write how to get a new laptop to run this project.
+Scipy dependencies:
+
+sudo apt-get install build-essential python3-dev libatlas-dev libatlas3-base liblapack-dev gfortran libpng12-dev libfreetype6-dev

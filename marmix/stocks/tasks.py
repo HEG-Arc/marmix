@@ -32,8 +32,6 @@ from celery.utils.log import get_task_logger
 
 # MarMix imports
 from config.celery import app
-from simulations.models import Simulation, Team, create_liquidity_manager
-from tickers.models import TickerTick
 
 
 # Get an instance of a logger

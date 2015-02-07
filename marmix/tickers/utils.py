@@ -25,7 +25,28 @@
 # Core Django imports
 
 # Third-party app imports
+import numpy as np
 
 # MarMix imports
 
 
+def geometric_brownian(T, mu, sigma, s0, dt):
+    """
+    Geometric brownian distribution.
+
+    :param T: Number of steps
+    :param mu: The percentage drift
+    :param sigma: The percentage volatility
+    :param s0: The initial value
+    :param dt: The time step (float).
+    :return: An array of simulated values, where G < 0.09
+    """
+    s = np.linspace(1, int(T/dt), int(T/dt))
+    while np.sum(s[int((T-1)/dt):int(T/dt)])/np.sum(s[int((T-2)/dt):int((T-1)/dt)])-1 > 0.09:
+        n = int(T/dt)
+        t = np.linspace(0, T, n)
+        w = np.random.standard_normal(size=n)
+        w = np.cumsum(w)*np.sqrt(dt)
+        x = (mu-0.5*sigma**2)*t + sigma*w
+        s = s0*np.exp(x)
+    return s

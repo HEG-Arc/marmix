@@ -63,6 +63,7 @@ celery==3.1.17
 
 # Ticker
 numpy==1.9.1
+scipy==0.15.1
 
 # Memcached
 python3-memcached==1.51

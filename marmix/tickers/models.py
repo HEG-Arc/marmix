@@ -34,6 +34,7 @@ from django_extensions.db.models import TimeStampedModel
 
 # MarMix imports
 from simulations.models import Simulation
+from stocks.models import Stock
 
 
 class Ticker(TimeStampedModel):
@@ -82,55 +83,60 @@ class Ticker(TimeStampedModel):
         return self.simulation.__str__()
 
 
-class TickerStock(TimeStampedModel):
+class TickerCompany(models.Model):
     """
     Stocks are shares of a company that are automatically generated during the simulation setup.
     """
-    ticker = models.ForeignKey('Ticker', verbose_name=_("ticker"), related_name="stocks", help_text=_("Related ticker"))
-    symbol = models.CharField(verbose_name=_("symbol"), max_length=4, help_text=_("Symbol of the stock (4 chars)"))
-    name = models.CharField(verbose_name=_("name"), max_length=100, help_text=_("Full name of the stock"))
+    ticker = models.ForeignKey('Ticker', verbose_name=_("ticker"), related_name="companies", help_text=_("Related ticker"))
+    symbol = models.CharField(verbose_name=_("symbol"), max_length=4, help_text=_("Symbol of the company (4 chars)"))
+    name = models.CharField(verbose_name=_("name"), max_length=100, help_text=_("Full name of the company"))
+    stock = models.ForeignKey(Stock, verbose_name=_("stock"), related_name="companies", help_text=_("Related stock"))
     description = models.TextField(verbose_name=_("description"), blank=True, help_text=_("Description of the stock (HTML)"))
-    quantity = models.IntegerField(verbose_name=_("quantity"), default=1, help_text=_("Total quantity of stocks in circulation"))
-    #next_price = models.DecimalField(verbose_name=_("next stock price"), max_digits=14, decimal_places=4,
-    #                                 default='0.0000', help_text=_("Next stock price"))
-    #drift = models.IntegerField(verbose_name=_("next stock price"),
-    #                            default='0.0000', help_text=_("Next stock price"))
 
     class Meta:
-        verbose_name = _('stock')
-        verbose_name_plural = _('stocks')
+        verbose_name = _('company')
+        verbose_name_plural = _('companies')
         ordering = ['symbol']
 
-    def _last_quote(self):
-        try:
-            last_quote = self.quotes.all()[0]
-        except IndexError:
-            last_quote = None
-        return last_quote
-    last_quote = property(_last_quote)
-
     def __str__(self):
-        return self.symbol
+        return self.name
 
 
-class TickerQuote(models.Model):
-    """
-    Quotes are the price of a given stock at a certain time.
-    """
-    stock = models.ForeignKey('TickerStock', verbose_name=_("stock"), related_name="quotes",
-                              help_text=_("Related stock"))
-    price = models.DecimalField(verbose_name=_("stock price"), max_digits=14, decimal_places=4,
-                                default='0.0000', help_text=_("Current stock price"))
-    timestamp = models.DateTimeField(verbose_name=_("timestamp"), auto_now_add=True,
-                                     help_text=_("Timestamp of the quote"))
+class CompanyFinancial(models.Model):
+    company = models.ForeignKey('TickerCompany', verbose_name=_("company"), related_name="financials", help_text=_("Related company"))
+    daily_dividend = models.DecimalField(verbose_name=_("daily dividend"), max_digits=14, decimal_places=4,
+                                         default='0.0000', help_text=_("Daily simulated dividend"))
+    daily_net_income = models.DecimalField(verbose_name=_("daily net income"), max_digits=14, decimal_places=4,
+                                           default='0.0000', help_text=_("Daily simulated net income"))
+    sim_round = models.IntegerField(verbose_name=_("round"), default=0, help_text=_("Current round"))
+    sim_day = models.IntegerField(verbose_name=_("day"), default=0, help_text=_("Current day"))
 
     class Meta:
-        verbose_name = _('quote')
-        verbose_name_plural = _('quotes')
-        ordering = ['-timestamp']
+        verbose_name = _('financial')
+        verbose_name_plural = _('financials')
+        ordering = ['-sim_round', '-sim_day']
 
     def __str__(self):
-        return "%s - %s (%s)" % (self.stock, self.price, self.timestamp)
+        return "%s-R%sD%s %s" % (self.company, self.sim_round, self.sim_day, self.daily_net_income)
+
+
+class CompanyShare(models.Model):
+    company = models.ForeignKey('TickerCompany', verbose_name=_("company"), related_name="shares", help_text=_("Related company"))
+    share_value = models.DecimalField(verbose_name=_("share value"), max_digits=14, decimal_places=4,
+                                      default='0.0000', help_text=_("Simulated share value"))
+    dividends = models.DecimalField(verbose_name=_("dividends"), max_digits=14, decimal_places=4,
+                                    default='0.0000', help_text=_("Simulated dividends"))
+    net_income = models.DecimalField(verbose_name=_("net income"), max_digits=14, decimal_places=4,
+                                     default='0.0000', help_text=_("Simulated net income"))
+    sim_round = models.IntegerField(verbose_name=_("round"), default=0, help_text=_("Current round"))
+
+    class Meta:
+        verbose_name = _('share')
+        verbose_name_plural = _('shares')
+        ordering = ['-sim_round']
+
+    def __str__(self):
+        return "%s-R%s %s" % (self.company, self.sim_round, self.share_value)
 
 
 class TickerTick(models.Model):
@@ -153,4 +159,4 @@ class TickerTick(models.Model):
     def save(self, *args, **kwargs):
         tick = {'ticker': self.ticker_id, 'timestamp': self.timestamp, 'sim_round': self.sim_round,
                 'sim_day': self.sim_day}
-        cache.set('tick-%s' % self.ticker_id, tick)
+

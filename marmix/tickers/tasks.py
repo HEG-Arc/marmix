@@ -23,17 +23,21 @@
 # Stdlib imports
 from __future__ import absolute_import
 import datetime
+from decimal import Decimal
 
 # Core Django imports
 from django.core.cache import cache
 from django.utils import timezone
 
 # Third-party app imports
+import numpy as np
 
 # MarMix imports
 from config.celery import app
 from simulations.models import Simulation, SimDay, current_sim_day
-from tickers.models import TickerTick
+from stocks.models import Stock
+from tickers.models import Ticker, TickerCompany, CompanyFinancial, CompanyShare
+from .utils import geometric_brownian
 
 
 @app.task
@@ -75,3 +79,45 @@ def next_tick(simulation):
         # First start of the simulation
         sim_day = SimDay(simulation=simulation, sim_round=1, sim_day=1, state=simulation.state)
         sim_day.save()
+
+
+@app.task
+def create_company_simulation(simulation_id, stock_id):
+    mu = 0.03
+    sigma = 0.01
+    simulation = Simulation.objects.get(pk=simulation_id)
+    stock = Stock.objects.get(pk=stock_id)
+    ticker = Ticker.objects.get(simulation=simulation)
+    company = TickerCompany(ticker=ticker, stock=stock, symbol=stock.symbol, name="Company %s" % stock.symbol)
+    company.save()
+    rounds = ticker.nb_rounds + 1
+    brownian_motion = geometric_brownian(rounds, mu, sigma, ticker.initial_value, rounds/(ticker.nb_days*rounds))
+    i = 0
+    simulation_dividends = []
+    simulation_net_income = []
+    for sim_round in range(0, rounds):
+        round_dividend = 0
+        round_net_income = 0
+        for sim_day in range(1, ticker.nb_days+1):
+            # We have each round/day and the corresponding dividend
+            daily_dividend = brownian_motion[i]
+            daily_net_income = Decimal(brownian_motion[i]) * ticker.dividend_payoff_rate * 10 * stock.quantity
+            c = CompanyFinancial(company=company, daily_dividend=daily_dividend, daily_net_income=daily_net_income, sim_round=sim_round, sim_day=sim_day)
+            c.save()
+            round_dividend += daily_dividend
+            round_net_income += daily_net_income
+            i += 1
+        simulation_dividends.append(round_dividend)
+        simulation_net_income.append(round_net_income)
+
+    # Share price estimation
+    G = simulation_dividends[-1]/simulation_dividends[-2]-1
+    R = 0.1
+    g = R
+    simulation_stock_price = []
+    for sim_round in range(0, rounds):
+        stock_price = np.npv(0.1, simulation_dividends[sim_round:rounds]) + (simulation_dividends[-1]*(1+g)/(R-G))/np.power(1+R, rounds-sim_round)
+        simulation_stock_price.append(stock_price)
+        c = CompanyShare(company=company, share_value=stock_price, dividends=simulation_dividends[sim_round],
+                         net_income=simulation_net_income[sim_round], sim_round=sim_round)
+        c.save()
