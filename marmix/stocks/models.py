@@ -120,6 +120,7 @@ class HistoricalPrice(models.Model):
     volume = models.IntegerField(verbose_name=_("volume"), help_text=_("Day volume"))
     sim_round = models.IntegerField(verbose_name=_("round"), default=0, help_text=_("Current round"))
     sim_day = models.IntegerField(verbose_name=_("day"), default=0, help_text=_("Current day"))
+    timestamp = models.DateTimeField(verbose_name=_("timestamp"), auto_now_add=True, help_text=_("Timestamp of the historical price"))
 
     class Meta:
         verbose_name = _('historical price')
@@ -160,6 +161,7 @@ class Order(models.Model):
                                     blank=True, help_text=_("Related transaction"))
     sim_round = models.IntegerField(verbose_name=_("round"), default=0, help_text=_("Current round"))
     sim_day = models.IntegerField(verbose_name=_("day"), default=0, help_text=_("Current day"))
+    timestamp = models.DateTimeField(verbose_name=_("updated"), auto_now=True, help_text=_("Last update of the order"))
 
     class Meta:
         verbose_name = _('order')
