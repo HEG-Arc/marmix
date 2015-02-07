@@ -39,7 +39,7 @@ urlpatterns = patterns('',
 
 from django.conf.urls import url, include
 from simulations.views import SimulationViewSet, CurrencyViewSet, TeamViewSet, ClockViewSet
-from stocks.views import StockViewSet, QuoteViewSet, OrderViewSet, HoldingsViewSet
+from stocks.views import StockViewSet, QuoteViewSet, OrderViewSet, HoldingsViewSet, CreateOrderViewSet
 from users.views import UserViewSet, LoginView
 from rest_framework.routers import DefaultRouter
 
@@ -53,6 +53,7 @@ router.register(r'stocks', StockViewSet, base_name='stock')
 router.register(r'quotes', QuoteViewSet)
 router.register(r'teams', TeamViewSet)
 router.register(r'orders', OrderViewSet, base_name='order')
+router.register(r'order', CreateOrderViewSet, base_name='create-order')
 router.register(r'holdings', HoldingsViewSet, base_name='holdings')
 router.register(r'clock', ClockViewSet, base_name='clock')
 

@@ -21,8 +21,10 @@
 # along with MarMix. If not, see <http://www.gnu.org/licenses/>.
 
 # Stdlib imports
+import datetime
 
 # Core Django imports
+from django.utils import timezone
 
 # Third-party app imports
 from rest_framework import serializers
@@ -30,6 +32,13 @@ from rest_framework import serializers
 # MarMix imports
 from .models import Stock, Quote, Order, HistoricalPrice
 from simulations.models import stock_historical_prices
+
+
+class DateTimeTzAwareField(serializers.DateTimeField):
+
+    def to_native(self, value):
+        value = timezone.localtime(value) + datetime.timedelta(hours=1)
+        return super(DateTimeTzAwareField, self).to_native(value)
 
 
 class NestedHistoricalPrice(serializers.ModelSerializer):
@@ -83,3 +92,12 @@ class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = ('id', 'stock', 'team', 'order_type', 'quantity', 'price', 'created_at', 'sim_round', 'sim_day', 'transaction')
+        read_only_fields = ['created_at', 'sim_round', 'sim_day', 'transaction', 'team']
+        #depth = 1
+
+
+class CreateOrderSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Order
+        fields = ('id', 'stock', 'order_type', 'quantity', 'price')

@@ -51,7 +51,7 @@ from rest_framework.permissions import IsAuthenticated
 
 # MarMix imports
 from .models import Stock, Quote, Order, TransactionLine
-from .serializers import StockSerializer, QuoteSerializer, OrderSerializer
+from .serializers import StockSerializer, QuoteSerializer, OrderSerializer, CreateOrderSerializer
 from .filters import QuoteFilter
 from simulations.models import current_sim_day, current_holdings
 
@@ -138,6 +138,25 @@ class OrderViewSet(viewsets.ModelViewSet):
         """
         user = self.request.user
         return Order.objects.filter(team=user.get_team)
+
+
+class CreateOrderViewSet(viewsets.ModelViewSet):
+    serializer_class = CreateOrderSerializer
+    permission_classes = (permissions.IsAuthenticated,)
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, *args, **kwargs):
+        return super(CreateOrderViewSet, self).dispatch(*args, **kwargs)
+
+    def get_queryset(self):
+        """
+        This view should return a list of all the orders for the authenticated user.
+        """
+        user = self.request.user
+        return Order.objects.filter(team=user.get_team)
+
+    def perform_create(self, serializer):
+        serializer.save(team=self.request.user.get_team)
 
 
 class OrderCreateView(SuccessMessageMixin, CreateView):
