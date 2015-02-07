@@ -28,6 +28,7 @@ from django.utils.translation import ugettext_lazy as _
 
 # Third-party app imports
 from django_extensions.db.models import TimeStampedModel
+import django_filters
 
 # MarMix imports
 from simulations.models import Simulation, Team, current_sim_day, stock_historical_prices

@@ -43,7 +43,7 @@ from django.utils.decorators import method_decorator
 
 
 # Third-party app imports
-from rest_framework import permissions, viewsets, status
+from rest_framework import permissions, viewsets, status, filters
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
@@ -52,6 +52,7 @@ from rest_framework.permissions import IsAuthenticated
 # MarMix imports
 from .models import Stock, Quote, Order, TransactionLine
 from .serializers import StockSerializer, QuoteSerializer, OrderSerializer
+from .filters import QuoteFilter
 from simulations.models import current_sim_day, current_holdings
 
 logger = logging.getLogger(__name__)
@@ -119,6 +120,8 @@ class QuoteViewSet(viewsets.ModelViewSet):
     queryset = Quote.objects.all()
     serializer_class = QuoteSerializer
     permission_classes = (permissions.IsAuthenticated,)
+    filter_class = QuoteFilter
+    ordering_fields = ('-timestamp')
 
 
 class OrderViewSet(viewsets.ModelViewSet):

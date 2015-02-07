@@ -46,6 +46,7 @@ class Common(Configuration):
         'rest_framework',  # API
         'djangular',  # AngularJS
         'permission',
+        'django_filters',
     )
 
     # Apps specific for this project go here.
@@ -289,7 +290,8 @@ class Common(Configuration):
     # END LOGGING CONFIGURATION
 
     REST_FRAMEWORK = {
-        'PAGINATE_BY': 20
+        'PAGINATE_BY': 10000,
+        'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',)
     }
 
     DEALER_TYPE = 'git'
