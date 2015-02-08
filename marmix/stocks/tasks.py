@@ -22,6 +22,7 @@
 
 # Stdlib imports
 import logging
+from decimal import Decimal
 
 # Core Django imports
 from django.utils.translation import ugettext as _
@@ -163,12 +164,9 @@ def set_opening_price(stock_id, price):
     from .models import Stock, Transaction, TransactionLine
     stock = Stock.objects.get(pk=stock_id)
     transactions = TransactionLine.objects.filter(stock=stock, transaction__transaction_type=Transaction.INITIAL)
+    price = Decimal(price)
     for transaction_line in transactions:
         amount = price * transaction_line.quantity
         transaction_line.amount = amount
         transaction_line.price = price
         transaction_line.save()
-        # We add the same amount of cash
-        #cash = TransactionLine(transaction=transaction_line.transaction, team=transaction_line.team, quantity=1,
-        #                       price=amount, amount=amount, asset_type=TransactionLine.CASH)
-        #cash.save()
