@@ -32,6 +32,7 @@ from rest_framework import serializers
 # MarMix imports
 from .models import TickerCompany, CompanyShare, CompanyFinancial
 from simulations.models import current_sim_day
+from stocks.serializers import NestedStockSerializer
 
 
 class NestedSharesSerializer(serializers.ModelSerializer):
@@ -51,6 +52,7 @@ class NestedFinancialsSerializer(serializers.ModelSerializer):
 class CompaniesSerializer(serializers.ModelSerializer):
     shares = serializers.SerializerMethodField()
     financials = serializers.SerializerMethodField()
+    stock = NestedStockSerializer(many=False, read_only=True)
 
     class Meta:
         model = TickerCompany
@@ -58,13 +60,17 @@ class CompaniesSerializer(serializers.ModelSerializer):
 
     def get_shares(self, obj):
         clock = current_sim_day(obj.ticker.simulation_id)
-        current_shares = CompanyShare.objects.filter(company=obj).filter(sim_round__lte=clock['sim_round'])
+        if clock['sim_round'] == 0:
+            round = 1
+        else:
+            round = clock['sim_round']
+        current_shares = CompanyShare.objects.filter(company=obj).filter(sim_round__lt=round)
         serializer = NestedSharesSerializer(current_shares, many=True)
         return serializer.data
 
     def get_financials(self, obj):
         clock = current_sim_day(obj.ticker.simulation_id)
-        current_financials = CompanyFinancial.objects.filter(company=obj).filter(sim_round__lte=clock['sim_round'])
+        current_financials = CompanyFinancial.objects.filter(company=obj).filter(sim_date__lte=clock['sim_round']*100+clock['sim_day'])
         serializer = NestedFinancialsSerializer(current_financials, many=True)
         return serializer.data
 
