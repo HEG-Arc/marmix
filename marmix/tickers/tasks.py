@@ -101,7 +101,7 @@ def create_company_simulation(simulation_id, stock_id):
         for sim_day in range(1, ticker.nb_days+1):
             # We have each round/day and the corresponding dividend
             daily_dividend = brownian_motion[i]
-            daily_net_income = Decimal(brownian_motion[i]) * ticker.dividend_payoff_rate * 10 * stock.quantity
+            daily_net_income = Decimal(brownian_motion[i]) / ticker.dividend_payoff_rate * 100 * stock.quantity
             c = CompanyFinancial(company=company, daily_dividend=daily_dividend, daily_net_income=daily_net_income, sim_round=sim_round, sim_day=sim_day)
             c.save()
             round_dividend += daily_dividend
