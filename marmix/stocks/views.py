@@ -71,7 +71,7 @@ class StockListView(ListView):
         if self.request.user.is_staff:
             stocks = Stock.objects.all()
         else:
-            stocks = Stock.objects.all().filter(simulation=self.request.user.get_team.current_simulation)
+            stocks = Stock.objects.all().filter(simulation_id=self.request.user.get_team.current_simulation_id)
         return stocks
 
 
@@ -89,7 +89,7 @@ class HoldingsView(View):
 
     def get(self, request, *args, **kwargs):
         team = self.request.user.get_team
-        orders = Order.objects.all().filter(team=team).select_related('stock', 'transaction')
+        orders = Order.objects.all().filter(stock__simulation_id=team.current_simulation_id).filter(team=team).select_related('stock', 'transaction')
         clock = current_sim_day(team.current_simulation_id)
         return render(request, 'stocks/transactionline_list.html', {'orders': orders, 'team': team, 'clock': clock})
 
@@ -113,7 +113,7 @@ class StockViewSet(viewsets.ModelViewSet):
         This view should return a list of all the stocks for the simulation of the authenticated user.
         """
         user = self.request.user
-        return Stock.objects.filter(simulation=user.get_team.current_simulation)
+        return Stock.objects.filter(simulation_id=user.get_team.current_simulation_id)
 
 
 class QuoteViewSet(viewsets.ModelViewSet):
@@ -137,7 +137,8 @@ class OrderViewSet(viewsets.ModelViewSet):
         This view should return a list of all the orders for the authenticated user.
         """
         user = self.request.user
-        return Order.objects.filter(team=user.get_team)
+        team = user.get_team
+        return Order.objects.filter(stock__simulation_id=team.current_simulation_id).filter(team_id=user.get_team.id)
 
 
 class CreateOrderViewSet(viewsets.ModelViewSet):
