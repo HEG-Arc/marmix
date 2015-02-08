@@ -88,6 +88,7 @@ class NestedStockSerializer(serializers.ModelSerializer):
 
 class OrderSerializer(serializers.ModelSerializer):
     stock = NestedStockSerializer(many=False, read_only=True)
+    transaction = serializers.SlugRelatedField(read_only=True, slug_field='fulfilled_at')
 
     class Meta:
         model = Order
@@ -97,6 +98,8 @@ class OrderSerializer(serializers.ModelSerializer):
 
 
 class CreateOrderSerializer(serializers.ModelSerializer):
+    # TODO: Restrict stocks to the stocks of the current simulation
+    transaction = serializers.SlugRelatedField(read_only=True, slug_field='fulfilled_at')
 
     class Meta:
         model = Order
