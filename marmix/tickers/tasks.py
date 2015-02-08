@@ -49,7 +49,7 @@ def main_ticker_task():
     for simulation in running_simulations:
         next_tick(simulation.id)
     print(running_simulations)
-    return 'Hello'
+    return 'Tick-tack'
 
 
 @app.task

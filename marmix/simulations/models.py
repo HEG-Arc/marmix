@@ -250,8 +250,10 @@ class Simulation(TimeStampedModel):
     state = models.IntegerField(verbose_name=_("state of the simulation"),
                                 choices=SIMULATION_STATE_CHOICES, default=CONFIGURING,
                                 help_text=_("The current state of this simulation"))
-    transaction_cost = models.DecimalField(verbose_name=_("transaction cost"), max_digits=14, decimal_places=4,
-                                           default='2.0000', help_text=_("Transaction costs per order"))
+    transaction_cost = models.DecimalField(verbose_name=_("transaction costs"), max_digits=14, decimal_places=4,
+                                           default='10.0000', help_text=_("Transaction costs per order"))
+    variable_transaction_cost = models.FloatField(verbose_name=_("variable transaction costs (%)"), default=1,
+                                                  help_text=_("Variable transaction costs per order in %"))
 
     def save(self, *args, **kwargs):
         if not self.code:

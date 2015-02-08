@@ -21,7 +21,8 @@
 # along with MarMix. If not, see <http://www.gnu.org/licenses/>.
 
 # Stdlib imports
-from django.utils import timezone
+from decimal import Decimal
+
 # Core Django imports
 from django.db import models, transaction
 from django.utils.translation import ugettext_lazy as _
@@ -382,5 +383,17 @@ def process_order(simulation, sell_order, buy_order, quantity):
             tc_buy = TransactionLine(transaction=new_transaction, team=buy_order.team,
                                      quantity=-1, price=simulation.transaction_cost,
                                      amount=-1*simulation.transaction_cost, asset_type=TransactionLine.TRANSACTIONS)
+            tc_sell.save()
+            tc_buy.save()
+        if simulation.variable_transaction_cost > 0:
+            transaction_price = float(price) * simulation.variable_transaction_cost / 100
+            tc_sell = TransactionLine(transaction=new_transaction, team=sell_order.team,
+                                      quantity=-1*quantity, price=Decimal(transaction_price),
+                                      amount=Decimal(-1*quantity*transaction_price),
+                                      asset_type=TransactionLine.TRANSACTIONS)
+            tc_buy = TransactionLine(transaction=new_transaction, team=buy_order.team,
+                                     quantity=-1*quantity, price=Decimal(transaction_price),
+                                     amount=Decimal(-1*quantity*transaction_price),
+                                     asset_type=TransactionLine.TRANSACTIONS)
             tc_sell.save()
             tc_buy.save()
