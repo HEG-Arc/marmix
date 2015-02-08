@@ -83,15 +83,15 @@ def next_tick(simulation):
 
 @app.task
 def create_company_simulation(simulation_id, stock_id):
-    mu = 0.03
-    sigma = 0.01
+    mu = 0.02
+    sigma = 0.1
     simulation = Simulation.objects.get(pk=simulation_id)
     stock = Stock.objects.get(pk=stock_id)
     ticker = Ticker.objects.get(simulation=simulation)
     company = TickerCompany(ticker=ticker, stock=stock, symbol=stock.symbol, name="Company %s" % stock.symbol)
     company.save()
     rounds = ticker.nb_rounds + 1
-    brownian_motion = geometric_brownian(rounds, mu, sigma, ticker.initial_value, rounds/(ticker.nb_days*rounds))
+    brownian_motion = geometric_brownian(rounds, mu, sigma, ticker.initial_value, rounds/(ticker.nb_days*rounds), stock_id)
     i = 0
     simulation_dividends = []
     simulation_net_income = []

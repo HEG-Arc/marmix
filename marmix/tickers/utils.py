@@ -30,7 +30,7 @@ import numpy as np
 # MarMix imports
 
 
-def geometric_brownian(T, mu, sigma, s0, dt):
+def geometric_brownian(T, mu, sigma, s0, dt, random=None):
     """
     Geometric brownian distribution.
 
