@@ -40,7 +40,7 @@ logger = get_task_logger(__name__)
 
 
 @app.task
-def check_matching_orders(order):
+def check_matching_orders(order_id):
     """
     Looks for matching orders in the order book.
 
@@ -49,6 +49,7 @@ def check_matching_orders(order):
     """
     # TODO: Check if balance is sufficient!
     from .models import Order, process_order
+    order = Order.objects.get(pk=order_id)
     logger.debug("Starting a new order matching cycle...")
     if order.order_type == Order.ASK:
         book_order_type = Order.BID
@@ -143,7 +144,7 @@ def check_matching_orders(order):
 
 
 @app.task
-def set_stock_quote(stock, price):
+def set_stock_quote(stock_id, price):
     """
     Creates a new stock quote.
 
@@ -151,7 +152,9 @@ def set_stock_quote(stock, price):
     :param price: The price of the last transaction
     :return: Quote object
     """
-    from .models import Quote
+    from .models import Quote, Stock
+    stock = Stock.objects.get(pk=stock_id)
+    price = Decimal(price)
     new_quote = Quote(stock=stock, price=price)
     new_quote.save()
     stock.price = price

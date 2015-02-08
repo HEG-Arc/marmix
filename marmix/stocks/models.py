@@ -181,7 +181,7 @@ class Order(models.Model):
         self.sim_day = current_sim_day(self.stock.simulation_id)['sim_day']
         if self.transaction is None:
             models.Model.save(self, force_insert, force_update, using, update_fields)
-            check_matching_orders.apply_async([self])
+            check_matching_orders.apply_async([self.id])
         else:
             models.Model.save(self, force_insert, force_update, using, update_fields)
 
@@ -369,7 +369,7 @@ def process_order(simulation, sell_order, buy_order, quantity):
         sell_order.save()
         buy_order.transaction = new_transaction
         buy_order.save()
-        set_stock_quote.apply_async([sell_order.stock, price])
+        set_stock_quote.apply_async([sell_order.stock.id, price])
         if new_sell_order:
             new_sell_order.save()
         if new_buy_order:

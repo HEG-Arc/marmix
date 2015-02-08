@@ -345,7 +345,7 @@ class SimulationInitializeView(SuccessMessageMixin, UpdateView):
         simulation.state = Simulation.READY
         simulation.save()
         # .apply_async([args,], queue='xxx', countdown=NN)
-        initialize_simulation.apply_async([simulation])
+        initialize_simulation.apply_async([simulation.id])
         return super(SimulationInitializeView, self).form_valid(form)
 
     def get_success_url(self):

@@ -36,7 +36,7 @@ from stocks.models import create_generic_stocks, process_opening_transactions, S
 
 
 @app.task
-def initialize_simulation(simulation):
+def initialize_simulation(simulation_id):
     """
     Initialize the simulation (async Celery task).
 
@@ -48,6 +48,7 @@ def initialize_simulation(simulation):
     :param simulation: Simulation object
     :return: None
     """
+    simulation = Simulation.objects.get(pk=simulation_id)
     msg_info = ""
     msg_error = ""
     if simulation.simulation_type == Simulation.INTRO:

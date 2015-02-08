@@ -44,13 +44,14 @@ from .utils import geometric_brownian
 def main_ticker_task():
     running_simulations = Simulation.objects.all().filter(state=Simulation.RUNNING)
     for simulation in running_simulations:
-        next_tick(simulation)
+        next_tick(simulation.id)
     print(running_simulations)
     return 'Hello'
 
 
 @app.task
-def next_tick(simulation):
+def next_tick(simulation_id):
+    simulation = Simulation.objects.get(pk=simulation_id)
     current = current_sim_day(simulation.id)
     if current['sim_round'] != 0:
         if current['timestamp'] < timezone.now()-datetime.timedelta(seconds=simulation.ticker.day_duration):
@@ -102,7 +103,8 @@ def create_company_simulation(simulation_id, stock_id):
             # We have each round/day and the corresponding dividend
             daily_dividend = brownian_motion[i]
             daily_net_income = Decimal(brownian_motion[i]) / ticker.dividend_payoff_rate * 100 * stock.quantity
-            c = CompanyFinancial(company=company, daily_dividend=daily_dividend, daily_net_income=daily_net_income, sim_round=sim_round, sim_day=sim_day)
+            c = CompanyFinancial(company=company, daily_dividend=daily_dividend, daily_net_income=daily_net_income,
+                                 sim_round=sim_round, sim_day=sim_day, sim_date=sim_round*100+sim_day)
             c.save()
             round_dividend += daily_dividend
             round_net_income += daily_net_income
