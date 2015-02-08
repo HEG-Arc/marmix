@@ -138,7 +138,7 @@ class OrderViewSet(viewsets.ModelViewSet):
         """
         user = self.request.user
         team = user.get_team
-        return Order.objects.filter(stock__simulation_id=team.current_simulation_id).filter(team_id=user.get_team.id)
+        return Order.objects.filter(stock__simulation_id=team.current_simulation_id).filter(team_id=user.get_team.id).order_by('-created_at')
 
 
 class CreateOrderViewSet(viewsets.ModelViewSet):
