@@ -24,18 +24,21 @@
 from __future__ import absolute_import
 import datetime
 from decimal import Decimal
+from random import randint
+import time
 
 # Core Django imports
 from django.core.cache import cache
 from django.utils import timezone
+from django.db.models import Sum
 
 # Third-party app imports
 import numpy as np
 
 # MarMix imports
 from config.celery import app
-from simulations.models import Simulation, SimDay, current_sim_day
-from stocks.models import Stock
+from simulations.models import Simulation, SimDay, Team, current_sim_day
+from stocks.models import Stock, Order
 from tickers.models import Ticker, TickerCompany, CompanyFinancial, CompanyShare
 from .utils import geometric_brownian
 
@@ -58,6 +61,7 @@ def next_tick(simulation_id):
             # Simulation was already started, we continue
             current_day = current['sim_day']
             current_round = current['sim_round']
+            cleanup_open_orders.apply_async(args=[simulation.id, current_round, current_day])
             if current_day == simulation.ticker.nb_days:
                 if current_round == simulation.ticker.nb_rounds:
                     simulation.state = Simulation.FINISHED
@@ -72,6 +76,9 @@ def next_tick(simulation_id):
             else:
                 sim_day = SimDay(simulation=simulation, sim_round=current_round, sim_day=current_day+1, state=simulation.state)
                 sim_day.save()
+                stocks = Stock.objects.all().filter(simulation_id=simulation.id)
+                for stock in stocks:
+                    liquidity_trader_order.apply_async(args=[simulation.id, stock.id])
             print("Next tick processed: SIM: %s - R%sD%s @ %s" %
                   (sim_day.simulation_id, sim_day.sim_round, sim_day.sim_day, sim_day.timestamp))
         else:
@@ -80,7 +87,9 @@ def next_tick(simulation_id):
         # First start of the simulation
         sim_day = SimDay(simulation=simulation, sim_round=1, sim_day=1, state=simulation.state)
         sim_day.save()
-
+        stocks = Stock.objects.all().filter(simulation_id=simulation.id)
+        for stock in stocks:
+            liquidity_trader_order.apply_async(args=[simulation.id, stock.id])
 
 @app.task
 def create_company_simulation(simulation_id, stock_id):
@@ -131,7 +140,44 @@ def create_company_simulation(simulation_id, stock_id):
         company_share.save()
         previous_company_share = company_share
         if sim_round == 0:
-            #stock.opening_price = stock_price
             stock.price = Decimal(stock_price)
             stock.save()
     return company.id
+
+
+@app.task
+def liquidity_trader_order(simulation_id, stock_id):
+    simulation = Simulation.objects.get(pk=simulation_id)
+    stock = Stock.objects.get(pk=stock_id)
+    team = Team.objects.get(current_simulation_id=simulation_id, team_type=Team.LIQUIDITY_MANAGER)
+    day_duration = simulation.ticker.day_duration
+    first_order_type = [Order.BID, Order.ASK]
+    second_order_type = first_order_type.pop(randint(0, 1))
+    first_order_type = first_order_type[0]
+    first_order_time = randint(0, int(day_duration/4*3/2))
+    second_order_time = int(day_duration/4*3/2) - first_order_time + randint(0, int(day_duration/4*3/2))
+
+    open_quantity = Order.objects.all().filter(stock_id=stock.id, order_type=second_order_type, price__isnull=False).aggregate(Sum('quantity'))['quantity__sum']
+    if open_quantity:
+        quantity = randint(int(open_quantity*0.05), int(open_quantity*0.15))
+        create_order.apply_async(args=[stock.id, team.id, first_order_type, quantity], countdown=first_order_time)
+    open_quantity = Order.objects.all().filter(stock_id=stock.id, order_type=first_order_type, price__isnull=False).aggregate(Sum('quantity'))['quantity__sum']
+    if open_quantity:
+        quantity = randint(int(open_quantity*0.05), int(open_quantity*0.15))
+        create_order.apply_async(args=[stock.id, team.id, second_order_type, quantity], countdown=second_order_time)
+
+
+@app.task
+def create_order(stock_id, team_id, order_type, quantity):
+    stock = Stock.objects.get(pk=stock_id)
+    team = Team.objects.get(pk=team_id)
+    new_order = Order(stock=stock, team=team, order_type=order_type, quantity=quantity)
+    new_order.save()
+    print("New order created: %s %s %s" % (stock.symbol, order_type, quantity))
+
+
+@app.task
+def cleanup_open_orders(simulation_id, current_round, current_day):
+    team = Team.objects.get(current_simulation_id=simulation_id, team_type=Team.LIQUIDITY_MANAGER)
+    print("Time to cleanup old liquidity trader orders for trader %s" % team)
+    Order.objects.filter(team_id=team.id, transaction__isnull=True, sim_round=current_round, sim_day=current_day).delete()

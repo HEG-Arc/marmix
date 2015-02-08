@@ -146,14 +146,14 @@ class Order(models.Model):
     """
     BID = 'BID'
     ASK = 'ASK'
-    SIMULATION_TYPE_CHOICES = (
+    ORDER_TYPE_CHOICES = (
         (BID, _('bid')),
         (ASK, _('ask')),
     )
 
     stock = models.ForeignKey('Stock', verbose_name=_("stock"), related_name="orders", help_text=_("Related stock"))
     team = models.ForeignKey(Team, verbose_name=_("team"), related_name="orders", help_text=_("Team which placed the order"))
-    order_type = models.CharField(verbose_name=_("type of order"), max_length=5, choices=SIMULATION_TYPE_CHOICES,
+    order_type = models.CharField(verbose_name=_("type of order"), max_length=5, choices=ORDER_TYPE_CHOICES,
                                   default=BID, help_text=_("The type of order (bid/ask)"))
     quantity = models.IntegerField(verbose_name=_("quantity ordered"), default=0, help_text=_("Quantity ordered. If the total quantity can not be provided, a new order will be created with the balance"))
     price = models.DecimalField(verbose_name=_("price tag"), max_digits=14, decimal_places=4,
