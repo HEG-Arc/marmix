@@ -128,6 +128,8 @@ class CompanyShare(models.Model):
                                     default='0.0000', help_text=_("Simulated dividends"))
     net_income = models.DecimalField(verbose_name=_("net income"), max_digits=14, decimal_places=4,
                                      default='0.0000', help_text=_("Simulated net income"))
+    drift = models.DecimalField(verbose_name=_("drift"), max_digits=14, decimal_places=4,
+                                default='0.0000', help_text=_("Drift"))
     sim_round = models.IntegerField(verbose_name=_("round"), default=0, help_text=_("Current round"))
 
     class Meta:

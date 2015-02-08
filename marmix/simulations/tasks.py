@@ -31,8 +31,8 @@ from async_messages import messages
 # MarMix imports
 from config.celery import app
 from simulations.models import Simulation, Team, create_liquidity_manager
-from tickers.models import TickerTick
-from stocks.models import create_generic_stocks, process_opening_transactions
+from tickers.tasks import create_company_simulation
+from stocks.models import create_generic_stocks, process_opening_transactions, Stock
 
 
 @app.task
@@ -65,7 +65,8 @@ def initialize_simulation(simulation):
         else:
             msg_error += _("No liquidity manager was created!") + "<br />"
         # initialize ticker
-        # TODO: Initialize ticker
+        for stock in simulation.stocks.all():
+            create_company_simulation.apply_async([simulation.id, stock.id])
         # opening transactions
         openings = process_opening_transactions(simulation)
         if openings:

@@ -1,0 +1,41 @@
+{%  extends "base.html" %}
+
+{% block title %}
+    {{ block.super }} > Companies
+{% endblock title %}
+
+{% block content %}
+<h1>Market {{ simulation.code }}</h1>
+
+{% include "simulations/includes/clock.html" with clock=simulation.get_sim_day %}
+
+{% for company in object_list %}
+<h2>{{ company.name }}</h2>
+<p>Stock: {{ company.symbol }}</p>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Round</th>
+            <th>Net income</th>
+            <th>Dividends</th>
+            <th>Drift</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for share in company.shares.all %}
+        <tr>
+            <td>R{{ share.sim_round }}</td>
+            <td>{{ share.net_income|stringformat:".2f" }}</td>
+            <td>{{ share.dividends|stringformat:".2f" }}</td>
+            <td>{{ share.drift|stringformat:".2f" }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="3">No team available for this market!</td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endfor %}
+{% endblock content %}

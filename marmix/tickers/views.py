@@ -37,20 +37,22 @@ from django.conf import settings
 # Third-party app imports
 
 # MarMix imports
-#from .models import <model>
+from .models import TickerCompany
+from simulations.models import Simulation
 
 
 logger = logging.getLogger(__name__)
 
 
-# class FooDetailView(DetailView):
-#
-#     model = <model>
-#
-#     def get_context_data(self, **kwargs):
-#         context = super(FooDetailView, self).get_context_data(**kwargs)
-#         context['foo'] = "bar"
-#         return context
+class CompaniesView(ListView):
+
+    model = TickerCompany
+    template_name = 'tickers/companies.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(CompaniesView, self).get_context_data(**kwargs)
+        context['simulation'] = Simulation.objects.get(pk=self.request.user.get_team.current_simulation_id)
+        return context
 
 
 # class FooListView(ListView):
