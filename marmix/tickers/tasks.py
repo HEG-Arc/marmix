@@ -38,7 +38,7 @@ import numpy as np
 # MarMix imports
 from config.celery import app
 from simulations.models import Simulation, SimDay, Team, current_sim_day
-from stocks.models import Stock, Order
+from stocks.models import Stock, Order, TransactionLine, Transaction
 from tickers.models import Ticker, TickerCompany, CompanyFinancial, CompanyShare
 from .utils import geometric_brownian
 
@@ -65,11 +65,13 @@ def next_tick(simulation_id):
             if current_day == simulation.ticker.nb_days:
                 if current_round == simulation.ticker.nb_rounds:
                     simulation.state = Simulation.FINISHED
+                    prepare_dividends_payments.apply_async([simulation.id, current_round])
                     sim_day = SimDay.objects.filter(simulation_id=simulation.id)[0]
                     sim_day.state = Simulation.FINISHED
                     sim_day.save()
                 else:
                     simulation.state = Simulation.PAUSED
+                    prepare_dividends_payments.apply_async([simulation.id, current_round])
                     sim_day = SimDay(simulation=simulation, sim_round=current_round+1, sim_day=0, state=simulation.state)
                     sim_day.save()
                 simulation.save()
@@ -90,6 +92,7 @@ def next_tick(simulation_id):
         stocks = Stock.objects.all().filter(simulation_id=simulation.id)
         for stock in stocks:
             liquidity_trader_order.apply_async(args=[simulation.id, stock.id])
+
 
 @app.task
 def create_company_simulation(simulation_id, stock_id):
@@ -181,3 +184,30 @@ def cleanup_open_orders(simulation_id, current_round, current_day):
     team = Team.objects.get(current_simulation_id=simulation_id, team_type=Team.LIQUIDITY_MANAGER)
     print("Time to cleanup old liquidity trader orders for trader %s" % team)
     Order.objects.filter(team_id=team.id, transaction__isnull=True, sim_round=current_round, sim_day=current_day).delete()
+
+
+@app.task
+def prepare_dividends_payments(simulation_id, current_round):
+    simulation = Simulation.objects.get(pk=simulation_id)
+    if simulation.simulation_type == Simulation.INTRO or simulation.simulation_type == Simulation.ADVANCED:
+        #  We pay the dividends from the simulated data
+        companies = TickerCompany.objects.filter(ticker__simulation_id=simulation.id)
+        for company in companies:
+            stock_id = company.stock_id
+            share = CompanyShare.objects.get(company_id=company.id, sim_round=current_round)
+            dividend = share.dividends
+            tl = TransactionLine.objects.filter(stock_id=stock_id).values('team').annotate(quantity=Sum('quantity')).order_by('team')
+            if tl:
+                execute_dividends_payments.apply_async(args=[simulation.id, stock_id, tl, dividend])
+
+
+@app.task
+def execute_dividends_payments(simulation_id, stock_id, tl, dividend):
+    simulation = Simulation.objects.get(pk=simulation_id)
+    stock = Stock.objects.get(pk=stock_id)
+    transaction = Transaction(simulation=simulation, transaction_type=Transaction.EOR)
+    transaction.save()
+    for line in tl:
+        team = Team.objects.get(pk=line['team'])
+        transaction_line = TransactionLine(transaction=transaction, stock=stock, team=team, quantity=line['quantity'], price=dividend, amount=line['quantity']*dividend, asset_type=TransactionLine.DIVIDENDS)
+        transaction_line.save()

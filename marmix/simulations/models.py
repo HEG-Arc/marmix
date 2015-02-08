@@ -105,6 +105,9 @@ def current_holdings(team_id, simulation_id):
     stocks_list = {'stocks': [], 'cash': [], 'balance': {'market_value': 0, 'purchase_value': 0, 'gain': 0, 'gain_p': 0}, 'clock': current_sim_day(simulation_id)}
     tl = TransactionLine.objects.filter(transaction__simulation_id=simulation_id).filter(team_id=team_id).values('stock__symbol', 'stock__price', 'asset_type', 'stock__id').annotate(
         quantity=Sum('quantity'), amount=Sum('amount')).order_by('stock__symbol')
+
+    dividends = 0
+    cash = 0
     for stock in tl:
         asset = dict(TransactionLine.ASSET_TYPE_CHOICES).get(stock['asset_type'])
         if stock['asset_type'] == TransactionLine.STOCKS:
@@ -123,10 +126,26 @@ def current_holdings(team_id, simulation_id):
             stocks_list['balance']['market_value'] += value
             stocks_list['balance']['purchase_value'] += stock['amount']
         else:
-            stocks_list['cash'].append({'asset_type': stock['asset_type'], 'quantity': stock['quantity'],
-                                        'amount': stock['amount'], 'asset': asset, 'value': stock['amount']})
+            if stock['asset_type'] == TransactionLine.DIVIDENDS:
+                cash += stock['amount']
+                dividends = cash
+            elif stock['asset_type'] == TransactionLine.INTERESTS:
+                cash += stock['amount']
+                stocks_list['cash'].append({'asset_type': stock['asset_type'], 'quantity': stock['quantity'],
+                                            'amount': stock['amount'], 'asset': asset, 'value': stock['amount']})
+            elif stock['asset_type'] == TransactionLine.TRANSACTIONS:
+                cash += stock['amount']
+                stocks_list['cash'].append({'asset_type': stock['asset_type'], 'quantity': stock['quantity'],
+                                            'amount': stock['amount'], 'asset': asset, 'value': stock['amount']})
+            elif stock['asset_type'] == TransactionLine.CASH:
+                cash += stock['amount']
             stocks_list['balance']['market_value'] += stock['amount']
             stocks_list['balance']['purchase_value'] += stock['amount']
+    if dividends != 0:
+        stocks_list['cash'].append({'asset_type': TransactionLine.DIVIDENDS, 'quantity': 1,
+                                    'amount': dividends, 'asset': dict(TransactionLine.ASSET_TYPE_CHOICES).get(TransactionLine.DIVIDENDS), 'value': dividends})
+    stocks_list['cash'].append({'asset_type': TransactionLine.CASH, 'quantity': 1,
+                                            'amount': cash, 'asset': dict(TransactionLine.ASSET_TYPE_CHOICES).get(TransactionLine.CASH), 'value': cash})
     stocks_list['balance']['gain'] = stocks_list['balance']['market_value'] - stocks_list['balance']['purchase_value']
     try:
         stocks_list['balance']['gain_p'] = (stocks_list['balance']['market_value']/stocks_list['balance']['purchase_value']-1)*100
