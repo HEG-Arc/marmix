@@ -264,13 +264,14 @@ def create_generic_stocks(simulation):
     stocks_created = 0
     for i in range(0, simulation.ticker.nb_companies):
         symbol = 2*chr(i+char_shift)
-        stock = Stock(simulation=simulation, symbol=symbol, name='Company %s' % symbol, quantity=10000)
+        stock = Stock(simulation=simulation, symbol=symbol, name='Company %s' % symbol, quantity=simulation.nb_shares)
         stock.save()
         stocks_created += 1
     return stocks_created
 
 
-def process_opening_transactions(simulation):
+def process_opening_transactions(simulation_id):
+    simulation = Simulation.objects.get(pk=simulation_id)
     # deposit cash
     cash_deposit = Transaction(simulation=simulation, transaction_type=Transaction.INITIAL)
     cash_deposit.save()
@@ -287,7 +288,6 @@ def process_opening_transactions(simulation):
                                   amount=amount, asset_type=TransactionLine.CASH)
         deposit.save()
     # deposit stocks
-    # TODO: Calculate opening price!
     for stock in simulation.stocks.all():
         stocks_deposit = Transaction(simulation=simulation, transaction_type=Transaction.INITIAL)
         stocks_deposit.save()
@@ -300,8 +300,8 @@ def process_opening_transactions(simulation):
                 quantity = stock_quantity - ((simulation.teams.count()-1) * allocation)
             else:
                 quantity = 0
-            deposit = TransactionLine(transaction=stocks_deposit, team=team, quantity=quantity, price=0, stock=stock,
-                                      amount=0, asset_type=TransactionLine.STOCKS)
+            deposit = TransactionLine(transaction=stocks_deposit, team=team, quantity=quantity, price=stock.price, stock=stock,
+                                      amount=quantity*stock.price, asset_type=TransactionLine.STOCKS)
             deposit.save()
     return True
 

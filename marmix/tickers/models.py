@@ -40,7 +40,7 @@ from stocks.models import Stock
 class Ticker(TimeStampedModel):
     simulation = models.OneToOneField(Simulation, verbose_name=_("simulation"), help_text=_("Related simulation"))
     nb_companies = models.IntegerField(verbose_name=_("number of companies"), null=True, blank=True, help_text=_("Number of real/simulated companies"))
-    initial_value = models.IntegerField(verbose_name=_("initial daily dividend value"), default="100", help_text=_("Initial value of the dividend par day (try with 1.00)"))
+    initial_value = models.IntegerField(verbose_name=_("initial daily dividend value"), default="1", help_text=_("Initial value of the dividend par day (try with 1.00)"))
     state = models.IntegerField(verbose_name=_("state of the ticker"),
                                 choices=Simulation.SIMULATION_STATE_CHOICES, default=Simulation.CONFIGURING,
                                 help_text=_("Current state of this ticker"))

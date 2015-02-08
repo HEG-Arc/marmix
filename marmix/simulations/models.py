@@ -240,6 +240,8 @@ class Simulation(TimeStampedModel):
                                        help_text=_("The type of this simulation"))
     capital = models.DecimalField(verbose_name=_("initial capital"), max_digits=14, decimal_places=4,
                                   default='0.0000', help_text=_("Initial capital paid to each team"))
+    nb_shares = models.IntegerField(verbose_name=_("# of shares"), default=100000,
+                                    help_text=_("# of shares per stock"))
     currency = models.ForeignKey('Currency', verbose_name=_("currency"),
                                  help_text=_("The currency symbol displayed in the interface (has no impact on the simulation)"))
     state = models.IntegerField(verbose_name=_("state of the simulation"),

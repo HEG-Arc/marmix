@@ -28,7 +28,7 @@
             <td>R{{ share.sim_round }}</td>
             <td>{{ share.net_income|stringformat:".2f" }}</td>
             <td>{{ share.dividends|stringformat:".2f" }}</td>
-            <td>{{ share.drift|stringformat:".2f" }}</td>
+            <td>{{ share.drift|stringformat:".2f" }} [{{ share.share_value|stringformat:".2f" }}]</td>
         </tr>
         {% empty %}
         <tr>

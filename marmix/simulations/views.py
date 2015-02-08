@@ -166,7 +166,7 @@ class TeamsSelectionView(SuccessMessageMixin, FormView):
 
 class SimulationCreate(SuccessMessageMixin, CreateView):
     model = Simulation
-    fields = ['code', 'simulation_type', 'capital', 'currency']
+    fields = ['code', 'simulation_type', 'capital', 'nb_shares', 'currency']
     success_message = _("The simulation <b>%(code)s</b> was successfully created. You can start using it right now!")
 
     def get_context_data(self, **kwargs):
@@ -190,7 +190,7 @@ class SimulationCreate(SuccessMessageMixin, CreateView):
 
 class SimulationUpdate(SuccessMessageMixin, UpdateView):
     model = Simulation
-    fields = ['code', 'simulation_type', 'capital', 'currency']
+    fields = ['code', 'simulation_type', 'capital', 'nb_shares', 'currency']
     success_message = _("The simulation was successfully updated!")
 
     def get_success_url(self):

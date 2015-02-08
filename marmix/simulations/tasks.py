@@ -66,9 +66,9 @@ def initialize_simulation(simulation):
             msg_error += _("No liquidity manager was created!") + "<br />"
         # initialize ticker
         for stock in simulation.stocks.all():
-            create_company_simulation.apply_async([simulation.id, stock.id])
+            create_company_simulation(simulation.id, stock.id)
         # opening transactions
-        openings = process_opening_transactions(simulation)
+        openings = process_opening_transactions(simulation.id)
         if openings:
             msg_info += _("Openings transactions were processed...") + "<br />"
         else:

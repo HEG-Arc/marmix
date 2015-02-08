@@ -54,6 +54,9 @@ class CompaniesView(ListView):
         context['simulation'] = Simulation.objects.get(pk=self.request.user.get_team.current_simulation_id)
         return context
 
+    def get_queryset(self):
+        return TickerCompany.objects.filter(ticker__simulation_id=self.request.user.get_team.current_simulation_id)
+
 
 # class FooListView(ListView):
 #
