@@ -110,6 +110,7 @@ class CompanyFinancial(models.Model):
                                            default='0.0000', help_text=_("Daily simulated net income"))
     sim_round = models.IntegerField(verbose_name=_("round"), default=0, help_text=_("Current round"))
     sim_day = models.IntegerField(verbose_name=_("day"), default=0, help_text=_("Current day"))
+    sim_date = models.IntegerField(verbose_name=_("date"), default=0, help_text=_("Current date"))
 
     class Meta:
         verbose_name = _('financial')

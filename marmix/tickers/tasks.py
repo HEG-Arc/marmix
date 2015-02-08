@@ -102,8 +102,8 @@ def create_company_simulation(simulation_id, stock_id):
         for sim_day in range(1, ticker.nb_days+1):
             # We have each round/day and the corresponding dividend
             daily_dividend = brownian_motion[i]
-            daily_net_income = Decimal(brownian_motion[i]) / ticker.dividend_payoff_rate * 100 * stock.quantity
-            c = CompanyFinancial(company=company, daily_dividend=daily_dividend, daily_net_income=daily_net_income,
+            daily_net_income = brownian_motion[i] / float(ticker.dividend_payoff_rate) * 100 * stock.quantity
+            c = CompanyFinancial(company=company, daily_dividend=Decimal(daily_dividend), daily_net_income=Decimal(daily_net_income),
                                  sim_round=sim_round, sim_day=sim_day, sim_date=sim_round*100+sim_day)
             c.save()
             round_dividend += daily_dividend
@@ -123,15 +123,15 @@ def create_company_simulation(simulation_id, stock_id):
         stock_price = np.npv(0.1, simulation_dividends[sim_round:rounds]) + (simulation_dividends[-1]*(1+g)/(R-G))/np.power(1+R, rounds-sim_round)
         simulation_stock_price.append(stock_price)
         if previous_company_share:
-            drift = stock_price / previous_company_share.share_value - 1
-            previous_company_share.drift = drift
+            drift = stock_price / float(previous_company_share.share_value) - 1
+            previous_company_share.drift = Decimal(drift)
             previous_company_share.save()
-        company_share = CompanyShare(company=company, share_value=stock_price, dividends=simulation_dividends[sim_round],
-                                     net_income=simulation_net_income[sim_round], drift=drift, sim_round=sim_round)
+        company_share = CompanyShare(company=company, share_value=Decimal(stock_price), dividends=Decimal(simulation_dividends[sim_round]),
+                                     net_income=Decimal(simulation_net_income[sim_round]), drift=Decimal(drift), sim_round=sim_round)
         company_share.save()
         previous_company_share = company_share
         if sim_round == 0:
-            stock.opening_price = stock_price
-            stock.price = stock_price
+            #stock.opening_price = stock_price
+            stock.price = Decimal(stock_price)
             stock.save()
-    return company
+    return company.id

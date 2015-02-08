@@ -168,6 +168,7 @@ def set_opening_price(stock_id, price):
     stock = Stock.objects.get(pk=stock_id)
     transactions = TransactionLine.objects.filter(stock=stock, transaction__transaction_type=Transaction.INITIAL)
     price = Decimal(price)
+    print("Setting the opening price: %s @ %s" % (stock.symbol, price))
     for transaction_line in transactions:
         amount = price * transaction_line.quantity
         transaction_line.amount = amount

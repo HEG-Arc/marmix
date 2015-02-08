@@ -35,9 +35,14 @@ from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 
 # Third-party app imports
+from rest_framework import permissions, viewsets, status, filters
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
 
 # MarMix imports
 from .models import TickerCompany
+from .serializers import CompaniesSerializer
 from simulations.models import Simulation
 
 
@@ -58,11 +63,12 @@ class CompaniesView(ListView):
         return TickerCompany.objects.filter(ticker__simulation_id=self.request.user.get_team.current_simulation_id)
 
 
-# class FooListView(ListView):
-#
-#     model = <model>
-#
-#     def get_context_data(self, **kwargs):
-#         context = super(FooListView, self).get_context_data(**kwargs)
-#         context['foo'] = "bar"
-#         return context
+class CompaniesViewSet(viewsets.ModelViewSet):
+    serializer_class = CompaniesSerializer
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get_queryset(self):
+        """
+        This view should return a list of all the companies for the authenticated user.
+        """
+        return TickerCompany.objects.filter(ticker__simulation_id=self.request.user.get_team.current_simulation_id)

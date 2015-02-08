@@ -75,9 +75,12 @@ def current_sim_day(simulation_id):
         except IndexError:
             current_day = None
         if current_day:
-            cached = {'sim_round': current_day.sim_round, 'sim_day': current_day.sim_day, 'timestamp': current_day.timestamp, 'state': current_day.get_state_display()}
+            cached = {'sim_round': current_day.sim_round, 'sim_day': current_day.sim_day,
+                      'sim_date': current_day.sim_round*100+current_day.sim_day,
+                      'timestamp': current_day.timestamp, 'state': current_day.get_state_display()}
         else:
-            cached = {'sim_round': 0, 'sim_day': 0, 'timestamp': timezone.now(), 'state': Simulation.INITIALIZING}
+            cached = {'sim_round': 0, 'sim_day': 0, 'sim_date': 0, 'timestamp': timezone.now(),
+                      'state': Simulation.INITIALIZING}
         cache.set('sim-day-%s' % simulation_id, cached)
     return cached
 

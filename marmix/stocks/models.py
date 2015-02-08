@@ -68,6 +68,7 @@ class Stock(TimeStampedModel):
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         if self.price != 0 and not self.opening_price:
+            print("Preparing opening: STOCK %s @ %s" % (self.symbol, self.price))
             # It's an update and we have the first quotation for this stock
             self.opening_price = self.price
             models.Model.save(self, force_insert, force_update, using, update_fields)
