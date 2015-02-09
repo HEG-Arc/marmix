@@ -45,11 +45,11 @@
           {% if request.user.is_poweruser %}
             <li><a href="{% url 'customers-list-view' %}">Customers</a></li>
             <li><a href="{% url 'simulations-list-view' %}">Simulations</a></li>
-          {% endif %}
-          {% if request.user.is_authenticated %}
             <li><a href="{% url 'stocks-list-view' %}">Stocks</a></li>
             <li><a href="{% url 'market-view' %}">Market</a></li>
             <li><a href="{% url 'holdings-list-view' %}">Holdings</a></li>
+          {% endif %}
+          {% if request.user.is_authenticated %}
             <li><a href="{% url 'users:detail' request.user.username  %}">{% trans "My Profile" %}</a></li>
             <li><a href="{% url 'account_logout' %}">{% trans "Logout" %}</a></li>
           {% else %}
