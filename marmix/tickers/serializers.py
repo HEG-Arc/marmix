@@ -70,7 +70,7 @@ class CompaniesSerializer(serializers.ModelSerializer):
 
     def get_financials(self, obj):
         clock = current_sim_day(obj.ticker.simulation_id)
-        current_financials = CompanyFinancial.objects.filter(company=obj).filter(sim_date__lte=clock['sim_round']*100+clock['sim_day'])
+        current_financials = CompanyFinancial.objects.filter(company=obj).filter(sim_date__lte=clock['sim_round']*100+clock['sim_day']).filter(sim_round__gt=0).filter(sim_day__gt=0)
         serializer = NestedFinancialsSerializer(current_financials, many=True)
         return serializer.data
 
