@@ -198,13 +198,14 @@ def historical_prices(simulation_id):
 
 
 def stock_historical_prices(stock_id):
+    # TODO: We should not have transactions during day 0...
     cursor = connection.cursor()
     cursor.execute('SELECT DISTINCT tl.stock_id, s.symbol, t.sim_round, t.sim_day, min(tl.price) OVER w AS price_low, '
                    'max(tl.price) OVER w AS price_high, first_value(tl.price) OVER w AS price_open, '
                    'last_value(tl.price) OVER w AS price_close, '
                    'sum(CASE WHEN tl.quantity > 0 THEN tl.quantity ELSE 0 END) OVER w AS volume '
                    'FROM stocks_transactionline tl, stocks_transaction t, stocks_stock s '
-                   'WHERE tl.transaction_id = t.id AND tl.stock_id = s.id AND t.sim_round > 0 AND tl.stock_id = %s '
+                   'WHERE tl.transaction_id = t.id AND tl.stock_id = s.id AND t.sim_round > 0 AND t.sim_day > 0 AND tl.stock_id = %s '
                    'WINDOW w AS (PARTITION BY t.sim_round, t.sim_day) '
                    'ORDER BY 1,3,4', [stock_id])
     q_stocks_historical = dictfetchall(cursor)
