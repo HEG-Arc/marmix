@@ -64,7 +64,7 @@ class CompaniesSerializer(serializers.ModelSerializer):
             round = 1
         else:
             round = clock['sim_round']
-        current_shares = CompanyShare.objects.filter(company=obj).filter(sim_round__lt=round)
+        current_shares = CompanyShare.objects.filter(company=obj).filter(sim_round__lt=round).filter(sim_round__gt=0)
         serializer = NestedSharesSerializer(current_shares, many=True)
         return serializer.data
 

@@ -51,7 +51,7 @@ from rest_framework.permissions import IsAuthenticated
 
 # MarMix imports
 from .models import Stock, Quote, Order, TransactionLine, dividends_list
-from .serializers import StockSerializer, QuoteSerializer, OrderSerializer, CreateOrderSerializer, DividendSerializer, NestedStockSerializer
+from .serializers import StockSerializer, QuoteSerializer, OrderSerializer, CreateOrderSerializer, NestedStockSerializer
 from .filters import QuoteFilter
 from simulations.models import current_sim_day, current_holdings
 
