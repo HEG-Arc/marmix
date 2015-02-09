@@ -51,7 +51,7 @@ from rest_framework.permissions import IsAuthenticated
 
 # MarMix imports
 from .models import Stock, Quote, Order, TransactionLine
-from .serializers import StockSerializer, QuoteSerializer, OrderSerializer, CreateOrderSerializer, DividendSerializer
+from .serializers import StockSerializer, QuoteSerializer, OrderSerializer, CreateOrderSerializer, DividendSerializer, NestedStockSerializer
 from .filters import QuoteFilter
 from simulations.models import current_sim_day, current_holdings
 
@@ -125,6 +125,17 @@ class StockViewSet(viewsets.ModelViewSet):
         user = self.request.user
         return Stock.objects.filter(simulation_id=user.get_team.current_simulation_id)
 
+
+class MarketViewSet(viewsets.ModelViewSet):
+    serializer_class = NestedStockSerializer
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get_queryset(self):
+        """
+        This view should return a list of all the stocks for the simulation of the authenticated user.
+        """
+        user = self.request.user
+        return Stock.objects.filter(simulation_id=user.get_team.current_simulation_id)
 
 class QuoteViewSet(viewsets.ModelViewSet):
     queryset = Quote.objects.all()
