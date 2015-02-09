@@ -28,11 +28,12 @@ from django.conf.urls import patterns, url
 # Third-party app imports
 
 # MarMix imports
-from .views import StockListView, StockDetailView, HoldingsView, OrderCreateView, OrderUpdateView, OrderListView, OrderDeleteView
+from .views import StockListView, StockDetailView, HoldingsView, OrderCreateView, OrderUpdateView, OrderListView, OrderDeleteView, DividendsView
 
 urlpatterns = patterns('',
     url(r'^(?P<pk>\d+)/$', StockDetailView.as_view(), name='stocks-detail-view'),
     url(r'^holdings/$', HoldingsView.as_view(), name='holdings-list-view'),
+    url(r'^dividends/$', DividendsView.as_view(), name='dividends-list-view'),
     url(r'^order/(?P<pk>\d+)/update/$', OrderUpdateView.as_view(), name='order-update-view'),
     url(r'^order/(?P<pk>\d+)/delete/$', OrderDeleteView.as_view(), name='order-delete-view'),
     url(r'^order/new/$', OrderCreateView.as_view(), name='order-create-view'),

@@ -30,7 +30,7 @@ from django.utils import timezone
 from rest_framework import serializers
 
 # MarMix imports
-from .models import Stock, Quote, Order, HistoricalPrice
+from .models import Stock, Quote, Order, HistoricalPrice, TransactionLine
 from simulations.models import stock_historical_prices
 
 
@@ -105,3 +105,12 @@ class CreateOrderSerializer(serializers.ModelSerializer):
         model = Order
         fields = ('id', 'stock', 'team', 'order_type', 'quantity', 'price', 'created_at', 'sim_round', 'sim_day', 'transaction')
         read_only_fields = ['created_at', 'sim_round', 'sim_day', 'transaction', 'team']
+
+
+class DividendSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = TransactionLine
+        fields = ('id', 'price', 'quantity', 'amount', 'asset_type', 'stock', 'transaction')
+        read_only_fields = ['price', 'quantity', 'amount', 'asset_type', 'stock', 'transaction']
+        depth = 1

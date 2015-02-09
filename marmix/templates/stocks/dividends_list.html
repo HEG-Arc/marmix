@@ -1,0 +1,37 @@
+{%  extends "base.html" %}
+
+{% block title %}
+    {{ block.super }} > Dividends
+{% endblock title %}
+
+{% block content %}
+<h1>Dividends</h1>
+
+{% include "simulations/includes/clock.html" with clock=clock %}
+
+<table class="table table-striped">
+<thead>
+<tr>
+    <th>Round</th>
+    <th>Stock</th>
+    <th>Price</th>
+    <th>Quantity</th>
+    <th>Amount</th>
+</tr>
+</thead>
+<tbody>
+{% for transaction in transactions %}
+    <tr>
+        <td>R{{ transaction.transaction.sim_round }}</td>
+        <td>{{ transaction.stock.symbol }}</td>
+        <td>{{ transaction.price|stringformat:".2f" }}</td>
+        <td>{{ transaction.quantity }}</td>
+        <td>{{ transaction.amount|stringformat:".2f" }}</td>
+    </tr>
+{% empty %}
+    <tr><td colspan="5">No dividends yet.</td></tr>
+{% endfor %}
+</tbody>
+</table>
+
+{% endblock content %}

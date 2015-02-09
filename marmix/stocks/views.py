@@ -51,7 +51,7 @@ from rest_framework.permissions import IsAuthenticated
 
 # MarMix imports
 from .models import Stock, Quote, Order, TransactionLine
-from .serializers import StockSerializer, QuoteSerializer, OrderSerializer, CreateOrderSerializer
+from .serializers import StockSerializer, QuoteSerializer, OrderSerializer, CreateOrderSerializer, DividendSerializer
 from .filters import QuoteFilter
 from simulations.models import current_sim_day, current_holdings
 
@@ -94,6 +94,16 @@ class HoldingsView(View):
         return render(request, 'stocks/transactionline_list.html', {'orders': orders, 'team': team, 'clock': clock})
 
 
+class DividendsView(View):
+
+    def get(self, request, *args, **kwargs):
+        team = self.request.user.get_team
+        tl = TransactionLine.objects.select_related('stock', 'transaction').filter(transaction__simulation_id=team.current_simulation_id).filter(
+            team_id=team.id).filter(asset_type=TransactionLine.DIVIDENDS).order_by('-transaction__sim_round', 'stock__symbol')
+        clock = current_sim_day(team.current_simulation_id)
+        return render(request, 'stocks/dividends_list.html', {'transactions': tl, 'clock': clock})
+
+
 class OrderListView(ListView):
 
     model = Order
@@ -127,10 +137,6 @@ class QuoteViewSet(viewsets.ModelViewSet):
 class OrderViewSet(viewsets.ModelViewSet):
     serializer_class = OrderSerializer
     permission_classes = (permissions.IsAuthenticated,)
-
-    @method_decorator(csrf_exempt)
-    def dispatch(self, *args, **kwargs):
-        return super(OrderViewSet, self).dispatch(*args, **kwargs)
 
     def get_queryset(self):
         """
@@ -230,3 +236,13 @@ class HoldingsViewSet(viewsets.ViewSet):
         holdings = current_holdings(trader.id, trader.current_simulation_id)
         response = Response(holdings, status=status.HTTP_200_OK)
         return response
+
+
+class DividendsViewSet(viewsets.ModelViewSet):
+    serializer_class = DividendSerializer
+    permission_classes = (IsAuthenticated,)
+
+    def get_queryset(self):
+        team = self.request.user.get_team
+        return TransactionLine.objects.select_related('stock', 'transaction').filter(transaction__simulation_id=team.current_simulation_id).filter(
+            team_id=team.id).filter(asset_type=TransactionLine.DIVIDENDS).order_by('-transaction__sim_round', 'stock__symbol')
