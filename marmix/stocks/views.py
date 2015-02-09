@@ -50,7 +50,7 @@ from rest_framework.permissions import IsAuthenticated
 
 
 # MarMix imports
-from .models import Stock, Quote, Order, TransactionLine
+from .models import Stock, Quote, Order, TransactionLine, dividends_list
 from .serializers import StockSerializer, QuoteSerializer, OrderSerializer, CreateOrderSerializer, DividendSerializer, NestedStockSerializer
 from .filters import QuoteFilter
 from simulations.models import current_sim_day, current_holdings
@@ -249,11 +249,11 @@ class HoldingsViewSet(viewsets.ViewSet):
         return response
 
 
-class DividendsViewSet(viewsets.ModelViewSet):
-    serializer_class = DividendSerializer
+class DividendsViewSet(viewsets.ViewSet):
     permission_classes = (IsAuthenticated,)
 
-    def get_queryset(self):
-        team = self.request.user.get_team
-        return TransactionLine.objects.select_related('stock', 'transaction').filter(transaction__simulation_id=team.current_simulation_id).filter(
-            team_id=team.id).filter(asset_type=TransactionLine.DIVIDENDS).order_by('-transaction__sim_round', 'stock__symbol')
+    def list(self, request, *args, **kw):
+        team = request.user.get_team
+        dividends = dividends_list(team.id)
+        response = Response(dividends, status=status.HTTP_200_OK)
+        return response
