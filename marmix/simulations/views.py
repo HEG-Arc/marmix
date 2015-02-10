@@ -61,6 +61,7 @@ from .forms import TeamsSelectionForm, TeamJoinForm
 from .tasks import initialize_simulation
 from customers.models import Customer
 from tickers.models import Ticker
+from stocks.tasks import open_market
 from stocks.models import Stock
 from .permissions import IsOwnerOrReadOnly, IsAdminOrReadOnly
 
@@ -418,5 +419,7 @@ def manage_simulation(request, simulation_id, next_state):
     elif next_state == Simulation.ARCHIVED and simulation.state == Simulation.FINISHED:
         simulation.state = Simulation.ARCHIVED
     simulation.save()
+    if simulation.state == Simulation.RUNNING:
+        open_market.apply_async([simulation.id])
     messages.info(request, 'The simulation is now <b>%s</b>' % simulation.get_state_display())
     return HttpResponseRedirect(reverse('simulations-detail-view', args=[simulation.id]))
