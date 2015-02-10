@@ -54,9 +54,12 @@ def initialize_simulation(simulation_id):
     if simulation.simulation_type == Simulation.INTRO:
         msg_info += _("Initialization of introductory simulation running...") + "<br />"
         # stocks creation
+        print("Initialization of introductory simulation running...")
+        print("Create generic stocks")
         stocks = create_generic_stocks(simulation)
         if stocks > 0:
             msg_info += _("%s stocks were created..." % stocks) + "<br />"
+            print("%s stocks created" % stocks)
         else:
             msg_error += _("No stocks were created!") + "<br />"
         # liquidity traders creation
@@ -69,6 +72,7 @@ def initialize_simulation(simulation_id):
         for stock in simulation.stocks.all():
             create_company_simulation(simulation.id, stock.id)
         # opening transactions
+        print("Process openings...............")
         openings = process_opening_transactions(simulation.id)
         if openings:
             msg_info += _("Openings transactions were processed...") + "<br />"
