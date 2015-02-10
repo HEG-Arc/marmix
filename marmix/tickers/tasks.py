@@ -131,18 +131,18 @@ def create_company_simulation(simulation_id, stock_id):
     g = R
     drift = 0
     simulation_stock_price = []
-    previous_company_share = None
+    previous_company_income = None
     for sim_round in range(0, rounds):
         stock_price = np.npv(0.1, simulation_dividends[sim_round:rounds]) + (simulation_dividends[-1]*(1+g)/(R-G))/np.power(1+R, rounds-sim_round)
         simulation_stock_price.append(stock_price)
-        if previous_company_share:
-            drift = stock_price / float(previous_company_share.share_value) - 1
-            previous_company_share.drift = Decimal(drift)
-            previous_company_share.save()
+        if previous_company_income:
+            drift = simulation_net_income[sim_round] / float(previous_company_income.net_income) - 1
+            previous_company_income.drift = Decimal(drift)
+            previous_company_income.save()
         company_share = CompanyShare(company=company, share_value=Decimal(stock_price), dividends=Decimal(simulation_dividends[sim_round]),
                                      net_income=Decimal(simulation_net_income[sim_round]), drift=Decimal(drift), sim_round=sim_round)
         company_share.save()
-        previous_company_share = company_share
+        previous_company_income = company_share
         if sim_round == 0:
             stock.price = Decimal(stock_price)
             stock.save()
