@@ -292,6 +292,7 @@ def process_opening_transactions(simulation_id):
         deposit.save()
     # deposit stocks
     for stock in simulation.stocks.all():
+        print("Stock deposit %s" % stock.symbol)
         stocks_deposit = Transaction(simulation=simulation, transaction_type=Transaction.INITIAL)
         stocks_deposit.save()
         stock_quantity = stock.quantity
@@ -303,7 +304,8 @@ def process_opening_transactions(simulation_id):
                 quantity = stock_quantity - ((simulation.teams.count()-1) * allocation)
             else:
                 quantity = 0
-            deposit = TransactionLine(transaction=stocks_deposit, team=team, quantity=quantity, price=stock.price, stock=stock,
+            print("Stock deposit %s -> %s" % (stock.symbol, team.name))
+            deposit = TransactionLine(transaction=stocks_deposit, team=team, quantity=quantity, price=Decimal(stock.price), stock=stock,
                                       amount=Decimal(quantity*stock.price), asset_type=TransactionLine.STOCKS)
             deposit.save()
     return True
