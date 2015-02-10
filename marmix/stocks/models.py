@@ -345,10 +345,10 @@ def process_order(simulation, sell_order, buy_order, quantity):
             price = buy_order.price
         else:
             price = sell_order.price
-    if sell_order.team.team_type == Team.LIQUIDITY_MANAGER or buy_order.team.team_type == Team.LIQUIDITY_MANAGER:
-        # TODO: Quick fix
-        if price > Decimal(1.5) * sell_order.stock.price:
-            price = 0
+    #if sell_order.team.team_type == Team.LIQUIDITY_MANAGER or buy_order.team.team_type == Team.LIQUIDITY_MANAGER:
+    # TODO: Quick fix
+    if price > Decimal(1.5) * sell_order.stock.price:
+        price = 0
     if price > 0:
         sell = TransactionLine(transaction=new_transaction, stock=sell_order.stock, team=sell_order.team,
                                quantity=-1*quantity, price=price, amount=-1*quantity*price,
