@@ -73,7 +73,7 @@ class Stock(TimeStampedModel):
             # It's an update and we have the first quotation for this stock
             self.opening_price = self.price
             models.Model.save(self, force_insert, force_update, using, update_fields)
-            set_opening_price.apply_async([self.id, self.price])
+            #set_opening_price.apply_async([self.id, self.price])
         else:
             models.Model.save(self, force_insert, force_update, using, update_fields)
 
