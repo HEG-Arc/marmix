@@ -417,5 +417,8 @@ def dividends_list(team_id):
             sim_round = tl.transaction.sim_round
         dividend = {'id': tl.id, 'price': tl.price, 'quantity': tl.quantity, 'amount': tl.amount, 'stock': tl.stock.symbol, 'stock_id': tl.stock.id}
         round_list.append(dividend)
-    dividends[sim_round-1] = round_list
+    if sim_round:
+        dividends[sim_round-1] = round_list
+    else:
+        dividends[0] = round_list
     return dividends
