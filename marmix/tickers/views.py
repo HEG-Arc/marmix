@@ -21,28 +21,17 @@
 # along with MarMix. If not, see <http://www.gnu.org/licenses/>.
 
 # Stdlib imports
-from hashlib import sha256
-import json
 import logging
 from decimal import Decimal
 
 # Core Django imports
-from django.views.generic.detail import DetailView
 from django.views.generic.list import ListView
 from django.shortcuts import render_to_response, get_object_or_404
-from django.template.context import RequestContext
-from django.http import Http404, HttpResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.conf import settings
 from django.forms.formsets import formset_factory
 from django.shortcuts import redirect
 
 # Third-party app imports
-from rest_framework import permissions, viewsets, status, filters
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
-from extra_views import ModelFormSetView
+from rest_framework import permissions, viewsets
 
 # MarMix imports
 from .models import TickerCompany, CompanyShare, CompanyShareForm
