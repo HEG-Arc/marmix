@@ -22,7 +22,7 @@
 
 # Stdlib imports
 import logging
-from decimal import Decimal
+from decimal import Decimal, getcontext
 
 # Core Django imports
 from django.utils.translation import ugettext as _
@@ -164,6 +164,7 @@ def set_stock_quote(stock_id, price):
 
 @app.task
 def set_opening_price(stock_id, price):
+    getcontext().prec = 4
     from .models import Stock, Transaction, TransactionLine
     stock = Stock.objects.get(pk=stock_id)
     transactions = TransactionLine.objects.filter(stock=stock, transaction__transaction_type=Transaction.INITIAL)
@@ -171,6 +172,7 @@ def set_opening_price(stock_id, price):
     print("Setting the opening price: %s @ %s" % (stock.symbol, price))
     for transaction_line in transactions:
         amount = price * transaction_line.quantity
-        transaction_line.amount = amount
-        transaction_line.price = price
+        transaction_line.amount = Decimal(amount)
+        transaction_line.price = Decimal(price)
         transaction_line.save()
+
