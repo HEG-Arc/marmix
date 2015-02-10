@@ -33,6 +33,7 @@ from celery.utils.log import get_task_logger
 
 # MarMix imports
 from config.celery import app
+from simulations.models import Simulation
 
 
 # Get an instance of a logger
@@ -50,83 +51,22 @@ def check_matching_orders(order_id):
     # TODO: Check if balance is sufficient!
     from .models import Order, process_order
     order = Order.objects.get(pk=order_id)
-    logger.debug("Starting a new order matching cycle...")
-    if order.order_type == Order.ASK:
-        book_order_type = Order.BID
-    else:
-        book_order_type = Order.ASK
-    logger.debug("Order type: %s" % book_order_type)
-    if not order.price:
-        logger.debug("No price asked, market order.")
-        # This is a market order
-        order_book = Order.objects.filter(stock=order.stock).filter(transaction__isnull=True).filter(order_type=book_order_type).filter(price__isnull=False)
-        if order_book:
-            logger.debug("We have limit orders in the book")
-            qty = order.quantity
-            for match_order in order_book:
-                if match_order.team != order.team:
-                    if match_order.quantity >= qty:
-                        #  We can fulfill the whole order
-                        qty_traded = qty
-                        logger.debug("Full order can be fulfilled: %s" % qty_traded)
-                    else:
-                        #  We fulfill a partial order and look for the next one
-                        qty_traded = match_order.quantity
-                        logger.debug("Partial order can be fulfilled: %s (order qty was: %s)" %
-                                     (qty_traded, match_order.quantity))
-                    if order.order_type == Order.ASK:
-                        sell_order = order
-                        buy_order = match_order
-                    else:
-                        sell_order = match_order
-                        buy_order = order
-                    logger.debug("Processing the order: SELL: %s / BUY: %s / QTY: %s" %
-                                 (sell_order, buy_order, qty_traded))
-                    process_order(order.stock.simulation, sell_order, buy_order, qty_traded)
-                    logger.info("New transaction: STOCK: %s QTY: %s SELLER: %s BUYER: %s" % (order.stock, qty_traded, sell_order.team, buy_order.team))
-                    break
-    else:
-        # This is a limit order
-        logger.debug("Price asked, limit order.")
-        order_book = Order.objects.filter(stock=order.stock).filter(transaction__isnull=True).filter(order_type=book_order_type).filter(price__isnull=True)
-        if order_book:
-            logger.debug("We have market orders in the book")
-            qty = order.quantity
-            for match_order in order_book:
-                if match_order.team != order.team:
-                    if match_order.quantity >= qty:
-                        #  We can fulfill the whole order
-                        qty_traded = qty
-                        logger.debug("Full order can be fulfilled: %s" % qty_traded)
-                    else:
-                        #  We fulfill a partial order and look for the next one
-                        qty_traded = match_order.quantity
-                        logger.debug("Partial order can be fulfilled: %s (order qty was: %s)" %
-                                     (qty_traded, match_order.quantity))
-                    if order.order_type == Order.ASK:
-                        sell_order = order
-                        buy_order = match_order
-                    else:
-                        sell_order = match_order
-                        buy_order = order
-                    logger.debug("Processing the order: SELL: %s / BUY: %s / QTY: %s" %
-                                 (sell_order, buy_order, qty_traded))
-                    process_order(order.stock.simulation, sell_order, buy_order, qty_traded)
-                    logger.info("New transaction: STOCK: %s QTY: %s SELLER: %s BUYER: %s" % (order.stock, qty_traded, sell_order.team, buy_order.team))
-                    break
+    if order.stock.simulation.state == Simulation.RUNNING:
+        logger.debug("Starting a new order matching cycle...")
+        if order.order_type == Order.ASK:
+            book_order_type = Order.BID
         else:
+            book_order_type = Order.ASK
+        logger.debug("Order type: %s" % book_order_type)
+        if not order.price:
+            logger.debug("No price asked, market order.")
+            # This is a market order
             order_book = Order.objects.filter(stock=order.stock).filter(transaction__isnull=True).filter(order_type=book_order_type).filter(price__isnull=False)
             if order_book:
                 logger.debug("We have limit orders in the book")
                 qty = order.quantity
                 for match_order in order_book:
-                    if order.order_type == Order.ASK:
-                        sell_order = order
-                        buy_order = match_order
-                    else:
-                        sell_order = match_order
-                        buy_order = order
-                    if match_order.team != order.team and sell_order.price <= buy_order.price:
+                    if match_order.team != order.team:
                         if match_order.quantity >= qty:
                             #  We can fulfill the whole order
                             qty_traded = qty
@@ -136,11 +76,73 @@ def check_matching_orders(order_id):
                             qty_traded = match_order.quantity
                             logger.debug("Partial order can be fulfilled: %s (order qty was: %s)" %
                                          (qty_traded, match_order.quantity))
+                        if order.order_type == Order.ASK:
+                            sell_order = order
+                            buy_order = match_order
+                        else:
+                            sell_order = match_order
+                            buy_order = order
                         logger.debug("Processing the order: SELL: %s / BUY: %s / QTY: %s" %
                                      (sell_order, buy_order, qty_traded))
                         process_order(order.stock.simulation, sell_order, buy_order, qty_traded)
                         logger.info("New transaction: STOCK: %s QTY: %s SELLER: %s BUYER: %s" % (order.stock, qty_traded, sell_order.team, buy_order.team))
                         break
+        else:
+            # This is a limit order
+            logger.debug("Price asked, limit order.")
+            order_book = Order.objects.filter(stock=order.stock).filter(transaction__isnull=True).filter(order_type=book_order_type).filter(price__isnull=True)
+            if order_book:
+                logger.debug("We have market orders in the book")
+                qty = order.quantity
+                for match_order in order_book:
+                    if match_order.team != order.team:
+                        if match_order.quantity >= qty:
+                            #  We can fulfill the whole order
+                            qty_traded = qty
+                            logger.debug("Full order can be fulfilled: %s" % qty_traded)
+                        else:
+                            #  We fulfill a partial order and look for the next one
+                            qty_traded = match_order.quantity
+                            logger.debug("Partial order can be fulfilled: %s (order qty was: %s)" %
+                                         (qty_traded, match_order.quantity))
+                        if order.order_type == Order.ASK:
+                            sell_order = order
+                            buy_order = match_order
+                        else:
+                            sell_order = match_order
+                            buy_order = order
+                        logger.debug("Processing the order: SELL: %s / BUY: %s / QTY: %s" %
+                                     (sell_order, buy_order, qty_traded))
+                        process_order(order.stock.simulation, sell_order, buy_order, qty_traded)
+                        logger.info("New transaction: STOCK: %s QTY: %s SELLER: %s BUYER: %s" % (order.stock, qty_traded, sell_order.team, buy_order.team))
+                        break
+            else:
+                order_book = Order.objects.filter(stock=order.stock).filter(transaction__isnull=True).filter(order_type=book_order_type).filter(price__isnull=False)
+                if order_book:
+                    logger.debug("We have limit orders in the book")
+                    qty = order.quantity
+                    for match_order in order_book:
+                        if order.order_type == Order.ASK:
+                            sell_order = order
+                            buy_order = match_order
+                        else:
+                            sell_order = match_order
+                            buy_order = order
+                        if match_order.team != order.team and sell_order.price <= buy_order.price:
+                            if match_order.quantity >= qty:
+                                #  We can fulfill the whole order
+                                qty_traded = qty
+                                logger.debug("Full order can be fulfilled: %s" % qty_traded)
+                            else:
+                                #  We fulfill a partial order and look for the next one
+                                qty_traded = match_order.quantity
+                                logger.debug("Partial order can be fulfilled: %s (order qty was: %s)" %
+                                             (qty_traded, match_order.quantity))
+                            logger.debug("Processing the order: SELL: %s / BUY: %s / QTY: %s" %
+                                         (sell_order, buy_order, qty_traded))
+                            process_order(order.stock.simulation, sell_order, buy_order, qty_traded)
+                            logger.info("New transaction: STOCK: %s QTY: %s SELLER: %s BUYER: %s" % (order.stock, qty_traded, sell_order.team, buy_order.team))
+                            break
 
 
 @app.task
@@ -175,4 +177,21 @@ def set_opening_price(stock_id, price):
         transaction_line.amount = Decimal(amount)
         transaction_line.price = Decimal(price)
         transaction_line.save()
+
+
+@app.task
+def open_market(simulation_id):
+    simulation = Simulation.objects.get(simulation_id)
+    for stock in simulation.stocks.all():
+        open_market_stock.apply_async([stock.id])
+
+
+@app.task
+def open_market_stock(stock_id):
+    from .models import Stock, Order
+    stock = Stock.objects.get(pk=stock_id)
+    market_orders = Order.objects.filter(stock_id=stock.id).filter(transaction__isnull=True).filter(price__isnull=True).order_by('created_at')
+    if market_orders:
+        for order in market_orders:
+            check_matching_orders(order.id)
 
