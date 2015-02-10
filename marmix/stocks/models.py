@@ -21,7 +21,7 @@
 # along with MarMix. If not, see <http://www.gnu.org/licenses/>.
 
 # Stdlib imports
-from decimal import Decimal
+from decimal import Decimal, getcontext
 
 # Core Django imports
 from django.db import models, transaction
@@ -273,6 +273,7 @@ def create_generic_stocks(simulation):
 
 
 def process_opening_transactions(simulation_id):
+    getcontext().prec = 4
     simulation = Simulation.objects.get(pk=simulation_id)
     # deposit cash
     cash_deposit = Transaction(simulation=simulation, transaction_type=Transaction.INITIAL)
@@ -303,7 +304,7 @@ def process_opening_transactions(simulation_id):
             else:
                 quantity = 0
             deposit = TransactionLine(transaction=stocks_deposit, team=team, quantity=quantity, price=stock.price, stock=stock,
-                                      amount=quantity*stock.price, asset_type=TransactionLine.STOCKS)
+                                      amount=Decimal(quantity*stock.price), asset_type=TransactionLine.STOCKS)
             deposit.save()
     return True
 
