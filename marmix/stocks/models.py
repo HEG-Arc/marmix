@@ -276,6 +276,7 @@ def process_opening_transactions(simulation_id):
     getcontext().prec = 4
     simulation = Simulation.objects.get(pk=simulation_id)
     # deposit cash
+    print("starting cash deposit....")
     cash_deposit = Transaction(simulation=simulation, transaction_type=Transaction.INITIAL)
     cash_deposit.save()
     for team in simulation.teams.all():
@@ -290,7 +291,9 @@ def process_opening_transactions(simulation_id):
         deposit = TransactionLine(transaction=cash_deposit, team=team, quantity=1, price=amount,
                                   amount=amount, asset_type=TransactionLine.CASH)
         deposit.save()
+    print("End cash deposit...")
     # deposit stocks
+    print("starting stocks deposit....")
     for stock in simulation.stocks.all():
         print("Stock deposit %s" % stock.symbol)
         stocks_deposit = Transaction(simulation=simulation, transaction_type=Transaction.INITIAL)
