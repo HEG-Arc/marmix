@@ -73,11 +73,11 @@ def initialize_simulation(simulation_id):
             create_company_simulation(simulation.id, stock.id)
         # opening transactions
         print("Process openings...............")
-        openings = process_opening_transactions(simulation.id)
-        if openings:
-            msg_info += _("Openings transactions were processed...") + "<br />"
-        else:
-            msg_error += _("Unable to process opening transactions!") + "<br />"
+        process_opening_transactions(simulation.id)
+        # if openings:
+        #     msg_info += _("Openings transactions were processed...") + "<br />"
+        # else:
+        #     msg_error += _("Unable to process opening transactions!") + "<br />"
         if msg_info != "":
             msg_info += _("Initialization succeeded! You can start running the simulation.")
             messages.info(simulation.user, msg_info)
