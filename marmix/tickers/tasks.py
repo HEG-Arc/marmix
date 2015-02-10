@@ -23,7 +23,7 @@
 # Stdlib imports
 from __future__ import absolute_import
 import datetime
-from decimal import Decimal
+from decimal import Decimal, getcontext
 from random import randint
 import time
 
@@ -96,6 +96,7 @@ def next_tick(simulation_id):
 
 @app.task
 def create_company_simulation(simulation_id, stock_id):
+    getcontext().prec = 4
     mu = 0.02
     sigma = 0.1
     simulation = Simulation.objects.get(pk=simulation_id)
