@@ -181,7 +181,7 @@ def set_opening_price(stock_id, price):
 
 @app.task
 def open_market(simulation_id):
-    simulation = Simulation.objects.get(simulation_id)
+    simulation = Simulation.objects.get(pk=simulation_id)
     for stock in simulation.stocks.all():
         open_market_stock.apply_async([stock.id])
 
