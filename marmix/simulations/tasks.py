@@ -31,7 +31,7 @@ from async_messages import messages
 # MarMix imports
 from config.celery import app
 from simulations.models import Simulation, Team, create_liquidity_manager
-from tickers.tasks import create_company_simulation
+from tickers.tasks import create_company_simulation, create_company_live
 from stocks.models import create_generic_stocks, process_opening_transactions, Stock
 
 
@@ -56,14 +56,14 @@ def initialize_simulation(simulation_id):
         # stocks creation
         print("Initialization of introductory simulation running...")
         print("Create generic stocks")
-        stocks = create_generic_stocks(simulation)
+        stocks = create_generic_stocks(simulation.id)
         if stocks > 0:
             msg_info += _("%s stocks were created..." % stocks) + "<br />"
             print("%s stocks created" % stocks)
         else:
             msg_error += _("No stocks were created!") + "<br />"
         # liquidity traders creation
-        liquidity_manager = create_liquidity_manager(simulation)
+        liquidity_manager = create_liquidity_manager(simulation.id)
         if liquidity_manager:
             msg_info += _("%s was created..." % liquidity_manager.name) + "<br />"
         else:
@@ -87,6 +87,11 @@ def initialize_simulation(simulation_id):
     elif simulation.simulation_type == Simulation.ADVANCED:
         messages.info(simulation.user, _("Initialization of advanced simulation running..."))
     elif simulation.simulation_type == Simulation.LIVE or simulation.simulation_type == Simulation.INDEXED:
-        messages.warning(simulation.user, _("Initialization of live or indexed simulations is not yet implemented! Sorry."))
+        create_generic_stocks(simulation.id)
+        create_liquidity_manager(simulation.id)
+        for stock in simulation.stocks.all():
+            create_company_live(simulation.id, stock.id)
+        process_opening_transactions(simulation.id)
+        messages.info(simulation.user, _("Initialization of live simulation successful."))
     else:
         messages.error(simulation.user, _("Initialization of simulation failed!"))

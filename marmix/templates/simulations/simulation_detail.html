@@ -39,6 +39,11 @@
 {% endif %}
     <a class="btn btn-info" href="https://m3.marmix.ch/static/dashboard/#/clock" target="_blank"><i class="fa fa-clock-o "></i> Simulation clock</a>
 
+
+    <a class="btn btn-primary" href="{% url 'companies-shares-create-view' object.id object.get_sim_day.sim_round %}"><i class="fa fa-money"></i> Pay dividends</a>
+
+    <a class="btn btn-warning" href="{% url 'closes-market-view' object.id %}"><i class="fa fa-btc"></i> Set closing prices</a>
+
 {% include "simulations/includes/clock.html" with clock=object.get_sim_day %}
 
 <h2>Teams</h2>

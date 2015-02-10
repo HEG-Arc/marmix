@@ -28,6 +28,7 @@ from django.db import models
 from django.utils.translation import ugettext_lazy as _
 from django.core.cache import cache
 from django.utils import timezone
+from django import forms
 
 # Third-party app imports
 from django_extensions.db.models import TimeStampedModel
@@ -163,3 +164,7 @@ class TickerTick(models.Model):
         tick = {'ticker': self.ticker_id, 'timestamp': self.timestamp, 'sim_round': self.sim_round,
                 'sim_day': self.sim_day}
 
+
+class CompanyShareForm(forms.Form):
+    company = forms.CharField()
+    net_income = forms.DecimalField()

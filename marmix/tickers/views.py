@@ -24,6 +24,7 @@
 from hashlib import sha256
 import json
 import logging
+from decimal import Decimal
 
 # Core Django imports
 from django.views.generic.detail import DetailView
@@ -33,16 +34,20 @@ from django.template.context import RequestContext
 from django.http import Http404, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
+from django.forms.formsets import formset_factory
+from django.shortcuts import redirect
 
 # Third-party app imports
 from rest_framework import permissions, viewsets, status, filters
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
+from extra_views import ModelFormSetView
 
 # MarMix imports
-from .models import TickerCompany
+from .models import TickerCompany, CompanyShare, CompanyShareForm
 from .serializers import CompaniesSerializer
+from .tasks import prepare_dividends_payments, set_closing_price
 from simulations.models import Simulation
 
 
@@ -72,3 +77,39 @@ class CompaniesViewSet(viewsets.ModelViewSet):
         This view should return a list of all the companies for the authenticated user.
         """
         return TickerCompany.objects.filter(ticker__simulation_id=self.request.user.get_team.current_simulation_id)
+
+
+def CompanyShareCreateView(request, simulation_id, sim_round):
+    simulation = Simulation.objects.get(pk=simulation_id)
+    sim_round = int(sim_round)
+    initial = []
+    for stock in simulation.stocks.all():
+        initial.append({'company': stock.symbol})
+    CompanyShareFormset = formset_factory(CompanyShareForm)
+    if request.method == 'POST':
+        formset = CompanyShareFormset(request.POST, request.FILES)
+        if formset.is_valid():
+            for form in formset:
+                if form.cleaned_data.get('company'):
+                    company = TickerCompany.objects.get(symbol=form.cleaned_data['company'], ticker=simulation.ticker)
+                    net_income = form.cleaned_data['net_income']
+                    dividends = net_income * simulation.ticker.dividend_payoff_rate / 100 / company.stock.quantity
+                    if sim_round - 2 > 0:
+                        past = CompanyShare.objects.get(company=company, sim_round=sim_round - 2)
+                        drift = Decimal(net_income) / past.net_income - 1
+                        share_value = dividends * (1 + drift) / (Decimal(0.1) - drift)
+                    else:
+                        share_value = 0
+                        drift = 0
+                    share = CompanyShare(company=company, share_value=share_value, dividends=dividends, net_income=net_income, drift=drift, sim_round=sim_round - 1)
+                    share.save()
+            prepare_dividends_payments.apply_async([simulation.id, sim_round-1])
+        return redirect('simulations-detail-view', simulation.id)
+    else:
+        formset = CompanyShareFormset(initial=initial)
+    return render_to_response('tickers/company_shares_create.html', {'formset': formset, 'sim_round': sim_round, 'simulation_id': simulation_id})
+
+
+def closes_market(request, simulation_id):
+    set_closing_price(simulation_id)
+    return redirect('market-view')

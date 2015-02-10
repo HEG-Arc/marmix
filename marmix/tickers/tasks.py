@@ -65,13 +65,14 @@ def next_tick(simulation_id):
             if current_day == simulation.ticker.nb_days:
                 if current_round == simulation.ticker.nb_rounds:
                     simulation.state = Simulation.FINISHED
-                    prepare_dividends_payments.apply_async([simulation.id, current_round])
-                    sim_day = SimDay.objects.filter(simulation_id=simulation.id)[0]
-                    sim_day.state = Simulation.FINISHED
+                    if simulation.simulation_type == Simulation.INTRO or simulation.simulation_type == Simulation.ADVANCED:
+                        prepare_dividends_payments.apply_async([simulation.id, current_round])
+                    sim_day = SimDay(simulation=simulation, sim_round=current_round, sim_day=current_day+1, state=Simulation.FINISHED)
                     sim_day.save()
                 else:
                     simulation.state = Simulation.PAUSED
-                    prepare_dividends_payments.apply_async([simulation.id, current_round])
+                    if simulation.simulation_type == Simulation.INTRO or simulation.simulation_type == Simulation.ADVANCED:
+                        prepare_dividends_payments.apply_async([simulation.id, current_round])
                     sim_day = SimDay(simulation=simulation, sim_round=current_round+1, sim_day=0, state=simulation.state)
                     sim_day.save()
                 simulation.save()
@@ -92,6 +93,15 @@ def next_tick(simulation_id):
         stocks = Stock.objects.all().filter(simulation_id=simulation.id)
         for stock in stocks:
             liquidity_trader_order.apply_async(args=[simulation.id, stock.id])
+
+
+@app.task
+def create_company_live(simulation_id, stock_id):
+    simulation = Simulation.objects.get(pk=simulation_id)
+    stock = Stock.objects.get(pk=stock_id)
+    ticker = Ticker.objects.get(simulation=simulation)
+    company = TickerCompany(ticker=ticker, stock=stock, symbol=stock.symbol, name="Company blue %s" % stock.symbol)
+    company.save()
 
 
 @app.task
@@ -190,16 +200,14 @@ def cleanup_open_orders(simulation_id, current_round, current_day):
 @app.task
 def prepare_dividends_payments(simulation_id, current_round):
     simulation = Simulation.objects.get(pk=simulation_id)
-    if simulation.simulation_type == Simulation.INTRO or simulation.simulation_type == Simulation.ADVANCED:
-        #  We pay the dividends from the simulated data
-        companies = TickerCompany.objects.filter(ticker__simulation_id=simulation.id)
-        for company in companies:
-            stock_id = company.stock_id
-            share = CompanyShare.objects.get(company_id=company.id, sim_round=current_round)
-            dividend = share.dividends
-            tl = TransactionLine.objects.filter(stock_id=stock_id).values('team').annotate(quantity=Sum('quantity')).order_by('team')
-            if tl:
-                execute_dividends_payments.apply_async(args=[simulation.id, stock_id, tl, dividend])
+    companies = TickerCompany.objects.filter(ticker__simulation_id=simulation.id)
+    for company in companies:
+        stock_id = company.stock_id
+        share = CompanyShare.objects.get(company_id=company.id, sim_round=current_round)
+        dividend = share.dividends
+        tl = TransactionLine.objects.filter(stock_id=stock_id).values('team').annotate(quantity=Sum('quantity')).order_by('team')
+        if tl:
+            execute_dividends_payments.apply_async(args=[simulation.id, stock_id, tl, dividend])
 
 
 @app.task
@@ -212,3 +220,13 @@ def execute_dividends_payments(simulation_id, stock_id, tl, dividend):
         team = Team.objects.get(pk=line['team'])
         transaction_line = TransactionLine(transaction=transaction, stock=stock, team=team, quantity=line['quantity'], price=dividend, amount=line['quantity']*dividend, asset_type=TransactionLine.DIVIDENDS)
         transaction_line.save()
+
+
+@app.task
+def set_closing_price(simulation_id):
+    simulation = Simulation.objects.get(pk=simulation_id)
+    stocks = simulation.stocks.all()
+    for stock in stocks:
+        share = CompanyShare.objects.get(company__stock=stock, sim_round=simulation.get_sim_day['sim_round'])
+        stock.price = share.share_value
+        stock.save()

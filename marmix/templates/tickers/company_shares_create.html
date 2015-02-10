@@ -1,0 +1,13 @@
+{%  extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+    {{ block.super }} > Create new simulation
+{% endblock title %}
+
+{% block content %}
+<form action="#" method="post">{% csrf_token %}
+    {{ formset|crispy }}
+    <button type="submit" class="btn btn-success"><i class="fa fa-check-square-o"></i> Create shares</button>
+</form>
+{% endblock content %}

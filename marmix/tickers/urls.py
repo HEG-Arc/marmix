@@ -28,10 +28,12 @@ from django.conf.urls import patterns, url
 # Third-party app imports
 
 # MarMix imports
-from .views import CompaniesView
+from .views import CompaniesView, CompanyShareCreateView, closes_market
 
 
 urlpatterns = patterns('',
     #url(r'^foo/(?P<foo_id>\d+)/$', foo, name='foo'),
     url(r'^companies/$', CompaniesView.as_view(), name='companies-view'),
+    url(r'^(?P<simulation_id>\d+)/shares/(?P<sim_round>\d+)/$', CompanyShareCreateView, name='companies-shares-create-view'),
+    url(r'^(?P<simulation_id>\d+)/closes/$', closes_market, name='closes-market-view'),
 )
