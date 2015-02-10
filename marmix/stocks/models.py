@@ -45,9 +45,9 @@ class Stock(TimeStampedModel):
     name = models.CharField(verbose_name=_("name"), max_length=100, help_text=_("Full name of the stock"))
     description = models.TextField(verbose_name=_("description"), blank=True, help_text=_("Description of the stock (HTML)"))
     quantity = models.IntegerField(verbose_name=_("quantity"), default=1, help_text=_("Total quantity of stocks in circulation"))
-    price = models.DecimalField(verbose_name=_("stock price"), max_digits=14, decimal_places=4,
+    price = models.DecimalField(verbose_name=_("stock price"), max_digits=24, decimal_places=4,
                                 default='0.0000', help_text=_("Current stock price"))
-    opening_price = models.DecimalField(verbose_name=_("opening price"), max_digits=14, decimal_places=4,
+    opening_price = models.DecimalField(verbose_name=_("opening price"), max_digits=24, decimal_places=4,
                                         null=True, blank=True, help_text=_("Opening price"))
 
     class Meta:
@@ -73,7 +73,7 @@ class Stock(TimeStampedModel):
             # It's an update and we have the first quotation for this stock
             self.opening_price = self.price
             models.Model.save(self, force_insert, force_update, using, update_fields)
-            #set_opening_price.apply_async([self.id, self.price])
+            set_opening_price.apply_async([self.id, self.price])
         else:
             models.Model.save(self, force_insert, force_update, using, update_fields)
 
@@ -86,7 +86,7 @@ class Quote(models.Model):
     Quotes are the price of a given stock at a certain time.
     """
     stock = models.ForeignKey('Stock', verbose_name=_("stock"), related_name="quotes", help_text=_("Related stock"))
-    price = models.DecimalField(verbose_name=_("stock price"), max_digits=14, decimal_places=4,
+    price = models.DecimalField(verbose_name=_("stock price"), max_digits=24, decimal_places=4,
                                 default='0.0000', help_text=_("Current stock price"))
     timestamp = models.DateTimeField(verbose_name=_("timestamp"), auto_now_add=True, help_text=_("Timestamp of the quote"))
     sim_round = models.IntegerField(verbose_name=_("round"), default=0, help_text=_("Current round"))
@@ -112,13 +112,13 @@ class HistoricalPrice(models.Model):
     A summary of the quotes, updated each sim_day.
     """
     stock = models.ForeignKey('Stock', verbose_name=_("stock"), related_name="history", help_text=_("Related stock"))
-    price_open = models.DecimalField(verbose_name=_("open"), max_digits=14, decimal_places=4,
+    price_open = models.DecimalField(verbose_name=_("open"), max_digits=24, decimal_places=4,
                                      default='0.0000', help_text=_("Current stock price"))
-    price_high = models.DecimalField(verbose_name=_("high"), max_digits=14, decimal_places=4,
+    price_high = models.DecimalField(verbose_name=_("high"), max_digits=24, decimal_places=4,
                                      default='0.0000', help_text=_("Current stock price"))
-    price_low = models.DecimalField(verbose_name=_("low"), max_digits=14, decimal_places=4,
+    price_low = models.DecimalField(verbose_name=_("low"), max_digits=24, decimal_places=4,
                                     default='0.0000', help_text=_("Current stock price"))
-    price_close = models.DecimalField(verbose_name=_("close"), max_digits=14, decimal_places=4,
+    price_close = models.DecimalField(verbose_name=_("close"), max_digits=24, decimal_places=4,
                                       default='0.0000', help_text=_("Current stock price"))
     volume = models.IntegerField(verbose_name=_("volume"), help_text=_("Day volume"))
     sim_round = models.IntegerField(verbose_name=_("round"), default=0, help_text=_("Current round"))
@@ -157,7 +157,7 @@ class Order(models.Model):
     order_type = models.CharField(verbose_name=_("type of order"), max_length=5, choices=ORDER_TYPE_CHOICES,
                                   default=BID, help_text=_("The type of order (bid/ask)"))
     quantity = models.IntegerField(verbose_name=_("quantity ordered"), default=0, help_text=_("Quantity ordered. If the total quantity can not be provided, a new order will be created with the balance"))
-    price = models.DecimalField(verbose_name=_("price tag"), max_digits=14, decimal_places=4,
+    price = models.DecimalField(verbose_name=_("price tag"), max_digits=24, decimal_places=4,
                                 blank=True, null=True, help_text=_("Price tag for one stock. If NULL, best available price"))
     created_at = models.DateTimeField(verbose_name=_("created"), auto_now_add=True, help_text=_("Creation of the order"))
     transaction = models.ForeignKey('Transaction', verbose_name=_("transaction"), related_name="orders", null=True,
@@ -245,7 +245,7 @@ class TransactionLine(models.Model):
                               help_text=_("Related stock"))
     team = models.ForeignKey(Team, verbose_name=_("team"), related_name="transactions", help_text=_("Team"))
     quantity = models.IntegerField(verbose_name=_("quantity"), default=0, help_text=_("Quantity"))
-    price = models.DecimalField(verbose_name=_("price tag"), max_digits=14, decimal_places=4,
+    price = models.DecimalField(verbose_name=_("price tag"), max_digits=24, decimal_places=4,
                                 blank=True, null=True, help_text=_("Price tag for one stock"))
     amount = models.DecimalField(verbose_name=_("amount"), max_digits=14, decimal_places=4,
                                  blank=True, null=True, help_text=_("Total amount (signed)"))
