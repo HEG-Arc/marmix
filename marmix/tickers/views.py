@@ -83,10 +83,15 @@ def CompanyShareCreateView(request, simulation_id, sim_round):
                     company = TickerCompany.objects.get(symbol=form.cleaned_data['company'], ticker=simulation.ticker)
                     net_income = form.cleaned_data['net_income']
                     dividends = net_income * simulation.ticker.dividend_payoff_rate / 100 / company.stock.quantity
+                    if dividends < 0:
+                        dividends = 0
                     if sim_round - 2 > 0:
                         past = CompanyShare.objects.get(company=company, sim_round=sim_round - 2)
                         drift = Decimal(net_income) / past.net_income - 1
-                        share_value = dividends * (1 + drift) / (Decimal(0.1) - drift)
+                        try:
+                            share_value = dividends * (1 + drift) / (Decimal(0.1) - drift)
+                        except:
+                            share_value = 0
                     else:
                         share_value = 0
                         drift = 0
