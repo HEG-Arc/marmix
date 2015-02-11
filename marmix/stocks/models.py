@@ -32,7 +32,7 @@ from django_extensions.db.models import TimeStampedModel
 import django_filters
 
 # MarMix imports
-from simulations.models import Simulation, Team, current_sim_day, stock_historical_prices
+from simulations.models import Simulation, Team, current_sim_day, stock_historical_prices, current_cash, current_shares
 from .tasks import check_matching_orders, set_stock_quote, set_opening_price
 
 
@@ -152,6 +152,15 @@ class Order(models.Model):
         (ASK, _('ask')),
     )
 
+    SUBMITTED = 'SUBMITTED'
+    PROCESSED = 'PROCESSED'
+    FAILED = 'FAILED'
+    ORDER_STATE_CHOICES = (
+        (SUBMITTED, _('submitted')),
+        (PROCESSED, _('processed')),
+        (FAILED, _('failed')),
+    )
+
     stock = models.ForeignKey('Stock', verbose_name=_("stock"), related_name="orders", help_text=_("Related stock"))
     team = models.ForeignKey(Team, verbose_name=_("team"), related_name="orders", help_text=_("Team which placed the order"))
     order_type = models.CharField(verbose_name=_("type of order"), max_length=5, choices=ORDER_TYPE_CHOICES,
@@ -162,6 +171,8 @@ class Order(models.Model):
     created_at = models.DateTimeField(verbose_name=_("created"), auto_now_add=True, help_text=_("Creation of the order"))
     transaction = models.ForeignKey('Transaction', verbose_name=_("transaction"), related_name="orders", null=True,
                                     blank=True, help_text=_("Related transaction"))
+    state = models.CharField(verbose_name=_("state of the order"), max_length=25, choices=ORDER_STATE_CHOICES,
+                             default=SUBMITTED, help_text=_("The state of the order (submitted/processed/failed)"))
     sim_round = models.IntegerField(verbose_name=_("round"), default=0, help_text=_("Current round"))
     sim_day = models.IntegerField(verbose_name=_("day"), default=0, help_text=_("Current day"))
     timestamp = models.DateTimeField(verbose_name=_("updated"), auto_now=True, help_text=_("Last update of the order"))
@@ -328,6 +339,7 @@ def process_order(simulation, sell_order, buy_order, quantity):
     :param quantity: The quantity to exchange (could be a partial fulfillment).
     :return: Nothing.
     """
+    ready_to_process = True
     new_transaction = Transaction(simulation=simulation, transaction_type=Transaction.ORDER)
     new_transaction.save()
     price = 0
@@ -348,8 +360,17 @@ def process_order(simulation, sell_order, buy_order, quantity):
             price = sell_order.price
     #if sell_order.team.team_type == Team.LIQUIDITY_MANAGER or buy_order.team.team_type == Team.LIQUIDITY_MANAGER:
     # TODO: Quick fix
-    if price > Decimal(1.5) * sell_order.stock.price:
-        price = 0
+    if price > Decimal(1.5) * sell_order.stock.price or price < Decimal(0.5) * sell_order.stock.price:
+        ready_to_process = False
+    if current_shares(sell_order.team_id) < quantity:
+        # Delete the order
+        ready_to_process = False
+    if current_cash(buy_order.team_id, simulation.id) < quantity * price:
+        # Delete the order
+        ready_to_process = False
+
+    # We check balance and share holding
+    #
     if price > 0:
         sell = TransactionLine(transaction=new_transaction, stock=sell_order.stock, team=sell_order.team,
                                quantity=-1*quantity, price=price, amount=-1*quantity*price,
