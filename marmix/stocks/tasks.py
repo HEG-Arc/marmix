@@ -61,7 +61,7 @@ def check_matching_orders(order_id):
         if not order.price:
             logger.debug("No price asked, market order.")
             # This is a market order
-            order_book = Order.objects.filter(stock=order.stock).filter(transaction__isnull=True).filter(order_type=book_order_type).filter(price__isnull=False)
+            order_book = Order.objects.filter(stock=order.stock).filter(state=Order.SUBMITTED).filter(order_type=book_order_type).filter(price__isnull=False)
             if order_book:
                 logger.debug("We have limit orders in the book")
                 qty = order.quantity
@@ -90,7 +90,7 @@ def check_matching_orders(order_id):
         else:
             # This is a limit order
             logger.debug("Price asked, limit order.")
-            order_book = Order.objects.filter(stock=order.stock).filter(transaction__isnull=True).filter(order_type=book_order_type).filter(price__isnull=True)
+            order_book = Order.objects.filter(stock=order.stock).filter(state=Order.SUBMITTED).filter(order_type=book_order_type).filter(price__isnull=True)
             if order_book:
                 logger.debug("We have market orders in the book")
                 qty = order.quantity
@@ -117,7 +117,7 @@ def check_matching_orders(order_id):
                         logger.info("New transaction: STOCK: %s QTY: %s SELLER: %s BUYER: %s" % (order.stock, qty_traded, sell_order.team, buy_order.team))
                         break
             else:
-                order_book = Order.objects.filter(stock=order.stock).filter(transaction__isnull=True).filter(order_type=book_order_type).filter(price__isnull=False)
+                order_book = Order.objects.filter(stock=order.stock).filter(state=Order.SUBMITTED).filter(order_type=book_order_type).filter(price__isnull=False)
                 if order_book:
                     logger.debug("We have limit orders in the book")
                     qty = order.quantity
