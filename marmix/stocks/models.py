@@ -399,8 +399,10 @@ def process_order(simulation, sell_order, buy_order, quantity):
         buy.save()
         buy_cost.save()
         sell_order.transaction = new_transaction
+        sell_order.state = Order.PROCESSED
         sell_order.save()
         buy_order.transaction = new_transaction
+        buy_order.state = Order.PROCESSED
         buy_order.save()
         set_stock_quote.apply_async([sell_order.stock.id, price])
         if new_sell_order:
