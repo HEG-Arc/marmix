@@ -192,8 +192,9 @@ class Order(models.Model):
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         self.sim_round = current_sim_day(self.stock.simulation_id)['sim_round']
         self.sim_day = current_sim_day(self.stock.simulation_id)['sim_day']
-        self.state = self.SUBMITTED
-        if self.transaction is None:
+        if not self.id:
+            self.state = self.SUBMITTED
+        if self.state == self.SUBMITTED:
             models.Model.save(self, force_insert, force_update, using, update_fields)
             check_matching_orders.apply_async([self.id])
         else:
