@@ -190,7 +190,7 @@ def open_market(simulation_id):
 def open_market_stock(stock_id):
     from .models import Stock, Order
     stock = Stock.objects.get(pk=stock_id)
-    market_orders = Order.objects.filter(stock_id=stock.id).filter(transaction__isnull=True).filter(price__isnull=True).order_by('created_at')
+    market_orders = Order.objects.filter(stock_id=stock.id).filter(state=Order.SUBMITTED).filter(price__isnull=True).order_by('created_at')
     if market_orders:
         for order in market_orders:
             check_matching_orders(order.id)
