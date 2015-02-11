@@ -105,12 +105,22 @@ def current_cash(team_id, simulation_id):
     from stocks.models import TransactionLine
     tl = TransactionLine.objects.filter(transaction__simulation_id=simulation_id).filter(team_id=team_id).exclude(
         asset_type=TransactionLine.STOCKS).values('team_id').annotate(cash_amount=Sum('amount')).order_by('team_id')
+    try:
+        cash = tl[0]['cash_amount']
+    except:
+        cash = 0
+    return cash
 
 
 def current_shares(team_id, stock_id):
     from stocks.models import TransactionLine
     tl = TransactionLine.objects.filter(team_id=team_id).filter(asset_type=TransactionLine.STOCKS).filter(
         stock_id=stock_id).values('team_id').annotate(shares=Sum('quantity')).order_by('team_id')
+    try:
+        shares = tl[0]['shares']
+    except:
+        shares = 0
+    return shares
 
 
 def current_holdings(team_id, simulation_id):
