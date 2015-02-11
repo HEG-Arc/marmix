@@ -363,16 +363,15 @@ def process_order(simulation, sell_order, buy_order, quantity):
     # TODO: Quick fix
     if price > Decimal(1.5) * sell_order.stock.price or price < Decimal(0.5) * sell_order.stock.price:
         ready_to_process = False
-    if current_shares(sell_order.team_id) < quantity:
-        # Delete the order
+    if current_shares(sell_order.team_id, sell_order.stock_id) < quantity:
         ready_to_process = False
+        sell_order.state = Order.FAILED
+        sell_order.save()
     if current_cash(buy_order.team_id, simulation.id) < quantity * price:
-        # Delete the order
         ready_to_process = False
-
-    # We check balance and share holding
-    #
-    if price > 0:
+        buy_order.state = Order.FAILED
+        buy_order.save()
+    if price > 0 and ready_to_process:
         sell = TransactionLine(transaction=new_transaction, stock=sell_order.stock, team=sell_order.team,
                                quantity=-1*quantity, price=price, amount=-1*quantity*price,
                                asset_type=TransactionLine.STOCKS)
