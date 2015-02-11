@@ -192,7 +192,7 @@ class Order(models.Model):
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         self.sim_round = current_sim_day(self.stock.simulation_id)['sim_round']
         self.sim_day = current_sim_day(self.stock.simulation_id)['sim_day']
-        if not self.id:
+        if self.pk is None:
             self.state = self.SUBMITTED
         if self.state == self.SUBMITTED:
             models.Model.save(self, force_insert, force_update, using, update_fields)
