@@ -88,8 +88,11 @@ def CompanyShareCreateView(request, simulation_id, sim_round):
                     if sim_round - 2 > 0:
                         past = CompanyShare.objects.get(company=company, sim_round=sim_round - 2)
                         drift = Decimal(net_income) / past.net_income - 1
+                        R = Decimal(0.1)
+                        if drift > R - Decimal(0.03):
+                            R = drift + Decimal(0.03)
                         try:
-                            share_value = dividends * (1 + drift) / (Decimal(0.1) - drift)
+                            share_value = dividends * (1 + drift) / (R - drift)
                         except:
                             share_value = 0
                     else:
