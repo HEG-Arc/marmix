@@ -101,6 +101,18 @@ def current_balance(team_id, simulation_id):
         return None
 
 
+def current_cash(team_id, simulation_id):
+    from stocks.models import TransactionLine
+    tl = TransactionLine.objects.filter(transaction__simulation_id=simulation_id).filter(team_id=team_id).exclude(
+        asset_type=TransactionLine.STOCKS).values('team_id').annotate(cash_amount=Sum('amount')).order_by('team_id')
+
+
+def current_shares(team_id, stock_id):
+    from stocks.models import TransactionLine
+    tl = TransactionLine.objects.filter(team_id=team_id).filter(asset_type=TransactionLine.STOCKS).filter(
+        stock_id=stock_id).values('team_id').annotate(shares=Sum('quantity')).order_by('team_id')
+
+
 def current_holdings(team_id, simulation_id):
     from stocks.models import TransactionLine
     stocks_list = {'stocks': [], 'cash': {}, 'balance': {'market_value': 0, 'purchase_value': 0, 'gain': 0, 'gain_p': 0}, 'clock': current_sim_day(simulation_id)}
