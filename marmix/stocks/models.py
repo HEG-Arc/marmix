@@ -297,7 +297,7 @@ def process_opening_transactions(simulation_id):
         if team.team_type == Team.PLAYERS:
             amount = simulation.capital
         elif team.team_type == Team.LIQUIDITY_MANAGER:
-            amount = simulation.capital
+            amount = simulation.capital * simulation.nb_teams * 9
         else:
             amount = 0
         team.current_simulation = simulation
