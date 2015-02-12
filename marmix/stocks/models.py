@@ -364,12 +364,14 @@ def process_order(simulation, sell_order, buy_order, quantity):
             price = sell_order.price
     #if sell_order.team.team_type == Team.LIQUIDITY_MANAGER or buy_order.team.team_type == Team.LIQUIDITY_MANAGER:
     # TODO: Quick fix
+    print("PRICE: %s" % price)
     if stock.price == 0 and stock.opening_price == 0:
         # We open the market
         cursor = connection.cursor()
         cursor.execute('SELECT SUM(price * abs(quantity)) as price, SUM(abs(quantity)) as qty '
                        'FROM stocks_order '
-                       'WHERE stock_id=%s AND state=%s', [stock.id, Order.SUBMITTED])
+                       'WHERE stock_id=%s AND state=%s AND order_type=%s',
+                       [stock.id, Order.SUBMITTED, Order.ASK])
         weighted_mean_price = cursor.fetchone()
     elif price > Decimal(1.5) * stock.price or price < Decimal(0.5) * stock.price:
         ready_to_process = False

@@ -54,6 +54,8 @@
                 <ul>
                 {% for simulation in object.simulations.all %}
                 <li><a href="{% url "ranking-view" simulation.id %}" target="_blank">{{ simulation.code }}</a> ({{ simulation.created }})</li>
+                {% empty %}
+                    <p>No simulation yet!</p>
                 {% endfor %}
                 </ul>
             </div>

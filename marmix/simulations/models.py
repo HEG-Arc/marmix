@@ -192,14 +192,15 @@ def rank_list(simulation_id):
     from stocks.models import TransactionLine
     cursor = connection.cursor()
     cursor.execute('SELECT tm.name, tm.id, SUM(CASE WHEN tl.asset_type=%s THEN s.price*tl.quantity ELSE tl.amount END) '
-                   'as balance '
+                   'as balance, '
+                   'SUM(CASE WHEN tl.asset_type=%s THEN tl.quantity ELSE 0 END) as size '
                    'FROM stocks_transactionline tl '
                    'LEFT JOIN stocks_stock s ON tl.stock_id=s.id '
                    'LEFT JOIN stocks_transaction st ON tl.transaction_id=st.id '
                    'LEFT JOIN simulations_team tm ON tl.team_id = tm.id '
                    'WHERE tl.team_id IN (SELECT team_id FROM simulations_team_simulations WHERE simulation_id=%s) '
                    'AND st.simulation_id=%s AND tm.team_type=%s GROUP BY tm.name, tm.id ORDER BY balance DESC',
-                   [TransactionLine.STOCKS, simulation_id, simulation_id, Team.PLAYERS])
+                   [TransactionLine.STOCKS, TransactionLine.STOCKS, simulation_id, simulation_id, Team.PLAYERS])
     rank_list = dictfetchall(cursor)
     return rank_list
 
