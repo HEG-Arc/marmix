@@ -297,6 +297,8 @@ class Simulation(TimeStampedModel):
                                            default='10.0000', help_text=_("Transaction costs per order"))
     variable_transaction_cost = models.FloatField(verbose_name=_("variable transaction costs (%)"), default=1,
                                                   help_text=_("Variable transaction costs per order in %"))
+    #expected_return = models.FloatField(verbose_name=_("variable transaction costs (%)"), default=1,
+    #                                              help_text=_("Variable transaction costs per order in %"))
 
     def save(self, *args, **kwargs):
         if not self.code:

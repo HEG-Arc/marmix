@@ -26,6 +26,7 @@ from decimal import Decimal, getcontext
 # Core Django imports
 from django.db import models, transaction
 from django.utils.translation import ugettext_lazy as _
+from django.db import connection
 
 # Third-party app imports
 from django_extensions.db.models import TimeStampedModel
@@ -341,6 +342,7 @@ def process_order(simulation, sell_order, buy_order, quantity):
     :param quantity: The quantity to exchange (could be a partial fulfillment).
     :return: Nothing.
     """
+    stock = Stock.objects.get(pk=sell_order.stock.id)
     ready_to_process = True
     new_transaction = Transaction(simulation=simulation, transaction_type=Transaction.ORDER)
     new_transaction.save()
@@ -362,7 +364,14 @@ def process_order(simulation, sell_order, buy_order, quantity):
             price = sell_order.price
     #if sell_order.team.team_type == Team.LIQUIDITY_MANAGER or buy_order.team.team_type == Team.LIQUIDITY_MANAGER:
     # TODO: Quick fix
-    if price > Decimal(1.5) * sell_order.stock.price or price < Decimal(0.5) * sell_order.stock.price:
+    if stock.price == 0 and stock.opening_price == 0:
+        # We open the market
+        cursor = connection.cursor()
+        cursor.execute('SELECT SUM(price * abs(quantity)) as price, SUM(abs(quantity)) as qty '
+                       'FROM stocks_order '
+                       'WHERE stock_id=%s AND state=%s', [stock.id, Order.SUBMITTED])
+        weighted_mean_price = cursor.fetchone()
+    elif price > Decimal(1.5) * stock.price or price < Decimal(0.5) * stock.price:
         ready_to_process = False
     if current_shares(sell_order.team_id, sell_order.stock_id) < quantity:
         ready_to_process = False
@@ -373,25 +382,25 @@ def process_order(simulation, sell_order, buy_order, quantity):
         buy_order.state = Order.FAILED
         buy_order.save()
     if price > 0 and ready_to_process:
-        sell = TransactionLine(transaction=new_transaction, stock=sell_order.stock, team=sell_order.team,
+        sell = TransactionLine(transaction=new_transaction, stock=stock, team=sell_order.team,
                                quantity=-1*quantity, price=price, amount=-1*quantity*price,
                                asset_type=TransactionLine.STOCKS)
         sell_revenue = TransactionLine(transaction=new_transaction, team=sell_order.team,
                                        quantity=1, price=quantity*price, amount=quantity*price,
                                        asset_type=TransactionLine.CASH)
-        buy = TransactionLine(transaction=new_transaction, stock=buy_order.stock, team=buy_order.team,
+        buy = TransactionLine(transaction=new_transaction, stock=stock, team=buy_order.team,
                               quantity=quantity, price=price, amount=quantity*price,
                               asset_type=TransactionLine.STOCKS)
         buy_cost = TransactionLine(transaction=new_transaction, team=buy_order.team,
                                    quantity=quantity, price=-1*quantity*price, amount=-1*quantity*price,
                                    asset_type=TransactionLine.CASH)
         if sell_order.quantity != quantity:
-            new_sell_order = Order(stock=sell_order.stock, team=sell_order.team, order_type=sell_order.order_type,
+            new_sell_order = Order(stock=stock, team=sell_order.team, order_type=sell_order.order_type,
                                    quantity=sell_order.quantity-quantity, price=sell_order.price,
                                    created_at=sell_order.created_at)
             sell_order.quantity = quantity
         if buy_order.quantity != quantity:
-            new_buy_order = Order(stock=buy_order.stock, team=buy_order.team, order_type=buy_order.order_type,
+            new_buy_order = Order(stock=stock, team=buy_order.team, order_type=buy_order.order_type,
                                   quantity=buy_order.quantity-quantity, price=buy_order.price,
                                   created_at=buy_order.created_at)
             buy_order.quantity = quantity
@@ -405,7 +414,7 @@ def process_order(simulation, sell_order, buy_order, quantity):
         buy_order.transaction = new_transaction
         buy_order.state = Order.PROCESSED
         buy_order.save()
-        set_stock_quote.apply_async([sell_order.stock.id, price])
+        set_stock_quote.apply_async([stock.id, price])
         if new_sell_order:
             new_sell_order.save()
         if new_buy_order:
