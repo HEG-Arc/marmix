@@ -11,6 +11,7 @@ from django.contrib import admin
 admin.autodiscover()
 import permission
 permission.autodiscover()
+from simulations.views import RankingView
 
 urlpatterns = patterns('',
     url(r'^$',  # noqa
@@ -35,6 +36,7 @@ urlpatterns = patterns('',
     url(r'^customers/', include('customers.urls')),
     url(r'^simulations/', include('simulations.urls')),
     url(r'^tickers/', include('tickers.urls')),
+    url(r'^ranking/(?P<pk>\d+)/', RankingView.as_view(), name='ranking-view')
 
 ) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

@@ -47,6 +47,15 @@
                 <h2>Market tools</h2>
                 <a class="btn btn-info" href="https://m3.marmix.ch/static/dashboard/#/" target="_blank"><i class="fa fa-line-chart"></i> Trading dashboard</a>
                 <a class="btn btn-info" href="https://m3.marmix.ch/static/dashboard/#/ticker" target="_blank"><i class="fa fa-money"></i> Companies financials</a>
+                {% if request.user.get_team.current_simulation_id %}
+                    <a class="btn btn-info" href="{% url "ranking-view" request.user.get_team.current_simulation_id %}" target="_blank"><i class="fa fa-list-ol"></i> Current ranking</a>
+                {% endif %}
+                <h2>Past simulations</h2>
+                <ul>
+                {% for simulation in object.simulations.all %}
+                <li><a href="{% url "ranking-view" simulation.id %}" target="_blank">{{ simulation.code }}</a> ({{ simulation.created }})</li>
+                {% endfor %}
+                </ul>
             </div>
         </div>
     </div>

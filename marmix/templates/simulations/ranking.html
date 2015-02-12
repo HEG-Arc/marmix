@@ -1,0 +1,25 @@
+{%  extends "base.html" %}
+{% load humanize %}
+
+{% block title %}
+    {{ block.super }} > Ranking
+{% endblock title %}
+
+{% block content %}
+<h1>Ranking {{ simulation.code }}</h1>
+
+<dl>
+<dt>Type:</dt><dd>{{ simulation.get_simulation_type_display }}</dd>
+<dt>Date:</dt><dd>{{ simulation.created|date:"SHORT_DATE_FORMAT" }}</dd>
+<dt>Initial capital:</dt><dd>{{ simulation.capital|stringformat:".f"|intcomma }}</dd>
+<dt>Nb of shares per company:</dt><dd>{{ simulation.nb_shares|intcomma }}</dd>
+<dt>Transaction costs (fixed):</dt><dd>{{ simulation.transaction_cost|stringformat:".2f"|intcomma }}</dd>
+<dt>Transaction costs (variable):</dt><dd>{{ simulation.variable_transaction_cost|intcomma }}%</dd>
+</dl>
+
+<h2>Ranking</h2>
+
+{% include "simulations/includes/ranking_table.html" with teams=simulation.get_rank_list %}
+
+
+{% endblock content %}

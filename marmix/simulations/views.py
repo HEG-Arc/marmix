@@ -55,7 +55,7 @@ from rest_framework.response import Response
 
 
 # MarMix imports
-from .models import Simulation, Currency, Team, current_sim_day, SimDay
+from .models import Simulation, Currency, Team, current_sim_day, SimDay, rank_list
 from .serializers import SimulationSerializer, CurrencySerializer, TeamSerializer
 from .forms import TeamsSelectionForm, TeamJoinForm
 from .tasks import initialize_simulation
@@ -372,6 +372,14 @@ class MarketView(View):
         team = self.request.user.get_team
         simulation = get_object_or_404(Simulation, pk=team.current_simulation_id)
         return render(request, 'simulations/market.html', {'simulation': simulation, })
+
+
+class RankingView(View):
+
+    def get(self, request, *args, **kwargs):
+        simulation = get_object_or_404(Simulation, pk=self.kwargs['pk'])
+        ranking = rank_list(simulation.id)
+        return render(request, 'simulations/ranking.html', {'simulation': simulation, 'ranking': ranking})
 
 
 class ClockViewSet(viewsets.ViewSet):

@@ -1,3 +1,4 @@
+{% load humanize %}
 <table class="table table-striped">
     <thead>
         <tr>
@@ -10,8 +11,8 @@
     {% for team in teams %}
         <tr>
             <td>{{ forloop.counter }}</td>
-            <td>{{ team.name }} ({{ team.team_id }})</td>
-            <td>{{ team.balance|stringformat:".2f" }}</td>
+            <td>{{ team.name }}</td>
+            <td>{{ team.balance|stringformat:".2f"|intcomma }}</td>
         </tr>
         {% empty %}
         <tr>
