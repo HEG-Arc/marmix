@@ -112,6 +112,17 @@ def current_cash(team_id, simulation_id):
     return cash
 
 
+def current_stock_value(team_id, simulation_id):
+    from stocks.models import TransactionLine
+    tl = TransactionLine.objects.filter(transaction__simulation_id=simulation_id).filter(team_id=team_id).filter(
+        asset_type=TransactionLine.STOCKS).values('team_id').annotate(cash_amount=Sum('amount')).order_by('team_id')
+    try:
+        cash = tl[0]['cash_amount']
+    except:
+        cash = 0
+    return cash
+
+
 def current_shares(team_id, stock_id):
     from stocks.models import TransactionLine
     tl = TransactionLine.objects.filter(team_id=team_id).filter(asset_type=TransactionLine.STOCKS).filter(
@@ -180,13 +191,15 @@ def current_holdings(team_id, simulation_id):
 def rank_list(simulation_id):
     from stocks.models import TransactionLine
     cursor = connection.cursor()
-    cursor.execute('SELECT tl.team_id, t.name, SUM(CASE WHEN tl.asset_type=%s THEN s.price*tl.quantity ELSE tl.amount END) '
-                   'as balance FROM stocks_transactionline tl LEFT JOIN stocks_stock s ON tl.stock_id=s.id '
-                   'LEFT JOIN simulations_team t ON t.id=tl.team_id L'
-                   'EFT JOIN simulations_team_simulations si ON si.team_id=tl.team_id '
-                   'WHERE t.team_type=%s AND si.simulation_id=%s '
-                   'GROUP BY tl.team_id, t.name '
-                   'ORDER BY balance DESC', [TransactionLine.STOCKS, Team.PLAYERS, simulation_id])
+    cursor.execute('SELECT tm.name, tm.id, SUM(CASE WHEN tl.asset_type=%s THEN s.price*tl.quantity ELSE tl.amount END) '
+                   'as balance '
+                   'FROM stocks_transactionline tl '
+                   'LEFT JOIN stocks_stock s ON tl.stock_id=s.id '
+                   'LEFT JOIN stocks_transaction st ON tl.transaction_id=st.id '
+                   'LEFT JOIN simulations_team tm ON tl.team_id = tm.id '
+                   'WHERE tl.team_id IN (SELECT team_id FROM simulations_team_simulations WHERE simulation_id=%s) '
+                   'AND st.simulation_id=%s AND tm.team_type=%s GROUP BY tm.name, tm.id ORDER BY balance DESC',
+                   [TransactionLine.STOCKS, simulation_id, simulation_id, Team.PLAYERS])
     rank_list = dictfetchall(cursor)
     return rank_list
 
