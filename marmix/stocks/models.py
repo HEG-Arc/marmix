@@ -401,14 +401,15 @@ def process_order(simulation, sell_order, buy_order, quantity):
                     sell_order.save()
                 ready_to_process = False
         else:
-            if buy_order.team.team_type == Team.LIQUIDITY_MANAGER:
-                buy_order.state = Order.FAILED
-                buy_order.save()
-                ready_to_process = False
-            if sell_order.team.team_type == Team.LIQUIDITY_MANAGER:
-                sell_order.state = Order.FAILED
-                sell_order.save()
-                ready_to_process = False
+            pass
+            # if buy_order.team.team_type == Team.LIQUIDITY_MANAGER:
+            #     buy_order.state = Order.FAILED
+            #     buy_order.save()
+            #     ready_to_process = False
+            # if sell_order.team.team_type == Team.LIQUIDITY_MANAGER:
+            #     sell_order.state = Order.FAILED
+            #     sell_order.save()
+            #     ready_to_process = False
     if price > 0 and ready_to_process:
         sell = TransactionLine(transaction=new_transaction, stock=stock, team=sell_order.team,
                                quantity=-1*quantity, price=price, amount=-1*quantity*price,
