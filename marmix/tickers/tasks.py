@@ -207,7 +207,7 @@ def prepare_dividends_payments(simulation_id, current_round):
         stock_id = company.stock_id
         share = CompanyShare.objects.get(company_id=company.id, sim_round=current_round)
         dividend = share.dividends
-        tl = TransactionLine.objects.filter(stock_id=stock_id).filter(asset_type=TransactionLine.STOCKS).values('team').annotate(quantity=Sum('quantity')).order_by('team')
+        tl = TransactionLine.objects.filter(stock_id=stock_id).filter(asset_type=TransactionLine.STOCKS).filter(transaction__sim_round__lte=current_round).values('team').annotate(quantity=Sum('quantity')).order_by('team')
         if tl:
             execute_dividends_payments.apply_async(args=[simulation.id, stock_id, tl, dividend])
 
