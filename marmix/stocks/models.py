@@ -397,7 +397,7 @@ def process_order(simulation, sell_order, buy_order, quantity):
                 ready_to_process = False
             if sell_order.team.team_type == Team.LIQUIDITY_MANAGER:
                 if spread > 0:
-                    sell_order.price = spread / 2 + max_bid.price
+                    sell_order.price = Decimal(spread / 2) + max_bid.price
                     sell_order.save()
                 ready_to_process = False
         else:
