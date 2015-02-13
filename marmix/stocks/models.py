@@ -392,7 +392,7 @@ def process_order(simulation, sell_order, buy_order, quantity):
             # It's too dangerous for the liquidity manager
             if buy_order.team.team_type == Team.LIQUIDITY_MANAGER:
                 if spread > 0:
-                    buy_order.price = spread / 2 + max_bid.price
+                    buy_order.price = Decimal(spread / 2) + max_bid.price
                     buy_order.save()
                 ready_to_process = False
             if sell_order.team.team_type == Team.LIQUIDITY_MANAGER:
