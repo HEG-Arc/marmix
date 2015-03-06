@@ -39,5 +39,5 @@
   font-family: 'Shadows Into Light';
   font-style: normal;
   font-weight: 400;
-  src: local('Shadows Into Light'), local('ShadowsIntoLight'), url(http://fonts.gstatic.com/s/shadowsintolight/v6/clhLqOv7MXn459PTh0gXYFK2TSYBz0eNcHnp4YqE4Ts.woff2) format('woff2'), url(http://fonts.gstatic.com/s/shadowsintolight/v6/clhLqOv7MXn459PTh0gXYHW1xglZCgocDnD_teV2lMU.woff) format('woff');
+  src: local('Shadows Into Light'), local('ShadowsIntoLight'), url('fonts/shadows-into-light.woff2') format('woff2'), url('fonts/shadows-into-light.woff') format('woff');
 }
