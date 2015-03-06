@@ -93,7 +93,7 @@
                                 {% endif %}
                                 {% if request.user.is_authenticated %}
                                 <li class="dropdown">
-									<a class="dropdown-toggle" href="{% url 'django.contrib.flatpages.views.flatpage' url="help/" %}">
+									<a class="dropdown-toggle" href="{% url 'help' %}">
 										Help
 										<i class="fa fa-angle-down"></i>
 									</a>
@@ -276,31 +276,32 @@
 								<div class="col-md-3">
 									<h5>About</h5>
 									<ul class="list icons list-unstyled">
-										<li><i class="fa fa-caret-right"></i> <a href="#">About Us</a></li>
-										<li><i class="fa fa-caret-right"></i> <a href="#">Services</a></li>
-										<li><i class="fa fa-caret-right"></i> <a href="#">Plans</a></li>
+										<li><i class="fa fa-caret-right"></i> <a href="{% url 'about' %}">About Us</a></li>
+										<li><i class="fa fa-caret-right"></i> <a href="{% url 'django.contrib.flatpages.views.flatpage' url="about/services/" %}">Services</a></li>
+										<li><i class="fa fa-caret-right"></i> <a href="{% url 'django.contrib.flatpages.views.flatpage' url="about/plans/" %}">Plans</a></li>
 									</ul>
 								</div>
 								<div class="col-md-3">
 									<h5>Game</h5>
 									<ul class="list icons list-unstyled">
-										<li><i class="fa fa-caret-right"></i> <a href="#">Features</a></li>
+										<li><i class="fa fa-caret-right"></i> <a href="{% url 'django.contrib.flatpages.views.flatpage' url="about/features/" %}">Features</a></li>
 									</ul>
 								</div>
 								<div class="col-md-3">
 									<h5>Help</h5>
 									<ul class="list icons list-unstyled">
-										<li><i class="fa fa-caret-right"></i> <a href="#">Manual</a></li>
-										<li><i class="fa fa-caret-right"></i> <a href="#">Market Rules</a></li>
+										<li><i class="fa fa-caret-right"></i> <a href="{% url 'django.contrib.flatpages.views.flatpage' url="help/manual/" %}">Manual</a></li>
+										<li><i class="fa fa-caret-right"></i> <a href="{% url 'django.contrib.flatpages.views.flatpage' url="help/market-rules/" %}">Market Rules</a></li>
+                                        <li><i class="fa fa-caret-right"></i> <a href="{% url 'django.contrib.flatpages.views.flatpage' url="help/faq/" %}">FAQ</a></li>
 									</ul>
 								</div>
 								<div class="col-md-3">
 									<h5>Extra Pages</h5>
 									<ul class="list icons list-unstyled">
-										<li><i class="fa fa-caret-right"></i> <a href="#">Team</a></li>
-										<li><i class="fa fa-caret-right"></i> <a href="#">FAQ</a></li>
-										<li><i class="fa fa-caret-right"></i> <a href="#">Sitemap</a></li>
-                                        <li><i class="fa fa-caret-right"></i> <a href="#">Code</a></li>
+										<li><i class="fa fa-caret-right"></i> <a href="{% url 'django.contrib.flatpages.views.flatpage' url="about/team/" %}">Team</a></li>
+										<li><i class="fa fa-caret-right"></i> <a href="{% url 'contact-us' %}">Contact us</a></li>
+										<li><i class="fa fa-caret-right"></i> <a href="{% url 'sitemap' %}">Sitemap</a></li>
+                                        <li><i class="fa fa-caret-right"></i> <a href="{% url 'django.contrib.flatpages.views.flatpage' url="about/code/" %}">Code</a></li>
 									</ul>
 								</div>
 							</div>
