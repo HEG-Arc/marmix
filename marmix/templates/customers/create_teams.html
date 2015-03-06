@@ -2,14 +2,24 @@
 {% load crispy_forms_tags %}
 
 {% block title %}
-    {{ block.super }} > Customers > Create teams
+    Customers - Create teams
 {% endblock title %}
 
 {% block content %}
-<h1>Teams creation</h1>
-<form action="{% url 'teams-create-view' customer_id %}" method="post">
-    {% csrf_token %}
-    {{ form|crispy }}
-    <button type="submit" class="btn btn-success"><i class="fa fa-check-square-o"></i> Create teams</button>
-</form>
+<div role="main" class="main">
+    <section class="full">
+    </section>
+    <div class="container">
+        <h1>Teams creation</h1>
+        <div class="row">
+            <div class="col-md-12">
+                <form action="{% url 'teams-create-view' customer_id %}" method="post">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    <button type="submit" class="btn btn-success"><i class="fa fa-check-square-o"></i> Create teams</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock content %}

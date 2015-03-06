@@ -1,16 +1,27 @@
 {%  extends "base.html" %}
 
 {% block title %}
-    {{ block.super }} > Simulations
+    Simulations
 {% endblock title %}
 
 {% block content %}
-<h1>{% if request.user.is_staff %}
-        All
-    {% else %}
-        {{ request.user|capfirst }}
-    {% endif %}Simulations</h1>
-
-{% include "simulations/includes/simulations_table.html" with simulations=object_list %}
-
+<div role="main" class="main">
+    <section class="full">
+    </section>
+    <div class="container">
+        <h1>
+            {% if request.user.is_staff %}
+                All
+            {% else %}
+                {{ request.user|capfirst }}
+            {% endif %}
+            Simulations
+        </h1>
+        <div class="row">
+            <div class="col-md-12">
+                {% include "simulations/includes/simulations_table.html" with simulations=object_list %}
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock content %}

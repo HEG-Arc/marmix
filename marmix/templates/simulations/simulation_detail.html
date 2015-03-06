@@ -1,60 +1,69 @@
 {%  extends "base.html" %}
 
 {% block title %}
-    {{ block.super }} > Simulation detail
+    Customer detail
 {% endblock title %}
 
 {% block content %}
-<h1>{{ object.customer }}</h1>
-<dl class="dl-horizontal">
-    <dt>Simulation code</dt>
-    <dd>{{ object.code }}</dd>
-    <dt>Administrator</dt>
-    <dd><a href="{% url 'users:detail' object.user.username  %}">{{ object.user }}</a></dd>
-    <dt>Simulation type</dt>
-    <dd>{{ object.get_simulation_type_display }}</dd>
-    <dt>Number of teams</dt>
-    <dd>{{ object.nb_teams }}</dd>
-    <dt>Initial capital</dt>
-    <dd>{{ object.capital|stringformat:".2f" }}</dd>
-    <dt>Currency</dt>
-    <dd>{{ object.currency }}</dd>
-    <dt>Current state</dt>
-    <dd>{{ object.get_state_display }}</dd>
-    <dt>Created at</dt>
-    <dd>{{ object.created }}</dd>
-</dl>
+<div role="main" class="main">
+    <section class="full">
+    </section>
+    <div class="container">
+        <h1>{{ object.customer }}</h1>
+        <div class="row">
+            <div class="col-md-12">
+                <dl class="dl-horizontal">
+                    <dt>Simulation code</dt>
+                    <dd>{{ object.code }}</dd>
+                    <dt>Administrator</dt>
+                    <dd><a href="{% url 'users:detail' object.user.username  %}">{{ object.user }}</a></dd>
+                    <dt>Simulation type</dt>
+                    <dd>{{ object.get_simulation_type_display }}</dd>
+                    <dt>Number of teams</dt>
+                    <dd>{{ object.nb_teams }}</dd>
+                    <dt>Initial capital</dt>
+                    <dd>{{ object.capital|stringformat:".2f" }}</dd>
+                    <dt>Currency</dt>
+                    <dd>{{ object.currency }}</dd>
+                    <dt>Current state</dt>
+                    <dd>{{ object.get_state_display }}</dd>
+                    <dt>Created at</dt>
+                    <dd>{{ object.created }}</dd>
+                </dl>
 
-{% if object.state < simulation_state.READY %}
-    <a class="btn btn-primary" href="{% url 'simulation-update-view' object.id %}"><i class="fa fa-pencil-square-o"></i> Edit the simulation</a>
-{% endif %}
-{% if object.state < simulation_state.READY %}
-    <a class="btn btn-warning" href="{% url 'simulation-initialize-view' object.id %}"><i class="fa fa-cogs"></i> Initialize the simulation</a>
-{% elif object.state == simulation_state.READY or object.state == simulation_state.PAUSED %}
-    <a class="btn btn-success" href="{% url 'simulation-manage-state' object.id simulation_state.RUNNING %}"><i class="fa fa-play"></i> Start the simulation</a>
-{% elif object.state == simulation_state.RUNNING %}
-    <a class="btn btn-warning" href="{% url 'simulation-manage-state' object.id simulation_state.PAUSED %}"><i class="fa fa-pause"></i> Pause the simulation</a>
-{% elif object.state == simulation_state.FINISHED %}
-    <a class="btn btn-danger" href="{% url 'simulation-manage-state' object.id simulation_state.ARCHIVED %}"><i class="fa fa-eject"></i> Archive the simulation</a>
-{% endif %}
-    <a class="btn btn-info" href="https://m3.marmix.ch/static/dashboard/#/clock" target="_blank"><i class="fa fa-clock-o "></i> Simulation clock</a>
+                {% if object.state < simulation_state.READY %}
+                    <a class="btn btn-primary" href="{% url 'simulation-update-view' object.id %}"><i class="fa fa-pencil-square-o"></i> Edit the simulation</a>
+                {% endif %}
+                {% if object.state < simulation_state.READY %}
+                    <a class="btn btn-warning" href="{% url 'simulation-initialize-view' object.id %}"><i class="fa fa-cogs"></i> Initialize the simulation</a>
+                {% elif object.state == simulation_state.READY or object.state == simulation_state.PAUSED %}
+                    <a class="btn btn-success" href="{% url 'simulation-manage-state' object.id simulation_state.RUNNING %}"><i class="fa fa-play"></i> Start the simulation</a>
+                {% elif object.state == simulation_state.RUNNING %}
+                    <a class="btn btn-warning" href="{% url 'simulation-manage-state' object.id simulation_state.PAUSED %}"><i class="fa fa-pause"></i> Pause the simulation</a>
+                {% elif object.state == simulation_state.FINISHED %}
+                    <a class="btn btn-danger" href="{% url 'simulation-manage-state' object.id simulation_state.ARCHIVED %}"><i class="fa fa-eject"></i> Archive the simulation</a>
+                {% endif %}
+                    <a class="btn btn-info" href="https://m3.marmix.ch/static/dashboard/#/clock" target="_blank"><i class="fa fa-clock-o "></i> Simulation clock</a>
 
 
-    <a class="btn btn-primary" href="{% url 'companies-shares-create-view' object.id object.get_sim_day.sim_round %}"><i class="fa fa-money"></i> Pay dividends</a>
+                    <a class="btn btn-primary" href="{% url 'companies-shares-create-view' object.id object.get_sim_day.sim_round %}"><i class="fa fa-money"></i> Pay dividends</a>
 
-    <a class="btn btn-warning" href="{% url 'closes-market-view' object.id %}"><i class="fa fa-btc"></i> Set closing prices</a>
+                    <a class="btn btn-warning" href="{% url 'closes-market-view' object.id %}"><i class="fa fa-btc"></i> Set closing prices</a>
 
-{% include "simulations/includes/clock.html" with clock=object.get_sim_day %}
+                {% include "simulations/includes/clock.html" with clock=object.get_sim_day %}
 
-<h2>Teams</h2>
+                <h2>Teams</h2>
 
-<a class="btn btn-primary" href="{% url 'teams-selection-view' object.id %}"><i class="fa fa-plus-square-o fa-lg"></i> Manage teams for this simulation</a>
-<a class="btn btn-info" href="{% url 'teams-export-xlsx-simulation' object.id %}"><i class="fa fa-file-excel-o fa-lg"></i> Export teams</a>
+                <a class="btn btn-primary" href="{% url 'teams-selection-view' object.id %}"><i class="fa fa-plus-square-o fa-lg"></i> Manage teams for this simulation</a>
+                <a class="btn btn-info" href="{% url 'teams-export-xlsx-simulation' object.id %}"><i class="fa fa-file-excel-o fa-lg"></i> Export teams</a>
 
-{% include "simulations/includes/teams_table.html" with teams=teams %}
+                {% include "simulations/includes/teams_table.html" with teams=teams %}
 
-<h2>Stocks</h2>
+                <h2>Stocks</h2>
 
-{% include "stocks/includes/stocks_table.html" with stocks=object.stocks.all %}
-
+                {% include "stocks/includes/stocks_table.html" with stocks=object.stocks.all %}
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock content %}

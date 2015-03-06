@@ -1,16 +1,26 @@
 {%  extends "base.html" %}
 
 {% block title %}
-    {{ block.super }} > Customers
+    Customers
 {% endblock title %}
 
 {% block content %}
-<h1>Customers</h1>
-<ul>
-{% for customer in object_list %}
-    <li><a href="{% url 'customers-detail-view' customer.id %}">{{ customer.name }}</a> ({{ customer.short_code }})</li>
-{% empty %}
-    <li>You have no administrative rights with this account.</li>
-{% endfor %}
-</ul>
+<div role="main" class="main">
+    <section class="full">
+    </section>
+    <div class="container">
+        <h1>Customers</h1>
+        <div class="row">
+            <div class="col-md-12">
+                <ul>
+                {% for customer in object_list %}
+                    <li><a href="{% url 'customers-detail-view' customer.id %}">{{ customer.name }}</a> ({{ customer.short_code }})</li>
+                {% empty %}
+                    <li>You have no administrative rights with this account.</li>
+                {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock content %}
