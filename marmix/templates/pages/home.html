@@ -43,7 +43,7 @@
 										 data-start="2000"
 										 data-easing="easeOutExpo">Check out our options and features.</div>
 
-									<a class="tp-caption customin btn btn-lg btn-primary main-button" href="about-us.html"
+									<a class="tp-caption customin btn btn-lg btn-primary main-button" href="{% url 'start' %}"
 										data-x="center" data-hoffset="0"
 										data-y="400"
 										data-customin="x:0;y:0;z:0;rotationX:90;rotationY:0;rotationZ:0;scaleX:1;scaleY:1;skewX:0;skewY:0;opacity:0;transformPerspective:200;transformOrigin:50% 0%;"
@@ -90,8 +90,8 @@
 							</div>
 							<div class="col-md-4">
 								<div class="get-started">
-									<a href="#" class="btn btn-lg btn-primary">Get Started Now!</a>
-									<div class="learn-more">or <a href="index.html">learn more.</a></div>
+									<a href="{% url 'start' %}" class="btn btn-lg btn-primary">Get Started Now!</a>
+									<div class="learn-more">or <a href="{% url 'about' %}">learn more.</a></div>
 								</div>
 							</div>
 						</div>
@@ -286,7 +286,7 @@
 					<div class="container">
 						<div class="row">
 							<div class="center">
-								<h3>MarMix is <strong>everything</strong> you need to create an <strong>awesome</strong> curriculum! <a href="#" target="_blank" class="btn btn-lg btn-primary" data-appear-animation="bounceIn">Buy Now!</a> <span class="arrow hlb hidden-xs hidden-sm hidden-md" data-appear-animation="rotateInUpLeft" style="top: -22px;"></span></h3>
+								<h3>MarMix is <strong>everything</strong> you need to create an <strong>awesome</strong> curriculum! <a href="{% url 'start' %}" class="btn btn-lg btn-primary" data-appear-animation="bounceIn">Buy Now!</a> <span class="arrow hlb hidden-xs hidden-sm hidden-md" data-appear-animation="rotateInUpLeft" style="top: -22px;"></span></h3>
 							</div>
 						</div>
 					</div>

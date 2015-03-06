@@ -13,3 +13,8 @@
 .black {
     color: #000000;
 }
+
+.full {
+    border-bottom: 5px solid #006699;
+    margin-bottom: 20px;
+}
