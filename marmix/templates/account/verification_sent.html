@@ -5,11 +5,25 @@
 {% block head_title %}{% trans "Verify Your E-mail Address" %}{% endblock %}
 
 {% block content %}
+<section class="page-top">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <ul class="breadcrumb">
+                    <li><a href="{% url 'home' %}">Home</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <h1>{% trans "Verify Your E-mail Address" %}</h1>
+            </div>
+        </div>
+    </div>
+</section>
 <div class="container">
   <div class="row">
     <div class="col-md-5">
-        <h2>{% trans "Verify Your E-mail Address" %}</h2>
-        
         <p>{% blocktrans %}We have sent an e-mail to <a href="mailto:{{ email }}">{{ email }}</a> for verification. Follow the link provided to finalize the signup process. Please contact us if you do not receive it within a few minutes.{% endblocktrans %}</p>
     </div>    
   </div>

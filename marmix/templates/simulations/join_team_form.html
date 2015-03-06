@@ -2,14 +2,33 @@
 {% load crispy_forms_tags %}
 
 {% block title %}
-    {{ block.super }} > Simulation > Join team
+    Join a Team
 {% endblock title %}
 
 {% block content %}
-<h1>Join team</h1>
-<form action="{% url 'team-join-view' %}" method="post">
-    {% csrf_token %}
-    {{ form|crispy }}
-    <button type="submit" class="btn btn-success"><i class="fa fa-check-square-o"></i> Join team</button>
-</form>
+<section class="page-top">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <ul class="breadcrumb">
+                    <li><a href="{% url 'home' %}">Home</a></li>
+                    <li class="active">Dashboard</li>
+                </ul>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <h1>Join a Team</h1>
+            </div>
+        </div>
+    </div>
+</section>
+<div class="container">
+    <p>In order to join a new team, enter the provided UUID in the filed below.</p>
+    <form action="{% url 'team-join-view' %}" method="post">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <button type="submit" class="btn btn-success"><i class="fa fa-check-square-o"></i> Join team</button>
+    </form>
+</div>
 {% endblock content %}

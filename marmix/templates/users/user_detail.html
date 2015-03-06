@@ -12,7 +12,7 @@
         <div class="row">
             <div class="col-md-12">
                 <ul class="breadcrumb">
-                    <li><a href="#">Home</a></li>
+                    <li><a href="{% url 'home' %}">Home</a></li>
                     <li class="active">Dashboard</li>
                 </ul>
             </div>
@@ -25,58 +25,101 @@
     </div>
 </section>
 <div class="container">
-        <div class="row">
-            <div class="col-sm-12">
-
-                <h2>{% if object == request.user %}Welcome {% endif %}{{ object.username }}</h2>
-                <dl class="dl-horizontal">
-                    <dt>Name</dt>
-                    <dd>{{ object.first_name }} {{ object.last_name }} {% if object == request.user %}<a class="btn btn-primary btn-xs" href="{% url 'users:update' %}"><i class="fa fa-pencil-square-o"></i> Edit</a>{% endif %}</dd>
-                    <dt>Email</dt>
-                    <dd>{{ object.email }} {% if object == request.user %}<a class="btn btn-primary btn-xs" href="{% url 'account_email' %}">{% if object.email %}<i class="fa fa-pencil-square-o"></i> Edit{% else %}<i class="fa fa-plus-square-o fa-lg"></i> Add{% endif %}</a>{% endif %}</dd>
-                    <dt>Avatar</dt>
-                    <dd>{% if object == request.user %}<a href="{% url 'avatar_change' %}">{% avatar object %}</a>{% else %}{% avatar object %}{% endif %}</dd>
-                    <dt>Date joined</dt>
-                    <dd>{{ object.date_joined|date:"SHORT_DATE_FORMAT" }}</dd>
-                    <dt>Last login</dt>
-                    <dd>{{ object.last_login|date:"SHORT_DATE_FORMAT" }}</dd>
-                    <dt>Permissions</dt>
-                    <dd>Active {% if object.is_active %}<i class="fa fa-check"></i>{% else %}<i class="fa fa-times"></i>{% endif %} |
-                        Manager {% if object.is_poweruser %}<i class="fa fa-check"></i>{% else %}<i class="fa fa-times"></i>{% endif %} |
-                        Staff {% if object.is_staff %}<i class="fa fa-check"></i>{% else %}<i class="fa fa-times"></i>{% endif %} |
-                        Superuser {% if object.is_superuser %}<i class="fa fa-check"></i>{% else %}<i class="fa fa-times"></i>{% endif %}
-                    </dd>
-                </dl>
+    <div class="row">
+        <div class="col-sm-8">
+            <h2>{{ object.username|capfirst }}</h2>
+            <div class="row">
+                <div class="col-sm-2">
+                    {% if object == request.user %}<a href="{% url 'avatar_change' %}">{% avatar object %}</a>{% else %}{% avatar object %}{% endif %}
+                </div>
+                <div class="col-sm-6">
+                    <dl class="">
+                        <dt>Name</dt>
+                        <dd>{{ object.first_name }} {{ object.last_name }} {% if object == request.user %}<a class="btn btn-primary btn-xs" href="{% url 'users:update' %}"><i class="fa fa-pencil-square-o"></i> Edit</a>{% endif %}</dd>
+                        <dt>Email</dt>
+                        <dd>{{ object.email }} {% if object == request.user %}<a class="btn btn-primary btn-xs" href="{% url 'account_email' %}">{% if object.email %}<i class="fa fa-pencil-square-o"></i> Edit{% else %}<i class="fa fa-plus-square-o fa-lg"></i> Add{% endif %}</a>{% endif %}</dd>
+                    </dl>
+                </div>
+            </div>
+            <dl class="">
+                <dt>Date joined</dt>
+                <dd>{{ object.date_joined|date:"SHORT_DATE_FORMAT" }}</dd>
+                <dt>Last login</dt>
+                <dd>{{ object.last_login|date:"SHORT_DATE_FORMAT" }}</dd>
+                <dt>Permissions</dt>
+                <dd>Active {% if object.is_active %}<i class="fa fa-check"></i>{% else %}<i class="fa fa-times"></i>{% endif %} |
+                    Manager {% if object.is_poweruser %}<i class="fa fa-check"></i>{% else %}<i class="fa fa-times"></i>{% endif %} |
+                    Staff {% if object.is_staff %}<i class="fa fa-check"></i>{% else %}<i class="fa fa-times"></i>{% endif %} |
+                    Superuser {% if object.is_superuser %}<i class="fa fa-check"></i>{% else %}<i class="fa fa-times"></i>{% endif %}
+                </dd>
+            </dl>
+        </div>
+        <div class="col-sm-4">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    {% if object == request.user %}
+                    <div class="btn-group pull-right">
+                        <a class="btn btn-warning btn-xs" href="{% url 'team-join-view' %}"><i class="fa fa-plus-square"></i> Join a team</a>
+                    </div>
+                    {% endif %}
+                    <h3 class="panel-title"><i class="fa fa-users"></i> Team</h3>
+                </div>
+                <div class="panel-body">
+                    {% if object.teams.all %}
+                    <ul class="list-group">
+                        {% for team in object.teams.all %}
+                        <li class="list-group-item"><a href="{% url 'team-detail-view' team.id  %}">{{ team.name }}</a></li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                        <p>Currently not member of any team.</p>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h3 class="panel-title"><i class="fa fa-wrench"></i> Market tools</h3>
+                </div>
+                <div class="panel-body">
+                    <p><a class="btn btn-info btn-block" href="https://m3.marmix.ch/static/dashboard/#/" target="_blank"><i class="fa fa-line-chart"></i> Trading dashboard</a></p>
+                    <p><a class="btn btn-info btn-block" href="https://m3.marmix.ch/static/dashboard/#/ticker" target="_blank"><i class="fa fa-money"></i> Companies financials</a></p>
+                {% if request.user.get_team.current_simulation_id %}
+                    <p><a class="btn btn-info btn-block" href="{% url "ranking-view" request.user.get_team.current_simulation_id %}" target="_blank"><i class="fa fa-list-ol"></i> Current ranking</a></p>
+                {% endif %}
+                </div>
             </div>
         </div>
-
-        <div class="row">
-            <div class="col-sm-12 ">
-                <h2>Current team(s)</h2>
-                {% if object == request.user %}<a class="btn btn-warning" href="{% url 'team-join-view' %}"><i class="fa fa-users"></i> Join a team</a>{% endif %}
-                <p>{% if object.teams.all %}
-                    {% for team in object.teams.all %}
-                        <a href="{% url 'team-detail-view' team.id  %}">{{ team.name }}</a>
-                        {% if not forloop.last %}/ {% endif %}
-                    {% endfor %}
-                {% else %}
-                    Currently not member of any team.
-                {% endif %}</p>
-                <h2>Market tools</h2>
-                <a class="btn btn-info" href="https://m3.marmix.ch/static/dashboard/#/" target="_blank"><i class="fa fa-line-chart"></i> Trading dashboard</a>
-                <a class="btn btn-info" href="https://m3.marmix.ch/static/dashboard/#/ticker" target="_blank"><i class="fa fa-money"></i> Companies financials</a>
-                {% if request.user.get_team.current_simulation_id %}
-                    <a class="btn btn-info" href="{% url "ranking-view" request.user.get_team.current_simulation_id %}" target="_blank"><i class="fa fa-list-ol"></i> Current ranking</a>
-                {% endif %}
-                <h2>Past simulations</h2>
-                <ul>
+    </div>
+    <hr>
+    <div class="row">
+        <div class="col-sm-12 ">
+            <h2>Past simulations</h2>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Simulation</th>
+                        <th>Date</th>
+                        <th>Ranking</th>
+                    </tr>
+                </thead>
+                <tbody>
                 {% for simulation in object.simulations.all %}
-                <li><a href="{% url "ranking-view" simulation.id %}" target="_blank">{{ simulation.code }}</a> ({{ simulation.created }})</li>
+                    <tr>
+                        <td>
+                            {{ simulation.code }}
+                        </td>
+                        <td>
+                            {{ simulation.created }}
+                        </td>
+                        <td>
+                            <a class="btn btn-info btn-xs" href="{% url "ranking-view" simulation.id %}" target="_blank"><i class="fa fa-list-ol"></i> View ranking</a>
+                        </td>
                 {% empty %}
                     <p>No simulation yet!</p>
                 {% endfor %}
-                </ul>
-            </div>
+                </tbody>
+            </table>
         </div>
+    </div>
 </div>
 {% endblock content %}

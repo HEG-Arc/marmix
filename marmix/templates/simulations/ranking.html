@@ -2,24 +2,52 @@
 {% load humanize %}
 
 {% block title %}
-    {{ block.super }} > Ranking
+    Ranking
 {% endblock title %}
 
 {% block content %}
-<h1>Ranking {{ simulation.code }}</h1>
+<section class="page-top">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <ul class="breadcrumb">
+                    <li><a href="{% url 'home' %}">Home</a></li>
+                    <li class="active">Simulations</li>
+                </ul>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <h1>Simulation {{ simulation.code }}</h1>
+            </div>
+        </div>
+    </div>
+</section>
+<div class="container">
+    <div class="row">
+        <div class="col-md-4">
+            <dl>
+                <dt>Type:</dt><dd>{{ simulation.get_simulation_type_display }}</dd>
+                <dt>Date:</dt><dd>{{ simulation.created|date:"SHORT_DATE_FORMAT" }}</dd>
+            </dl>
+        </div>
+        <div class="col-md-4">
+            <dl>
+                <dt>Initial capital:</dt><dd>{{ simulation.capital|stringformat:".f"|intcomma }}</dd>
+                <dt>Nb of shares per company:</dt><dd>{{ simulation.nb_shares|intcomma }}</dd>
+            </dl>
+        </div>
+        <div class="col-md-4">
+            <dl>
+                <dt>Transaction costs (fixed):</dt><dd>{{ simulation.transaction_cost|stringformat:".2f"|intcomma }}</dd>
+                <dt>Transaction costs (variable):</dt><dd>{{ simulation.variable_transaction_cost|intcomma }}%</dd>
+            </dl>
+        </div>
+    </div>
 
-<dl>
-<dt>Type:</dt><dd>{{ simulation.get_simulation_type_display }}</dd>
-<dt>Date:</dt><dd>{{ simulation.created|date:"SHORT_DATE_FORMAT" }}</dd>
-<dt>Initial capital:</dt><dd>{{ simulation.capital|stringformat:".f"|intcomma }}</dd>
-<dt>Nb of shares per company:</dt><dd>{{ simulation.nb_shares|intcomma }}</dd>
-<dt>Transaction costs (fixed):</dt><dd>{{ simulation.transaction_cost|stringformat:".2f"|intcomma }}</dd>
-<dt>Transaction costs (variable):</dt><dd>{{ simulation.variable_transaction_cost|intcomma }}%</dd>
-</dl>
+    <hr>
 
-<h2>Ranking</h2>
-
-{% include "simulations/includes/ranking_table.html" with teams=simulation.get_rank_list %}
-
-
+    <h2>Ranking</h2>
+    {% include "simulations/includes/ranking_table.html" with teams=simulation.get_rank_list %}
+</div>
 {% endblock content %}
