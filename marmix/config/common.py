@@ -31,10 +31,7 @@ class Common(Configuration):
         'django.contrib.messages',
         'django.contrib.staticfiles',
         'django.contrib.humanize',
-
-        # Useful template tags:
-        # 'django.contrib.humanize',
-
+        'django.contrib.flatpages',
         # Admin
         'django.contrib.admin',
     )
@@ -75,12 +72,13 @@ class Common(Configuration):
         'django.contrib.messages.middleware.MessageMiddleware',
         'async_messages.middleware.AsyncMiddleware',
         'django.middleware.clickjacking.XFrameOptionsMiddleware',
+        'django.contrib.flatpages.middleware.FlatpageFallbackMiddleware',
     )
     # END MIDDLEWARE CONFIGURATION
 
     # MIGRATIONS CONFIGURATION
     MIGRATION_MODULES = {
-        'sites': 'contrib.sites.migrations'
+        #'sites': 'contrib.sites.migrations'
     }
     # END MIGRATIONS CONFIGURATION
 

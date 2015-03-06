@@ -17,9 +17,6 @@ urlpatterns = patterns('',
     url(r'^$',  # noqa
         TemplateView.as_view(template_name='pages/home.html'),
         name="home"),
-    url(r'^about/$',
-        TemplateView.as_view(template_name='pages/about.html'),
-        name="about"),
 
     # Uncomment the next line to enable the admin:
     url(r'^admin/', include(admin.site.urls)),
@@ -36,9 +33,14 @@ urlpatterns = patterns('',
     url(r'^customers/', include('customers.urls')),
     url(r'^simulations/', include('simulations.urls')),
     url(r'^tickers/', include('tickers.urls')),
-    url(r'^ranking/(?P<pk>\d+)/', RankingView.as_view(), name='ranking-view')
+    url(r'^ranking/(?P<pk>\d+)/', RankingView.as_view(), name='ranking-view'),
+    url(r'^pages/', include('django.contrib.flatpages.urls'))
 
 ) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+urlpatterns += patterns('django.contrib.flatpages.views',
+    url(r'^about/$', 'flatpage', {'url': '/about/'}, name='about'),
+)
 
 from django.conf.urls import url, include
 from simulations.views import SimulationViewSet, CurrencyViewSet, TeamViewSet, ClockViewSet

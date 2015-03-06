@@ -1,6 +1,294 @@
 {%  extends "base.html" %}
+{% load staticfiles i18n %}
 
 {% block content %}
-<h1>MarMix</h1>
-<p>Welcome to MarMix3, the new stock market simulation game.</p>
+				<div class="slider-container">
+					<div class="slider" id="revolutionSlider" data-plugin-revolution-slider data-plugin-options='{"startheight": 677}'>
+						<ul>
+							<li data-transition="fade" data-slotamount="10" data-masterspeed="300">
+								<img src="{% static 'img/slides/mm-01-2.jpg' %}" data-bgfit="cover" data-bgposition="center center" data-bgrepeat="no-repeat">
+
+									<div class="tp-caption sft stb visible-lg"
+										 data-x="327"
+										 data-y="250"
+										 data-speed="300"
+										 data-start="1000"
+										 data-easing="easeOutExpo"><img src="{% static 'img/slides/slide-title-border.png' %}" alt=""></div>
+
+									<div class="tp-caption top-label lfl stl"
+										 data-x="center" data-hoffset="0"
+										 data-y="250"
+										 data-speed="300"
+										 data-start="500"
+										 data-easing="easeOutExpo">DO YOU NEED A NEW WAY TO TEACH</div>
+
+									<div class="tp-caption sft stb visible-lg"
+										 data-x="807"
+										 data-y="250"
+										 data-speed="300"
+										 data-start="1000"
+										 data-easing="easeOutExpo"><img src="{% static 'img/slides/slide-title-border.png' %}" alt=""></div>
+
+									<div class="tp-caption main-label sft stb"
+										 data-x="center" data-hoffset="0"
+										 data-y="280"
+										 data-speed="300"
+										 data-start="1500"
+										 data-easing="easeOutExpo">DATA ANALYTICS?</div>
+
+									<div class="tp-caption bottom-label sft stb"
+										 data-x="center" data-hoffset="0"
+										 data-y="350"
+										 data-speed="500"
+										 data-start="2000"
+										 data-easing="easeOutExpo">Check out our options and features.</div>
+
+									<a class="tp-caption customin btn btn-lg btn-primary main-button" href="about-us.html"
+										data-x="center" data-hoffset="0"
+										data-y="400"
+										data-customin="x:0;y:0;z:0;rotationX:90;rotationY:0;rotationZ:0;scaleX:1;scaleY:1;skewX:0;skewY:0;opacity:0;transformPerspective:200;transformOrigin:50% 0%;"
+										data-speed="800"
+										data-start="1700"
+										data-easing="Back.easeInOut"
+										data-endspeed="300">
+											Get Started Now!
+									</a>
+
+							</li>
+							<li data-transition="fade" data-slotamount="10" data-masterspeed="300">
+								<img src="{% static 'img/slides/mm-01-1.jpg' %}" data-bgfit="cover" data-bgposition="right center" data-bgrepeat="no-repeat">
+
+								<div class="tp-caption featured-label sft stb"
+									 data-x="0"
+									 data-y="180"
+									 data-speed="300"
+									 data-start="1500"
+									 data-easing="easeOutExpo"><span class="black">WELCOME TO <span class="marmix">marmix</span></span></div>
+
+								<div class="tp-caption bottom-label sft stb black"
+									 data-x="0"
+									 data-y="238"
+									 data-speed="500"
+									 data-start="2000"
+									 data-easing="easeOutExpo">The <strong>#1 Serious Game</strong> on data analytics</div>
+
+
+							</li>
+						</ul>
+					</div>
+				</div>
+
+				<div class="home-intro">
+					<div class="container">
+
+						<div class="row">
+							<div class="col-md-8">
+								<p>
+									The fastest way to integrate <em>data analytics</em> in your curriculum
+									<span>Check out our options and features included.</span>
+								</p>
+							</div>
+							<div class="col-md-4">
+								<div class="get-started">
+									<a href="#" class="btn btn-lg btn-primary">Get Started Now!</a>
+									<div class="learn-more">or <a href="index.html">learn more.</a></div>
+								</div>
+							</div>
+						</div>
+
+					</div>
+				</div>
+
+				<div class="container">
+
+					<div class="row center">
+						<div class="col-md-12">
+							<h2 class="short word-rotator-title">
+								MarMix is the <strong>#1 Serious Game</strong> on data analytics
+							</h2>
+							<p class="lead">
+								Students are engaged in a stock market simulation where they have to assess the future value of companies<br>based on the analysis of their performance.
+							</p>
+						</div>
+					</div>
+
+				</div>
+
+				<div class="container">
+					<div class="row center">
+						<div class="col-md-12">
+							<img src="{% static 'img/students.jpg' %}" class="img-responsive" data-appear-animation="fadeInUp" alt="students" style="margin: 45px 0px -35px;">
+						</div>
+					</div>
+				</div>
+
+				<section class="featured">
+					<div class="container">
+
+						<div class="row">
+							<div class="col-md-12">
+								<div class="row">
+									<div class="col-md-4">
+										<div class="feature-box secundary">
+											<div class="feature-box-icon">
+												<i class="fa fa-line-chart"></i>
+											</div>
+											<div class="feature-box-info">
+												<h4 class="shorter">Stock market</h4>
+												<p class="tall">The game is based on a stock market simulation where stock prices are tied to <span class="alternative-font">companies valuation</span>.</p>
+											</div>
+										</div>
+										<div class="feature-box secundary">
+											<div class="feature-box-icon">
+												<i class="fa fa-file-excel-o"></i>
+											</div>
+											<div class="feature-box-info">
+												<h4 class="shorter">Tools</h4>
+												<p class="tall">In order to analyze the data, participants design and use dashboards based on spreadsheets connected to live data sources.</p>
+											</div>
+										</div>
+									</div>
+									<div class="col-md-4">
+										<div class="feature-box secundary">
+											<div class="feature-box-icon">
+												<i class="fa fa-cubes"></i>
+											</div>
+											<div class="feature-box-info">
+												<h4 class="shorter">Data analysis</h4>
+												<p class="tall">Using business tools, participants need to analyze various data in order to forecast the companies future income.</p>
+											</div>
+										</div>
+										<div class="feature-box secundary">
+											<div class="feature-box-icon">
+												<i class="fa fa-database"></i>
+											</div>
+											<div class="feature-box-info">
+												<h4 class="shorter">Data</h4>
+												<p class="tall">We provide <span class="alternative-font">dozens sets</span> of simulation data that can be loaded and used for live games.</p>
+											</div>
+										</div>
+									</div>
+									<div class="col-md-4">
+										<div class="feature-box secundary">
+											<div class="feature-box-icon">
+												<i class="fa fa-bars"></i>
+											</div>
+											<div class="feature-box-info">
+												<h4 class="shorter">Game levels</h4>
+												<p class="tall">To foster interest and immersion in the game, MarMix is build around <span class="alternative-font">four game levels</span> with increasing complexity.</p>
+											</div>
+										</div>
+										<div class="feature-box secundary">
+											<div class="feature-box-icon">
+												<i class="fa fa-gears"></i>
+											</div>
+											<div class="feature-box-info">
+												<h4 class="shorter">ERPsim integration</h4>
+												<p class="tall">Already using ERPsim in your curriculum? Double the fun by using MarMix in parallel.</p>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</section>
+
+				<div class="container">
+					<div class="row push-top">
+						<div class="col-md-4 push-top">
+							<img class="img-responsive" src="{% static 'img/marmix-holdings.jpg' %}" alt="layout styles" data-appear-animation="fadeInLeft">
+						</div>
+						<div class="col-md-7 col-md-offset-1">
+							<h2 class="push-top"><strong>Trading</strong> on the MarMix stock market</h2>
+							<p class="lead">
+								The stock market is fully configurable. Based on the game level, dividends payment, transaction costs (fixed and variable), opening auctions and interest payments can be enabled to tailor the game to each curriculum's needs.
+							</p>
+							<p>
+								Each market comes with a liquidity trader that simulates the invisible part of the market, bringing liquidity where needed. Liquidity traders are able to bring liquidities on the market without influencing the stocks' price.
+							</p>
+						</div>
+					</div>
+
+					<hr class="tall" />
+
+					<div class="row">
+						<div class="col-md-7">
+							<h2 class="push-top">Predicting <strong>Companies' Valuation</strong></h2>
+							<p class="lead">
+								With our exlusive Style Switcher you will be able to choose any color you want for your website, choose the layout style (wide / boxed), website type (one page / normal), then generate the css that will be compiled by a {less} proccessor.
+							</p>
+							<p>
+								Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur imperdiet hendrerit volutpat. Sed in nunc nec ligula consectetur mollis in vel justo. Vestibulum ante ipsum primis in faucibus orci.
+							</p>
+						</div>
+						<div class="col-md-4 col-md-offset-1 push-top">
+							<img class="img-responsive" src="{% static 'img/marmix-excel.png' %}" alt="style switcher" data-appear-animation="fadeInRight">
+						</div>
+					</div>
+				</div>
+				<section class="parallax" data-stellar-background-ratio="0.5" style="background-image: url({% static 'img/parallax-marmix.jpg' %});">
+					<div class="container">
+						<div class="row center">
+							<div class="col-md-12 center">
+								<h2 class="white"><strong>What</strong> Client’s Say</h2>
+								<div class="row">
+									<div class="owl-carousel testimonials" data-plugin-options='{"items": 1}'>
+										<div>
+											<div class="col-md-12">
+												<img src="{% static 'img/clients/portrait-cgz.jpg' %}" class="img-responsive img-circle" alt="">
+												<blockquote class="testimonial-carousel">
+												<p>This serious game is really what was missing in my business intelligence course. Now students are able to test their ability to purposefully analyze and understand data analysis. Using the stock market to trade companies based on their valuation adds a lot of fun in my classes!</p>
+												</blockquote>
+												<p class="white"><strong>Cédric Gaspoz</strong><br><span>Faculty - HES-SO</span></p>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</section>
+
+				<div class="container">
+					<div class="row center">
+						<div class="col-md-12">
+							<h2 class="shorter word-rotator-title">
+								We're not the only ones
+								<strong>
+									<span class="word-rotate" data-plugin-options='{"delay": 3500, "animDelay": 400}'>
+										<span class="word-rotate-items">
+											<span>excited</span>
+											<span>happy</span>
+										</span>
+									</span>
+								</strong>
+								about MarMix...
+							</h2>
+							<p class="lead">2 customers in 1 country use MarMix.</p>
+						</div>
+					</div>
+					<div class="row center push-top">
+						<div class="owl-carousel" data-plugin-options='{"items": 6, "autoplay": true, "autoplayTimeout": 3000}'>
+                            <div></div>
+                            <div></div>
+							<div>
+								<img class="img-responsive" src="{% static 'img/logos/logo-heg-arc.png' %}" alt="">
+							</div>
+							<div>
+								<img class="img-responsive" src="{% static 'img/logos/logo-hec-lausanne.png' %}" alt="">
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<section class="call-to-action featured footer">
+					<div class="container">
+						<div class="row">
+							<div class="center">
+								<h3>MarMix is <strong>everything</strong> you need to create an <strong>awesome</strong> curriculum! <a href="#" target="_blank" class="btn btn-lg btn-primary" data-appear-animation="bounceIn">Buy Now!</a> <span class="arrow hlb hidden-xs hidden-sm hidden-md" data-appear-animation="rotateInUpLeft" style="top: -22px;"></span></h3>
+							</div>
+						</div>
+					</div>
+				</section>
 {% endblock content %}

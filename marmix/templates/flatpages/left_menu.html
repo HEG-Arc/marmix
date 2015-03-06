@@ -1,0 +1,61 @@
+{%  extends "base.html" %}
+
+{% block title %}
+    {{ flatpage.title }}
+{% endblock title %}
+
+{% block content %}
+<section class="page-top">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <ul class="breadcrumb">
+                    <li><a href="#">Home</a></li>
+                    <li class="active">{{ flatpage.title }}</li>
+                </ul>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <h1>{{ flatpage.title }}</h1>
+            </div>
+        </div>
+    </div>
+</section>
+<div class="container">
+    <div class="row">
+        <div class="col-md-3">
+            <aside class="sidebar">
+                <h4>Categories</h4>
+                <ul class="nav nav-list primary push-bottom">
+                    <li><a href="#">Design</a></li>
+                    <li><a href="#">Photos</a></li>
+                    <li><a href="#">Videos</a></li>
+                    <li><a href="#">Lifestyle</a></li>
+                    <li><a href="#">Technology</a></li>
+                </ul>
+            </aside>
+        </div>
+        <div class="col-md-9">
+
+            <h2>Left <strong>Sidebar</strong> Page</h2>
+
+            <div class="row">
+                <div class="col-md-12">
+                    <p class="lead">
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque rutrum pellentesque imperdiet. Nulla lacinia iaculis nulla non pulvinar. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Ut eu risus enim, ut pulvinar lectus. Sed hendrerit nibh metus.
+                    </p>
+                </div>
+            </div>
+
+            <hr class="tall">
+
+            <div class="row">
+                <div class="col-md-12">
+                    {{ flatpage.content }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}

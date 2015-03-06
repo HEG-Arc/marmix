@@ -1,68 +1,261 @@
 {% load staticfiles i18n %}<!DOCTYPE html>
-<html lang="en" ng-app>
-  <head>
-    <meta charset="utf-8">
-    <title>{% block title %}MarMix{% endblock title %}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="">
-    <meta name="author" content="">
+<html>
+	<head>
 
-    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
-    <!--[if lt IE 9]>
-      <script src="{% static 'html5shiv/js/html5shiv.min.js' %}"></script>
-    <![endif]-->
+		<!-- Basic -->
+		<meta charset="utf-8">
+        <title>MarMix - {% block title %}Forecasting the future{% endblock title %}</title>
+		<meta name="keywords" content="Marmix, serious game, data analytics, prediction, ERPsim" />
+		<meta name="description" content="MarMix - The #1 Serious Game on data analytics">
+		<meta name="author" content="Cédric Gaspoz">
 
-    {% block css %}
-    <!-- Latest compiled and minified CSS -->
-    <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.min.css' %}">
+		<!-- Mobile Metas -->
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- Optional theme -->
-    <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap-theme.min.css' %}">
-    <link rel="stylesheet" href="{% static 'bootstrap/css/sticky-footer.css' %}">
+		<!-- Web Fonts  -->
+		<link href="http://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800%7CShadows+Into+Light" rel="stylesheet" type="text/css">
+        <link rel="stylesheet" href="{% static 'css/fonts.css' %}" type="text/css">
 
-    <!-- Your stuff: Third-party css libraries go here -->
-    <link rel="stylesheet" href="{% static 'font-awesome/css/font-awesome.min.css' %}">
+		<!-- Vendor CSS -->
+		<link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.css' %}">
+		<link rel="stylesheet" href="{% static 'font-awesome/css/font-awesome.css' %}">
+		<link rel="stylesheet" href="{% static 'vendor/owlcarousel/owl.carousel.min.css' %}" media="screen">
+		<link rel="stylesheet" href="{% static 'vendor/owlcarousel/owl.theme.default.min.css' %}" media="screen">
+		<link rel="stylesheet" href="{% static 'vendor/magnific-popup/magnific-popup.css' %}" media="screen">
 
-    <!-- This file store project specific CSS -->
-    <link href="{% static 'css/project.css' %}" rel="stylesheet">
-    {% endblock %}
+		<!-- Theme CSS -->
+		<link rel="stylesheet" href="{% static 'css/theme.css' %}">
+		<link rel="stylesheet" href="{% static 'css/theme-elements.css' %}">
+		<link rel="stylesheet" href="{% static 'css/theme-blog.css' %}">
+		<link rel="stylesheet" href="{% static 'css/theme-shop.css' %}">
+		<link rel="stylesheet" href="{% static 'css/theme-animate.css' %}">
 
-    {% block angular %}
-      <script src="{% static 'angularjs/js/angular.min.js' %}"></script>
-    {% endblock %}
-    <link rel="icon" type="image/ico" href="{% static 'images/favicon.ico' %}">
+		<!-- Current Page CSS -->
+		<link rel="stylesheet" href="{% static 'vendor/rs-plugin/css/settings.css' %}" media="screen">
+		<link rel="stylesheet" href="{% static 'vendor/circle-flip-slideshow/css/component.css' %}" media="screen">
 
-  </head>
+		<!-- Skin CSS -->
+		<link rel="stylesheet" href="{% static 'css/skins/marmix.css' %}">
 
-  <body>
+		<!-- Theme Custom CSS -->
+		<link rel="stylesheet" href="{% static 'css/custom.css' %}">
 
-    <div class="header navbar">
-      <div class="container">
-        <a class="navbar-brand" href="{% url 'home' %}"><img src="{% static 'images/marmix_200.png' %}"></a>
-        <ul class="nav navbar-nav">
-          <li class="active"><a href="{% url 'home' %}">Home</a></li>
-          <li><a href="{% url 'about' %}">About</a></li>
-          {% if request.user.is_poweruser %}
-            <li><a href="{% url 'customers-list-view' %}">Customers</a></li>
-            <li><a href="{% url 'simulations-list-view' %}">Simulations</a></li>
-            <li><a href="{% url 'stocks-list-view' %}">Stocks</a></li>
-            <li><a href="{% url 'market-view' %}">Market</a></li>
-            <li><a href="{% url 'holdings-list-view' %}">Holdings</a></li>
-          {% endif %}
-          {% if request.user.is_authenticated %}
-            <li><a href="{% url 'users:detail' request.user.username  %}">{% trans "My Profile" %}</a></li>
-            <li><a href="{% url 'account_logout' %}">{% trans "Logout" %}</a></li>
-          {% else %}
-            <li><a href="{% url 'account_signup' %}">{% trans "Sign Up" %}</a></li>
-            <li><a href="{% url 'account_login' %}">{% trans "Log In" %}</a></li>
-          {% endif %}
-        </ul>
-      </div>
-    </div>
+		<!-- Head Libs -->
+		<script src="{% static 'vendor/modernizr/modernizr.js' %}"></script>
 
-    <div class="container">
-        
-      {% if messages %}
+		<!--[if IE]>
+			<link rel="stylesheet" href="{% static 'css/ie.css' %}">
+		<![endif]-->
+
+		<!--[if lte IE 8]>
+			<script src="{% static 'vendor/respond/respond.js' %}"></script>
+			<script src="{% static 'vendor/excanvas/excanvas.js' %}"></script>
+		<![endif]-->
+
+	</head>
+	<body>
+
+		<div class="body">
+			<header id="header" class="flat-menu single-menu">
+				<div class="container">
+					<div class="logo">
+						<a href="{% url 'home' %}">
+							<img alt="MarMix" width="168" height="54" data-sticky-width="125" data-sticky-height="40" src="{% static 'img/logo_marmix.png' %}">
+						</a>
+					</div>
+					<button class="btn btn-responsive-nav btn-inverse" data-toggle="collapse" data-target=".nav-main-collapse">
+						<i class="fa fa-bars"></i>
+					</button>
+				</div>
+				<div class="navbar-collapse nav-main-collapse collapse">
+					<div class="container">
+						<nav class="nav-main mega-menu">
+							<ul class="nav nav-pills nav-main" id="mainMenu">
+								<li class="active">
+                                    <a href="{% url 'home' %}">Home</a>
+								</li>
+								<li>
+									<a href="{% url 'about' %}">About</a>
+								</li>
+                                {% if request.user.is_poweruser %}
+								<li class="dropdown">
+									<a class="dropdown-toggle" href="{% url 'simulations-list-view' %}">
+										Simulations
+										<i class="fa fa-angle-down"></i>
+									</a>
+									<ul class="dropdown-menu">
+                                        <li><a href="{% url 'customers-list-view' %}">Customers</a></li>
+										<li><a href="{% url 'stocks-list-view' %}">Stocks</a></li>
+										<li><a href="{% url 'market-view' %}">Market</a></li>
+										<li><a href="{% url 'holdings-list-view' %}">Holdings</a></li>
+									</ul>
+								</li>
+                                {% endif %}
+                                {% if request.user.is_authenticated %}
+                                <li class="dropdown">
+									<a class="dropdown-toggle" href="{% url 'django.contrib.flatpages.views.flatpage' url="help/" %}">
+										Help
+										<i class="fa fa-angle-down"></i>
+									</a>
+									<ul class="dropdown-menu">
+                                        <li><a href="{% url 'django.contrib.flatpages.views.flatpage' url="help/manual/" %}">Manual</a></li>
+										<li><a href="{% url 'django.contrib.flatpages.views.flatpage' url="help/market-rules/" %}">Market Rules</a></li>
+										<li><a href="{% url 'django.contrib.flatpages.views.flatpage' url="help/faq/" %}">FAQ</a></li>
+									</ul>
+								</li>
+                                <li class="dropdown">
+									<a class="dropdown-toggle" href="{% url 'users:detail' request.user.username  %}">
+										Dashboard
+										<i class="fa fa-angle-down"></i>
+									</a>
+									<ul class="dropdown-menu">
+                                        <li><a href="https://m3.marmix.ch/static/dashboard/#/" target="_blank"><i class="fa fa-line-chart"></i> Trading dashboard</a></li>
+										<li><a href="https://m3.marmix.ch/static/dashboard/#/ticker" target="_blank"><i class="fa fa-money"></i> Companies financials</a></li>
+										{% if request.user.get_team.current_simulation_id %}
+                                            <li><a href="{% url "ranking-view" request.user.get_team.current_simulation_id %}"><i class="fa fa-list-ol"></i> Current ranking</a></li>
+                                        {% endif %}
+									</ul>
+								</li>
+								<li>
+                                    <a href="{% url 'users:detail' request.user.username  %}">
+                                        <i class="fa fa-user"></i> {% trans "My Profile" %}
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{% url 'account_logout' %}">
+                                        <i class="fa fa-sign-out"></i> {% trans "Logout" %}
+                                    </a>
+                                </li>
+                                {% else %}
+								<li class="dropdown mega-menu-item mega-menu-signin signin" id="headerAccount">
+									<a class="dropdown-toggle" href="{% url 'account_login' %}">
+										<i class="fa fa-user"></i> {% trans "Sign In" %}
+										<i class="fa fa-angle-down"></i>
+									</a>
+									<ul class="dropdown-menu">
+										<li>
+											<div class="mega-menu-content">
+												<div class="row">
+													<div class="col-md-12">
+
+														<div class="signin-form">
+
+															<span class="mega-menu-sub-title">{% trans "Sign In" %}</span>
+															<form action="{% url 'account_login' %}" id="" method="post">
+                                                                {% csrf_token %}
+																<div class="row">
+																	<div class="form-group">
+																		<div class="col-md-12">
+																			<label>Username</label>
+																			<input type="text" value="" name="login" class="form-control input-lg">
+																		</div>
+																	</div>
+																</div>
+																<div class="row">
+																	<div class="form-group">
+																		<div class="col-md-12">
+																			<a class="pull-right" id="headerRecover" href="#">({% trans "Forgot Password?" %})</a>
+																			<label>Password</label>
+																			<input type="password" value="" name="password" class="form-control input-lg">
+																		</div>
+																	</div>
+																</div>
+																<div class="row">
+																	<div class="col-md-6">
+																		<span class="remember-box checkbox">
+																			<label for="rememberme">
+																				<input type="checkbox" id="rememberme" name="remember">Remember Me
+																			</label>
+																		</span>
+																	</div>
+																	<div class="col-md-6">
+																		<input type="submit" value="Login" class="btn btn-primary pull-right push-bottom" data-loading-text="Loading...">
+																	</div>
+																</div>
+															</form>
+															<p class="sign-up-info">Don't have an account yet? <a href="#" id="headerSignUp">{% trans "Sign Up" %}</a></p>
+														</div>
+
+														<div class="signup-form">
+															<span class="mega-menu-sub-title">{% trans "Sign Up" %}</span>
+
+															<form action="{% url 'account_signup' %}" id="" method="post">
+                                                                {% csrf_token %}
+                                                                <div class="row">
+																	<div class="form-group">
+																		<div class="col-md-12">
+																			<label>Username</label>
+																			<input type="text" value="" name="username" class="form-control input-lg">
+																		</div>
+																	</div>
+																</div>
+																<div class="row">
+																	<div class="form-group">
+																		<div class="col-md-12">
+																			<label>E-mail Address</label>
+																			<input type="text" value="" name="email" class="form-control input-lg">
+																		</div>
+																	</div>
+																</div>
+																<div class="row">
+																	<div class="form-group">
+																		<div class="col-md-6">
+																			<label>Password</label>
+																			<input type="password" value="" name="password1" class="form-control input-lg">
+																		</div>
+																		<div class="col-md-6">
+																			<label>Re-enter Password</label>
+																			<input type="password" value="" name="password2" class="form-control input-lg">
+																		</div>
+																	</div>
+																</div>
+																<div class="row">
+																	<div class="col-md-12">
+																		<input type="submit" value="Create Account" class="btn btn-primary pull-right push-bottom" data-loading-text="Loading...">
+																	</div>
+																</div>
+															</form>
+															<p class="log-in-info">Already have an account? <a href="#" id="headerSignIn">{% trans "Sign In" %}</a></p>
+														</div>
+
+														<div class="recover-form">
+															<span class="mega-menu-sub-title">{% trans "Password Reset" %}</span>
+															<p>{% trans "Forgotten your password? Enter your e-mail address below, and we'll send you an e-mail allowing you to reset it." %}</p>
+
+															<form action="{% url 'account_reset_password' %}" id="" method="post">
+                                                                {% csrf_token %}
+																<div class="row">
+																	<div class="form-group">
+																		<div class="col-md-12">
+																			<label>E-mail Address</label>
+																			<input type="text" value="" name="email" class="form-control input-lg">
+																		</div>
+																	</div>
+																</div>
+																<div class="row">
+																	<div class="col-md-12">
+																		<input type="submit" value="{% trans "Reset My Password" %}" class="btn btn-primary pull-right push-bottom" data-loading-text="Loading...">
+																	</div>
+																</div>
+															</form>
+                                                            <p>{% blocktrans %}Please contact us if you have any trouble resetting your password.{% endblocktrans %}</p>
+															<p class="log-in-info">Already have an account? <a href="#" id="headerRecoverCancel">{% trans "Sign In" %}</a></p>
+														</div>
+
+													</div>
+												</div>
+											</div>
+										</li>
+									</ul>
+								</li>
+                                {% endif %}
+							</ul>
+						</nav>
+					</div>
+				</div>
+			</header>
+
+                  {% if messages %}
           {% for message in messages %}
               <div class="alert {% if message.tags %}alert-{{ message.tags }}"{% endif %}>{{ message|safe }}</div>
           {% endfor %}
@@ -72,31 +265,128 @@
         <p>Use this document as a way to quick start any new project.</p>
       {% endblock content %}
 
-    </div> <!-- /container -->
+			<footer class="short" id="footer">
+				<div class="container">
+					<div class="row">
+						<div class="col-md-9">
+							<h4>About <span class="marmix">marmix</span></h4>
+							<p>The MarMix serious game is a simulation based on a stock market and simulated companies whose shares are exchanged on the stock market. Students receive new data from the companies activity every minute and need to analyze them in order to predict their future benefits. Using the discounted dividend method to valuate the companies, students are able to place their orders on the exchange... <a href="{% url 'about' %}" class="btn-flat btn-xs">View More <i class="fa fa-arrow-right"></i></a></p>
+							<hr class="light">
+							<div class="row">
+								<div class="col-md-3">
+									<h5>About</h5>
+									<ul class="list icons list-unstyled">
+										<li><i class="fa fa-caret-right"></i> <a href="#">About Us</a></li>
+										<li><i class="fa fa-caret-right"></i> <a href="#">Services</a></li>
+										<li><i class="fa fa-caret-right"></i> <a href="#">Plans</a></li>
+									</ul>
+								</div>
+								<div class="col-md-3">
+									<h5>Game</h5>
+									<ul class="list icons list-unstyled">
+										<li><i class="fa fa-caret-right"></i> <a href="#">Features</a></li>
+									</ul>
+								</div>
+								<div class="col-md-3">
+									<h5>Help</h5>
+									<ul class="list icons list-unstyled">
+										<li><i class="fa fa-caret-right"></i> <a href="#">Manual</a></li>
+										<li><i class="fa fa-caret-right"></i> <a href="#">Market Rules</a></li>
+									</ul>
+								</div>
+								<div class="col-md-3">
+									<h5>Extra Pages</h5>
+									<ul class="list icons list-unstyled">
+										<li><i class="fa fa-caret-right"></i> <a href="#">Team</a></li>
+										<li><i class="fa fa-caret-right"></i> <a href="#">FAQ</a></li>
+										<li><i class="fa fa-caret-right"></i> <a href="#">Sitemap</a></li>
+                                        <li><i class="fa fa-caret-right"></i> <a href="#">Code</a></li>
+									</ul>
+								</div>
+							</div>
+						</div>
+						<div class="col-md-3">
+							<h5 class="short">Contact Us</h5>
+							<p class="short">Phone: +41 32 930 2088</p>
+							<p class="short">Fax: +41 32 930 2021</p>
+							<ul class="list icons list-unstyled push-top">
+								<li><i class="fa fa-map-marker"></i> <strong>Address:</strong> Haute école de gestion Arc<br>Espace de l'Europe 21<br>CH-2000 Neuchâtel, Switzerland</li>
+								<li><i class="fa fa-envelope"></i> <strong>Email:</strong> <a href="mailto:m3@marmix.ch">m3@marmix.ch</a></li>
+							</ul>
+							<div class="social-icons push-top">
+								<ul class="social-icons">
+									<li class="facebook"><a href="http://www.facebook.com/" target="_blank" data-placement="bottom" data-tooltip title="Facebook">Facebook</a></li>
+									<li class="twitter"><a href="http://www.twitter.com/" target="_blank" data-placement="bottom" data-tooltip title="Twitter">Twitter</a></li>
+									<li class="linkedin"><a href="http://www.linkedin.com/" target="_blank" data-placement="bottom" data-tooltip title="Linkedin">Linkedin</a></li>
+								</ul>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="footer-copyright">
+					<div class="container">
+						<div class="row">
+							<div class="col-md-1">
+								<a href="index.html" class="logo">
+									<img alt="MarMix" class="img-responsive" src="{% static 'img/logo-footer.png' %}">
+								</a>
+							</div>
+							<div class="col-md-11">
+								<p>© Copyright 2015. All Rights Reserved. - Version <a href="https://github.com/HEG-Arc/MarMix/commit/{{ REVISION }}">{{ REVISION }}</a></p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</footer>
+		</div>
 
-    <footer class="footer">
-      <div class="container">
-        <p>&copy; MarMix 2015 - Version <a href="https://github.com/HEG-Arc/MarMix/commit/{{ REVISION }}">{{ REVISION }}</a></p>
-      </div>
-    </footer>
+		<!-- Vendor -->
+		<script src="{% static 'vendor/jquery/jquery.js' %}"></script>
+		<script src="{% static 'vendor/jquery.appear/jquery.appear.js' %}"></script>
+		<script src="{% static 'vendor/jquery.easing/jquery.easing.js' %}"></script>
+		<script src="{% static 'vendor/jquery-cookie/jquery-cookie.js' %}"></script>
+		<script src="{% static 'bootstrap/js/bootstrap.js' %}"></script>
+		<script src="{% static 'vendor/common/common.js' %}"></script>
+		<script src="{% static 'vendor/jquery.validation/jquery.validation.js' %}"></script>
+		<script src="{% static 'vendor/jquery.stellar/jquery.stellar.js' %}"></script>
+		<script src="{% static 'vendor/jquery.easy-pie-chart/jquery.easy-pie-chart.js' %}"></script>
+		<script src="{% static 'vendor/jquery.gmap/jquery.gmap.js' %}"></script>
+		<script src="{% static 'vendor/isotope/jquery.isotope.js' %}"></script>
+		<script src="{% static 'vendor/owlcarousel/owl.carousel.js' %}"></script>
+		<script src="{% static 'vendor/jflickrfeed/jflickrfeed.js' %}"></script>
+		<script src="{% static 'vendor/magnific-popup/jquery.magnific-popup.js' %}"></script>
+		<script src="{% static 'vendor/vide/vide.js' %}"></script>
 
-    {% block modal %}{% endblock modal %}
+		<!-- Theme Base, Components and Settings -->
+		<script src="{% static 'js/theme.js' %}"></script>
 
-    <!-- Le javascript
-    ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
-    {% block javascript %}
-      <!-- Latest JQuery -->
-      <script src="{% static 'jquery/js/jquery-1.11.2.min.js' %}"></script>
+		<!-- Specific Page Vendor and Views -->
+		<script src="{% static 'vendor/rs-plugin/js/jquery.themepunch.tools.min.js' %}"></script>
+		<script src="{% static 'vendor/rs-plugin/js/jquery.themepunch.revolution.min.js' %}"></script>
+		<script src="{% static 'vendor/circle-flip-slideshow/js/jquery.flipshow.js' %}"></script>
+		<script src="{% static 'js/views/view.home.js' %}"></script>
 
-      <!-- Latest compiled and minified JavaScript -->
-      <script src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
+		<!-- Theme Custom -->
+		<script src="{% static 'js/custom.js' %}"></script>
 
-      <!-- Your stuff: Third-party javascript libraries go here -->
+		<!-- Theme Initialization Files -->
+		<script src="{% static 'js/theme.init.js' %}"></script>
 
-      <!-- place project specific Javascript in this file -->
-      <script src="{% static 'js/project.js' %}"></script>
-    {% endblock javascript %}
-  </body>
+		<!-- Google Analytics: Change UA-XXXXX-X to be your site's ID. Go to http://www.google.com/analytics/ for more information.
+		<script type="text/javascript">
+
+			var _gaq = _gaq || [];
+			_gaq.push(['_setAccount', 'UA-12345678-1']);
+			_gaq.push(['_trackPageview']);
+
+			(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+			})();
+
+		</script>
+		 -->
+
+	</body>
 </html>
- 
