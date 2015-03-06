@@ -12,6 +12,7 @@
 		<!-- Mobile Metas -->
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+        {% block css %}
 		<!-- Web Fonts  -->
 		<link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700,800%7CShadows+Into+Light" rel="stylesheet" type="text/css">
         <link rel="stylesheet" href="{% static 'css/fonts.css' %}" type="text/css">
@@ -39,6 +40,7 @@
 
 		<!-- Theme Custom CSS -->
 		<link rel="stylesheet" href="{% static 'css/custom.css' %}">
+        {% endblock css %}
 
 		<!-- Head Libs -->
 		<script src="{% static 'vendor/modernizr/modernizr.js' %}"></script>
@@ -307,7 +309,7 @@
 									<h5>Extra Pages</h5>
 									<ul class="list icons list-unstyled">
 										<li><i class="fa fa-caret-right"></i> <a href="{% url 'django.contrib.flatpages.views.flatpage' url="about/team/" %}">Team</a></li>
-										<li><i class="fa fa-caret-right"></i> <a href="{% url 'contact-us' %}">Contact us</a></li>
+										<li><i class="fa fa-caret-right"></i> <a href="{% url 'envelope-contact' %}">Contact us</a></li>
 										<li><i class="fa fa-caret-right"></i> <a href="{% url 'sitemap' %}">Sitemap</a></li>
                                         <li><i class="fa fa-caret-right"></i> <a href="{% url 'django.contrib.flatpages.views.flatpage' url="about/code/" %}">Code</a></li>
 									</ul>
@@ -349,6 +351,7 @@
 			</footer>
 		</div>
 
+        {% block javascript %}
 		<!-- Vendor -->
 		<script src="{% static 'vendor/jquery/jquery.js' %}"></script>
 		<script src="{% static 'vendor/jquery.appear/jquery.appear.js' %}"></script>
@@ -380,6 +383,6 @@
 
 		<!-- Theme Initialization Files -->
 		<script src="{% static 'js/theme.init.js' %}"></script>
-
+        {% endblock javascript %}
 	</body>
 </html>

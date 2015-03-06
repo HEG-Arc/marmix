@@ -17,7 +17,7 @@ urlpatterns = patterns('',
     url(r'^$',  # noqa
         TemplateView.as_view(template_name='pages/home.html'),
         name="home"),
-
+    url(r'^contact/', include('envelope.urls')),
     # Uncomment the next line to enable the admin:
     url(r'^admin/', include(admin.site.urls)),
 
@@ -42,7 +42,6 @@ urlpatterns += patterns('django.contrib.flatpages.views',
     url(r'^about/$', 'flatpage', {'url': '/about/'}, name='about'),
     url(r'^help/$', 'flatpage', {'url': '/help/'}, name='help'),
     url(r'^sitemap/$', 'flatpage', {'url': '/sitemap/'}, name='sitemap'),
-    url(r'^contact-us/$', 'flatpage', {'url': '/contact-us/'}, name='contact-us'),
     url(r'^start/$', 'flatpage', {'url': '/start/'}, name='start'),
 )
 

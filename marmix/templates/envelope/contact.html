@@ -1,0 +1,133 @@
+{%  extends "base.html" %}
+{% load staticfiles i18n envelope_tags crispy_forms_tags %}
+
+{% block content %}
+<div role="main" class="main">
+
+    <section class="page-top">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    <ul class="breadcrumb">
+                        <li><a href="{% url 'home' %}">Home</a></li>
+                        <li class="active">Contact Us</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <h1>Contact Us</h1>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Google Maps - Go to the bottom of the page to change settings and map location. -->
+    <div id="googlemaps" class="google-map"></div>
+
+    <div class="container">
+
+        <div class="row">
+            <div class="col-md-6">
+                <h2 class="short"><strong>Contact</strong> Us</h2>
+                <form action="{% url 'envelope-contact' %}" method="post">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    <div class="row">
+                        <div class="col-md-12">
+                            <input type="submit" value="Send Message" class="btn btn-primary btn-lg" data-loading-text="Loading...">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="col-md-6">
+
+                <h4 class="push-top">Get in <strong>touch</strong></h4>
+                <p>If you are interested in using our platform, contact us and we will be happy to discuss opportunities with you!</p>
+
+                <hr />
+
+                <h4>The <strong>Office</strong></h4>
+                <ul class="list-unstyled">
+                    <li><i class="fa fa-map-marker"></i> <strong>Address:</strong> Haute école de gestion Arc<br>Espace de l'Europe 21, CH-2000 Neuchâtel, Switzerland</li>
+                    <li><i class="fa fa-building"></i> <strong>Office:</strong> Campus Arc 1, room 150</li>
+                    <li><i class="fa fa-phone"></i> <strong>Phone:</strong> +41 32 930 2088</li>
+                    <li><i class="fa fa-envelope"></i> <strong>Email:</strong> <a href="mailto:m3@marmix.ch">m3@marmix.ch</a></li>
+                </ul>
+
+                <hr />
+
+                <h4>Business <strong>Hours</strong></h4>
+                <ul class="list-unstyled">
+                    <li><i class="fa fa-time"></i> Monday - Friday 9am to 5pm</li>
+                    <li><i class="fa fa-time"></i> Saturday - Closed</li>
+                    <li><i class="fa fa-time"></i> Sunday - Closed</li>
+                </ul>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+{% endblock content %}
+
+{% block javascript %}
+    {{ block.super }}
+    <script src="http://maps.google.com/maps/api/js?sensor=false"></script>
+    <script>
+
+        /*
+        Map Settings
+
+            Find the Latitude and Longitude of your address:
+                - http://universimmedia.pagesperso-orange.fr/geo/loc.htm
+                - http://www.findlatitudeandlongitude.com/find-address-from-latitude-and-longitude/
+
+        */
+
+        // Map Markers
+        var mapMarkers = [{
+            address: "Espace de l'Europe 21, CH-2000 Neuchâtel",
+            html: "<strong>HEG Arc</strong><br>Neuchâtel",
+            icon: {
+                image: "img/pin.png",
+                iconsize: [26, 46],
+                iconanchor: [12, 46]
+            },
+            popup: true
+        }];
+
+        // Map Initial Location
+        var initLatitude = 46.99832;
+        var initLongitude = 6.94076;
+
+        // Map Extended Settings
+        var mapSettings = {
+            controls: {
+                draggable: true,
+                panControl: true,
+                zoomControl: true,
+                mapTypeControl: true,
+                scaleControl: true,
+                streetViewControl: true,
+                overviewMapControl: true
+            },
+            scrollwheel: false,
+            markers: mapMarkers,
+            latitude: initLatitude,
+            longitude: initLongitude,
+            zoom: 16
+        };
+
+        var map = $("#googlemaps").gMap(mapSettings);
+
+        // Map Center At
+        var mapCenterAt = function(options, e) {
+            e.preventDefault();
+            $("#googlemaps").gMap("centerAt", options);
+        }
+
+    </script>
+{% endblock javascript %}

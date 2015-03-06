@@ -45,6 +45,7 @@ class Common(Configuration):
         'djangular',  # AngularJS
         'permission',
         'django_filters',
+        'envelope',
     )
 
     # Apps specific for this project go here.

@@ -70,3 +70,6 @@ python3-memcached==1.51
 
 # Async messages
 django-async-messages==0.3.1
+
+# Contact form
+django-envelope==1.0
