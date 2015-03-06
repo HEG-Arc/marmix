@@ -40,6 +40,9 @@ urlpatterns = patterns('',
 
 urlpatterns += patterns('django.contrib.flatpages.views',
     url(r'^about/$', 'flatpage', {'url': '/about/'}, name='about'),
+    url(r'^help/$', 'flatpage', {'url': '/help/'}, name='help'),
+    url(r'^sitemap/$', 'flatpage', {'url': '/sitemap/'}, name='sitemap'),
+    url(r'^contact-us/$', 'flatpage', {'url': '/contact-us/'}, name='contact-us'),
 )
 
 from django.conf.urls import url, include
