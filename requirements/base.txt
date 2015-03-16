@@ -73,3 +73,6 @@ django-async-messages==0.3.1
 
 # Contact form
 django-envelope==1.0
+
+# Robots
+django-robots==1.0

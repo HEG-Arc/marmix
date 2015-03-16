@@ -44,7 +44,8 @@ urlpatterns = patterns('',
     url(r'^ranking/(?P<pk>\d+)/', RankingView.as_view(), name='ranking-view'),
     url(r'^pages/', include('django.contrib.flatpages.urls')),
     url(r'^sitemap\.xml$', sitemap, {'sitemaps': sitemaps},
-        name='django.contrib.sitemaps.views.sitemap')
+        name='django.contrib.sitemaps.views.sitemap'),
+    url(r'^robots\.txt$', include('robots.urls')),
 
 ) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

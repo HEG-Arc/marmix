@@ -47,6 +47,7 @@ class Common(Configuration):
         'permission',
         'django_filters',
         'envelope',
+        'robots',
     )
 
     # Apps specific for this project go here.
