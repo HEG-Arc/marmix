@@ -273,7 +273,7 @@ class OrderBookViewSet(viewsets.ViewSet):
         for order in orders:
             if not last_order_price:
                 last_order_price = order['price']
-                if current_price > last_order_price:
+                if current_price > order['price']:
                     order_book.append({'price': current_price, 'quantity': 0, 'orders': 0, 'order_type': 'MARKET'})
             if last_order_price > current_price and current_price > order['price']:
                 order_book.append({'price': current_price, 'quantity': 0, 'orders': 0, 'order_type': 'MARKET'})
