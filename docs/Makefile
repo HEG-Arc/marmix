@@ -16,7 +16,7 @@ ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
 # the i18n builder cannot share the environment and doctrees with the others
 I18NSPHINXOPTS  = $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
 
-.PHONY: help clean html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest gettext marmix
+.PHONY: help clean html dirhtml singlehtml pickle json htmlhelp qthelp devhelp epub latex latexpdf text man changes linkcheck doctest gettext marmix manual
 
 help:
 	@echo "Please use \`make <target>' where <target> is one of"
@@ -40,6 +40,7 @@ help:
 	@echo "  linkcheck  to check all external links for integrity"
 	@echo "  doctest    to run all doctests embedded in the documentation (if enabled)"
 	@echo "  marmix     to make the PDF and HTML files and push them to the GitHub repository"
+	@echo "  manual     to make the HTML manual files"
 
 clean:
 	-rm -rf $(BUILDDIR)/*
@@ -182,3 +183,11 @@ marmix:
 	cd $(BUILDDIR)/html; git add . ; git commit -m "rebuilt docs"; git push origin gh-pages
 	@echo
 	@echo "All done! Thank you for contributing documentation ;-)"
+
+manual:
+	@echo "Building MarMix's manual..."
+	@echo
+	@echo "Building the HTML pages"
+	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+	@echo
+	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
