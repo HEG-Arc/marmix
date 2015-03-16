@@ -12,6 +12,14 @@ admin.autodiscover()
 import permission
 permission.autodiscover()
 from simulations.views import RankingView
+from django.contrib.sitemaps import FlatPageSitemap
+from django.contrib.sitemaps.views import sitemap
+from sitemaps import StaticViewSitemap
+
+sitemaps = {
+    'flatpages': FlatPageSitemap,
+    'static': StaticViewSitemap,
+}
 
 urlpatterns = patterns('',
     url(r'^$',  # noqa
@@ -34,7 +42,9 @@ urlpatterns = patterns('',
     url(r'^simulations/', include('simulations.urls')),
     url(r'^tickers/', include('tickers.urls')),
     url(r'^ranking/(?P<pk>\d+)/', RankingView.as_view(), name='ranking-view'),
-    url(r'^pages/', include('django.contrib.flatpages.urls'))
+    url(r'^pages/', include('django.contrib.flatpages.urls')),
+    url(r'^sitemap\.xml$', sitemap, {'sitemaps': sitemaps},
+        name='django.contrib.sitemaps.views.sitemap')
 
 ) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

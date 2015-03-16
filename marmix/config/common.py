@@ -32,6 +32,7 @@ class Common(Configuration):
         'django.contrib.staticfiles',
         'django.contrib.humanize',
         'django.contrib.flatpages',
+        'django.contrib.sitemaps',
         # Admin
         'django.contrib.admin',
     )
