@@ -58,7 +58,7 @@ urlpatterns += patterns('django.contrib.flatpages.views',
 
 from django.conf.urls import url, include
 from simulations.views import SimulationViewSet, CurrencyViewSet, TeamViewSet, ClockViewSet
-from stocks.views import StockViewSet, QuoteViewSet, OrderViewSet, HoldingsViewSet, CreateOrderViewSet, DividendsViewSet, MarketViewSet
+from stocks.views import StockViewSet, QuoteViewSet, OrderViewSet, HoldingsViewSet, CreateOrderViewSet, DividendsViewSet, MarketViewSet, OrderBookViewSet
 from users.views import UserViewSet, LoginView
 from tickers.views import CompaniesViewSet
 from rest_framework.routers import DefaultRouter
@@ -79,6 +79,7 @@ router.register(r'clock', ClockViewSet, base_name='clock')
 router.register(r'tickers', CompaniesViewSet, base_name='ticker')
 router.register(r'dividends', DividendsViewSet, base_name='dividend')
 router.register(r'market', MarketViewSet, base_name='market')
+router.register(r'book', OrderBookViewSet, base_name='book')
 
 # The API URLs are now determined automatically by the router.
 # Additionally, we include the login URLs for the browsable API.

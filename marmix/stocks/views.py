@@ -24,6 +24,7 @@
 from hashlib import sha256
 import json
 import logging
+import collections
 
 # Core Django imports
 from django.views.generic.detail import DetailView
@@ -40,6 +41,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 from django.contrib import messages
 from django.utils.decorators import method_decorator
+from django.db.models import Sum, Count
 
 
 # Third-party app imports
@@ -242,7 +244,7 @@ class HoldingsViewSet(viewsets.ViewSet):
     """
     permission_classes = (IsAuthenticated, )
 
-    def list(self, request, *args, **kw):
+    def list(self, request, *args, **kwargs):
         trader = request.user.get_team
         holdings = current_holdings(trader.id, trader.current_simulation_id)
         response = Response(holdings, status=status.HTTP_200_OK)
@@ -252,8 +254,32 @@ class HoldingsViewSet(viewsets.ViewSet):
 class DividendsViewSet(viewsets.ViewSet):
     permission_classes = (IsAuthenticated,)
 
-    def list(self, request, *args, **kw):
+    def list(self, request, *args, **kwargs):
         team = request.user.get_team
         dividends = dividends_list(team.id)
         response = Response(dividends, status=status.HTTP_200_OK)
+        return response
+
+
+class OrderBookViewSet(viewsets.ViewSet):
+
+    def retrieve(self, request, pk=None):
+        stock = get_object_or_404(Stock, pk=pk)
+        orders = Order.objects.filter(stock=stock, state=Order.SUBMITTED).values('price', 'order_type').annotate(qty=Sum('quantity'),
+                                                                                                   orders=Count('id')).order_by('-price')
+        current_price = stock.price
+        order_book = []
+        last_order_price = None
+        for order in orders:
+            if not last_order_price:
+                last_order_price = order['price']
+                if current_price > last_order_price:
+                    order_book.append({'price': current_price, 'quantity': 0, 'orders': 0, 'order_type': 'MARKET'})
+            if last_order_price > current_price and current_price > order['price']:
+                order_book.append({'price': current_price, 'quantity': 0, 'orders': 0, 'order_type': 'MARKET'})
+            order_book.append({'price': order['price'], 'quantity': order['qty'], 'orders': order['orders'], 'order_type': order['order_type']})
+            last_order_price = order['price']
+        if last_order_price > current_price:
+            order_book.append({'price': current_price, 'quantity': 0, 'orders': 0, 'order_type': 'MARKET'})
+        response = Response(order_book, status=status.HTTP_200_OK)
         return response
