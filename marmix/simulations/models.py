@@ -137,7 +137,7 @@ def current_shares(team_id, stock_id):
 def current_holdings(team_id, simulation_id):
     from stocks.models import TransactionLine
     stocks_list = {'stocks': [], 'cash': {}, 'balance': {'market_value': 0, 'purchase_value': 0, 'gain': 0, 'gain_p': 0}, 'clock': current_sim_day(simulation_id)}
-    tl = TransactionLine.objects.filter(transaction__simulation_id=simulation_id).filter(team_id=team_id).values('stock__symbol', 'stock__price', 'asset_type', 'stock__id').annotate(
+    tl = TransactionLine.objects.filter(transaction__simulation_id=simulation_id).filter(team_id=team_id).values('stock__symbol', 'stock__price', 'asset_type', 'stock__id', 'stock__quantity').annotate(
         quantity=Sum('quantity'), amount=Sum('amount')).order_by('stock__symbol')
 
     dividends = 0
@@ -148,14 +148,20 @@ def current_holdings(team_id, simulation_id):
             price = stock['stock__price']
             value = stock['quantity']*price
             gain = value-stock['amount']
+            outstanding_shares = stock['stock__quantity']
             try:
                 gain_p = (value/stock['amount']-1)*100
             except:
                 gain_p = 0
+            try:
+                shares_p = stock['quantity'] / outstanding_shares * 100
+            except:
+                shares_p = 0
 
             stocks_list['stocks'].append({'symbol': stock['stock__symbol'], 'asset_type': stock['asset_type'],
                                          'quantity': stock['quantity'], 'amount': stock['amount'], 'asset': asset,
                                          'gain': gain, 'gain_p': gain_p, 'value': value,
+                                         'outstanding_shares': outstanding_shares, 'shares_p': shares_p,
                                          'price': price, 'stock_id': stock['stock__id']})
             stocks_list['balance']['market_value'] += value
             stocks_list['balance']['purchase_value'] += stock['amount']
