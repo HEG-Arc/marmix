@@ -76,3 +76,49 @@ class Production(Common):
 
     ACCOUNT_DEFAULT_HTTP_PROTOCOL = 'https'
     # Your production stuff: Below this line define 3rd party libary settings
+    LOGGING = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'filters': {
+            'require_debug_false': {
+                '()': 'django.utils.log.RequireDebugFalse'
+            },
+            'require_debug_true': {
+                '()': 'django.utils.log.RequireDebugTrue'
+            },
+            },
+        'formatters': {
+            'verbose': {
+                'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+            },
+            'simple': {
+                'format': '%(levelname)s %(message)s'
+            },
+            },
+        'handlers': {
+            'mail_admins': {
+                'level': 'ERROR',
+                'filters': ['require_debug_false'],
+                'class': 'django.utils.log.AdminEmailHandler'
+            },
+            'file_debug': {
+                'level': 'DEBUG',
+                'class': 'logging.FileHandler',
+                'filename': '/var/log/marmix/django-debug.log',
+                'formatter': 'verbose',
+                },
+            'console': {
+                'level': 'DEBUG',
+                'filters': ['require_debug_true'],
+                'class': 'logging.StreamHandler',
+                'formatter': 'simple',
+                },
+            },
+        'loggers': {
+            '': {
+                'handlers': ['file_debug', 'mail_admins', 'console'],
+                'level': 'DEBUG',
+                'propagate': True,
+                },
+            }
+    }
