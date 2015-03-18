@@ -248,10 +248,16 @@ have access to the daily net income of all companies traded on the stock market.
 Current ranking
 ...............
 
-TBD
+During a simulation, you can see your current ranking minute by minute. However, the intra-game ranking is based on the
+value of your portfolio at the **current market price**. This value may not reflect the final market value after final
+dividends will be paid.
 
 Previous simulations
 ********************
+
+If your team is part in more than one simulation, you will have access to all past simulations through this section.
+Each simulation is listed and you can use the "Ranking" button to display your ranking during a given simulation
+(:num:`Figure #account-dashboard-ranking`).
 
 .. _account-dashboard-ranking:
 
