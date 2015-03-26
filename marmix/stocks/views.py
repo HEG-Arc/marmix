@@ -265,7 +265,7 @@ class OrderBookViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, pk=None):
         stock = get_object_or_404(Stock, pk=pk)
-        orders = Order.objects.filter(stock=stock, state=Order.SUBMITTED).values('price',
+        orders = Order.objects.filter(stock=stock, state=Order.SUBMITTED, price__gt=0).values('price',
                                       'order_type').annotate(qty=Sum('quantity'), orders=Count('id')).order_by('-price')
         current_price = stock.price
         order_book = []
