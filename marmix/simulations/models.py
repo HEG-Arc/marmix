@@ -154,7 +154,7 @@ def current_holdings(team_id, simulation_id):
             except:
                 gain_p = 0
             try:
-                shares_p = stock['quantity'] / outstanding_shares * 100
+                shares_p = stock['quantity'] / outstanding_shares
             except:
                 shares_p = 0
 
