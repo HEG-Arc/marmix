@@ -212,6 +212,29 @@ class SimulationUpdate(SuccessMessageMixin, UpdateView):
         return simulation
 
 
+class SimulationInfoUpdate(SuccessMessageMixin, UpdateView):
+    model = Simulation
+    fields = ['info', ]
+    success_message = _("The simulation information was successfully updated!")
+
+    def get_success_url(self):
+        return reverse('simulations-detail-view', kwargs={'pk': self.object.pk})
+
+    def get_context_data(self, **kwargs):
+        context = super(SimulationInfoUpdate, self).get_context_data(**kwargs)
+        simulation = get_object_or_404(Simulation, pk=self.kwargs['pk'])
+        context['simulation_id'] = simulation.id
+        context['action'] = 'update-info'
+        return context
+
+    def get_object(self, queryset=None):
+        if self.request.user.is_staff:
+            simulation = get_object_or_404(Simulation, pk=self.kwargs['pk'])
+        else:
+            simulation = get_object_or_404(Simulation, user=self.request.user, pk=self.kwargs['pk'])
+        return simulation
+
+
 class SimulationDelete(SuccessMessageMixin, DeleteView):
     model = Simulation
     success_url = reverse_lazy('simulations-list-view')

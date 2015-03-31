@@ -171,12 +171,12 @@ def liquidity_trader_order(simulation_id, stock_id):
     first_order_time = randint(0, int(day_duration/4*3/2))
     second_order_time = int(day_duration/4*3/2) - first_order_time + randint(0, int(day_duration/4*3/2))
 
-    open_quantity = Order.objects.all().filter(stock_id=stock.id, order_type=second_order_type, price__isnull=False, quantity__lt=100).aggregate(Sum('quantity'))['quantity__sum']
+    open_quantity = Order.objects.all().filter(stock_id=stock.id, order_type=second_order_type, price__isnull=False, quantity__lt=200).aggregate(Sum('quantity'))['quantity__sum']
     if open_quantity:
         quantity = randint(0, int(open_quantity*0.20))
         if quantity > 0:
             create_order.apply_async(args=[stock.id, team.id, first_order_type, quantity], countdown=first_order_time)
-    open_quantity = Order.objects.all().filter(stock_id=stock.id, order_type=first_order_type, price__isnull=False, quantity__lt=100).aggregate(Sum('quantity'))['quantity__sum']
+    open_quantity = Order.objects.all().filter(stock_id=stock.id, order_type=first_order_type, price__isnull=False, quantity__lt=200).aggregate(Sum('quantity'))['quantity__sum']
     if open_quantity:
         quantity = randint(0, int(open_quantity*0.20))
         if quantity > 0:

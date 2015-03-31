@@ -317,6 +317,8 @@ class Simulation(TimeStampedModel):
                                            default='10.0000', help_text=_("Transaction costs per order"))
     variable_transaction_cost = models.FloatField(verbose_name=_("variable transaction costs (%)"), default=1,
                                                   help_text=_("Variable transaction costs per order in %"))
+    info = models.TextField(verbose_name=_("simulation information"), null="True", blank="True",
+                            help_text=_("Information that is displayed in the participant's dashboard"))
     #expected_return = models.FloatField(verbose_name=_("variable transaction costs (%)"), default=1,
     #                                              help_text=_("Variable transaction costs per order in %"))
 

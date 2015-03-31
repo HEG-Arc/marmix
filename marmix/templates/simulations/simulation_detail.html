@@ -11,7 +11,7 @@
     <div class="container">
         <h1>{{ object.customer }}</h1>
         <div class="row">
-            <div class="col-md-12">
+            <div class="col-md-4">
                 <dl class="dl-horizontal">
                     <dt>Simulation code</dt>
                     <dd>{{ object.code }}</dd>
@@ -30,26 +30,41 @@
                     <dt>Created at</dt>
                     <dd>{{ object.created }}</dd>
                 </dl>
-
+            </div>
+            <div class="col-md-4">
+                <ul class="list-group">
                 {% if object.state < simulation_state.READY %}
-                    <a class="btn btn-primary" href="{% url 'simulation-update-view' object.id %}"><i class="fa fa-pencil-square-o"></i> Edit the simulation</a>
+                    <li class="list-group-item"><a class="btn btn-primary" href="{% url 'simulation-update-view' object.id %}"><i class="fa fa-pencil-square-o"></i> Edit the simulation</a></li>
                 {% endif %}
                 {% if object.state < simulation_state.READY %}
-                    <a class="btn btn-warning" href="{% url 'simulation-initialize-view' object.id %}"><i class="fa fa-cogs"></i> Initialize the simulation</a>
+                    <li class="list-group-item"><a class="btn btn-warning btn-block" href="{% url 'simulation-initialize-view' object.id %}"><i class="fa fa-cogs"></i> Initialize the simulation</a></li>
                 {% elif object.state == simulation_state.READY or object.state == simulation_state.PAUSED %}
-                    <a class="btn btn-success" href="{% url 'simulation-manage-state' object.id simulation_state.RUNNING %}"><i class="fa fa-play"></i> Start the simulation</a>
+                    <li class="list-group-item"><a class="btn btn-success btn-block" href="{% url 'simulation-manage-state' object.id simulation_state.RUNNING %}"><i class="fa fa-play"></i> Start the simulation</a></li>
                 {% elif object.state == simulation_state.RUNNING %}
-                    <a class="btn btn-warning" href="{% url 'simulation-manage-state' object.id simulation_state.PAUSED %}"><i class="fa fa-pause"></i> Pause the simulation</a>
+                    <li class="list-group-item"><a class="btn btn-warning btn-block" href="{% url 'simulation-manage-state' object.id simulation_state.PAUSED %}"><i class="fa fa-pause"></i> Pause the simulation</a></li>
                 {% elif object.state == simulation_state.FINISHED %}
-                    <a class="btn btn-danger" href="{% url 'simulation-manage-state' object.id simulation_state.ARCHIVED %}"><i class="fa fa-eject"></i> Archive the simulation</a>
+                    <li class="list-group-item"><a class="btn btn-danger btn-block" href="{% url 'simulation-manage-state' object.id simulation_state.ARCHIVED %}"><i class="fa fa-eject"></i> Archive the simulation</a></li>
                 {% endif %}
-                    <a class="btn btn-info" href="https://m3.marmix.ch/static/dashboard/#/clock" target="_blank"><i class="fa fa-clock-o "></i> Simulation clock</a>
-
-
-                    <a class="btn btn-primary" href="{% url 'companies-shares-create-view' object.id object.get_sim_day.sim_round %}"><i class="fa fa-money"></i> Pay dividends</a>
-
-                    <a class="btn btn-warning" href="{% url 'closes-market-view' object.id %}"><i class="fa fa-btc"></i> Set closing prices</a>
-
+                    <li class="list-group-item"><a class="btn btn-info btn-block" href="https://m3.marmix.ch/static/dashboard/#/clock" target="_blank"><i class="fa fa-clock-o "></i> Simulation clock</a></li>
+                    <li class="list-group-item"><a class="btn btn-primary btn-block" href="{% url 'companies-shares-create-view' object.id object.get_sim_day.sim_round %}"><i class="fa fa-money"></i> Pay dividends</a></li>
+                    <li class="list-group-item"><a class="btn btn-warning btn-block" href="{% url 'closes-market-view' object.id %}"><i class="fa fa-btc"></i> Set closing prices</a></li>
+                </ul>
+            </div>
+            <div class="col-md-4">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <div class="btn-group pull-right">
+                            <a class="btn btn-warning btn-xs" href="{% url 'simulation-info-update-view' object.id %}"><i class="fa fa-pencil-square"></i> Edit info box</a>
+                        </div>
+                        <h3 class="panel-title"><i class="fa fa-comments-o"></i> Simulation Infobox</h3>
+                    </div>
+                    <div class="panel-body">
+                        {{ object.info|safe }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
                 {% include "simulations/includes/clock.html" with clock=object.get_sim_day %}
 
                 <h2>Teams</h2>
