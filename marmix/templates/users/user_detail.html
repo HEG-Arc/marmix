@@ -53,13 +53,13 @@
                     Superuser {% if object.is_superuser %}<i class="fa fa-check"></i>{% else %}<i class="fa fa-times"></i>{% endif %}
                 </dd>
             </dl>
-            {% if request.user.get_team.current_simulation.info %}
+            {% if object.get_team.current_simulation.info %}
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <h4 class="panel-title"><i class="fa fa-comments-o"></i> Infobox</h4>
                 </div>
                 <div class="panel-body">
-                    {{ request.user.get_team.current_simulation.info|safe }}
+                    {{ object.get_team.current_simulation.info|safe }}
                 </div>
             </div>
             {% endif %}
@@ -113,7 +113,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                {% for simulation in object.simulations.all %}
+                {% for simulation in object.get_team.simulations.all %}
                     <tr>
                         <td>
                             {{ simulation.code }}
