@@ -1,5 +1,5 @@
 # Bleeding edge Django
-django==1.7.6
+django==1.7.7
 
 # Configuration
 django-configurations==0.8
@@ -33,21 +33,21 @@ django-autoslug==1.7.2
 django-avatar==2.0
 
 # Time zones support
-pytz==2014.10
+pytz==2015.2
 
 # Django REST framework
 Markdown==2.6.1
 django-filter==0.9.2
-djangorestframework==3.1.0
+djangorestframework==3.1.1
 
 # Django extensions
-django-extensions==1.5.1
+django-extensions==1.5.2
 
 # Django-shorturls (for encoding)
 django-shorturls==1.1.0
 
 # AngularJS
-django-angular==0.7.12
+django-angular==0.7.13
 
 # Permissions
 django-permission==0.8.5
@@ -56,7 +56,7 @@ django-permission==0.8.5
 dealer==2.0.4
 
 # Excel Export
-XlsxWriter==0.6.6
+XlsxWriter==0.7.2
 
 # Scheduler
 celery==3.1.17
