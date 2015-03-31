@@ -60,7 +60,7 @@ from .serializers import SimulationSerializer, CurrencySerializer, TeamSerialize
 from .forms import TeamsSelectionForm, TeamJoinForm
 from .tasks import initialize_simulation
 from customers.models import Customer
-from tickers.models import Ticker
+from tickers.models import Ticker, CompanyShare
 from stocks.tasks import open_market
 from stocks.models import Stock
 from .permissions import IsOwnerOrReadOnly, IsAdminOrReadOnly
@@ -333,6 +333,40 @@ def teams_export_xlsx(request, simulation_id=None, customer_id=None):
 
     response = HttpResponse(output.read(), content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     response['Content-Disposition'] = "attachment; filename=marmix_teams.xlsx"
+
+    return response
+
+
+def company_shares_export_xlsx(request, simulation_id):
+    simulation = get_object_or_404(Simulation, pk=simulation_id)
+    cs = CompanyShare.objects.filter(company__ticker__simulation=simulation).prefetch_related('company').order_by('sim_round', 'company__symbol')
+
+    output = io.BytesIO()
+    workbook = Workbook(output, {'in_memory': True})
+    worksheet = workbook.add_worksheet('Companies Financials')
+    bold = workbook.add_format({'bold': True})
+    date_format = workbook.add_format({'num_format': 'yyyy-MM-dd'})
+    worksheet.write(0, 0, 'Company', bold)
+    worksheet.write(0, 1, 'Share value', bold)
+    worksheet.write(0, 2, 'Dividends', bold)
+    worksheet.write(0, 3, 'Net income', bold)
+    worksheet.write(0, 4, 'Drift', bold)
+    worksheet.write(0, 5, 'Round', bold)
+    row = 1
+    for share in cs:
+        worksheet.write(row, 0, share.company.symbol)
+        worksheet.write(row, 1, share.share_value)
+        worksheet.write(row, 2, share.dividends)
+        worksheet.write(row, 3, share.net_income)
+        worksheet.write(row, 4, share.drift)
+        worksheet.write(row, 5, share.sim_round)
+        row += 1
+    workbook.close()
+
+    output.seek(0)
+
+    response = HttpResponse(output.read(), content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+    response['Content-Disposition'] = "attachment; filename=marmix_companies_financials.xlsx"
 
     return response
 

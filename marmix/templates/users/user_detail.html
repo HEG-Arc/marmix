@@ -110,6 +110,7 @@
                         <th>Simulation</th>
                         <th>Date</th>
                         <th>Ranking</th>
+                        <th>Data</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -123,6 +124,9 @@
                         </td>
                         <td>
                             <a class="btn btn-info btn-xs" href="{% url "ranking-view" simulation.id %}" target="_blank"><i class="fa fa-list-ol"></i> View ranking</a>
+                        </td>
+                        <td>
+                            <a class="btn btn-info btn-xs" href="{% url "company-shares-export-xlsx-simulation" simulation.id %}" target="_blank"><i class="fa fa-file-excel-o"></i> Companies financials</a>
                         </td>
                 {% empty %}
                     <p>No simulation yet!</p>
