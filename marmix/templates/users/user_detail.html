@@ -126,7 +126,7 @@
                             <a class="btn btn-info btn-xs" href="{% url "ranking-view" simulation.id %}" target="_blank"><i class="fa fa-list-ol"></i> View ranking</a>
                         </td>
                         <td>
-                            <a class="btn btn-info btn-xs" href="{% url "company-shares-export-xlsx-simulation" simulation.id %}" target="_blank"><i class="fa fa-file-excel-o"></i> Companies financials</a>
+                            <a class="btn btn-info btn-xs" href="{% url "company-shares-export-xlsx-simulation" simulation.id %}"><i class="fa fa-file-excel-o"></i> Download data</a>
                         </td>
                 {% empty %}
                     <p>No simulation yet!</p>

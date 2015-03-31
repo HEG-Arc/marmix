@@ -37,6 +37,29 @@ from simulations.models import Simulation, Team, current_sim_day, stock_historic
 from .tasks import check_matching_orders, set_stock_quote, set_opening_price
 
 
+def dictfetchall(cursor):
+    """
+    Returns all rows from a cursor as a dict
+
+    :param cursor:
+    :return:
+    """
+    desc = cursor.description
+    return [
+        dict(zip([col[0] for col in desc], row))
+        for row in cursor.fetchall()
+    ]
+
+
+def simulation_quotes_history(simulation_id):
+    cursor = connection.cursor()
+    cursor.execute('SELECT * '
+                   'FROM quotes_history '
+                   'WHERE simulation_id=%s', [simulation_id, ])
+    quotes_history = dictfetchall(cursor)
+    return quotes_history
+
+
 class Stock(TimeStampedModel):
     """
     Stocks are shares of a company that are automatically generated during the simulation setup.

@@ -62,7 +62,7 @@ from .tasks import initialize_simulation
 from customers.models import Customer
 from tickers.models import Ticker, CompanyShare
 from stocks.tasks import open_market
-from stocks.models import HistoricalPrice
+from stocks.models import simulation_quotes_history
 
 
 logger = logging.getLogger(__name__)
@@ -340,7 +340,7 @@ def teams_export_xlsx(request, simulation_id=None, customer_id=None):
 def company_shares_export_xlsx(request, simulation_id):
     simulation = get_object_or_404(Simulation, pk=simulation_id)
     cs = CompanyShare.objects.filter(company__ticker__simulation=simulation).prefetch_related('company').order_by('sim_round', 'company__symbol')
-    hp = HistoricalPrice.objects.filter(stock__simulation=simulation).prefetch_related('stock').order_by('sim_round', 'sim_day', 'stock__symbol')
+    qh = simulation_quotes_history(simulation.id)
 
     output = io.BytesIO()
     workbook = Workbook(output, {'in_memory': True})
@@ -354,17 +354,17 @@ def company_shares_export_xlsx(request, simulation_id):
     worksheet.write(0, 4, 'Price Close', bold)
     worksheet.write(0, 5, 'Volume', bold)
     worksheet.write(0, 6, 'Round', bold)
-    worksheet.write(0, 7, 'Day', bold)
+    worksheet.write(0, 7, 'Date', bold)
     row = 1
-    for price in hp:
-        worksheet.write(row, 0, price.stock.symbol)
-        worksheet.write(row, 1, price.price_open)
-        worksheet.write(row, 2, price.price_high)
-        worksheet.write(row, 3, price.price_low)
-        worksheet.write(row, 4, price.price_close)
-        worksheet.write(row, 5, price.volume)
-        worksheet.write(row, 6, price.sim_round)
-        worksheet.write(row, 7, price.sim_day)
+    for quote in qh:
+        worksheet.write(row, 0, quote['symbol'])
+        worksheet.write(row, 1, quote['open'])
+        worksheet.write(row, 2, quote['high'])
+        worksheet.write(row, 3, quote['low'])
+        worksheet.write(row, 4, quote['close'])
+        worksheet.write(row, 5, quote['volume'])
+        worksheet.write(row, 6, quote['sim_round'])
+        worksheet.write(row, 7, quote['sim_date'])
         row += 1
     worksheet2 = workbook.add_worksheet('Companies Financials')
     worksheet2.write(0, 0, 'Company', bold)
