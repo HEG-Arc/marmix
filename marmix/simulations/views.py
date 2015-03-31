@@ -355,7 +355,7 @@ def company_shares_export_xlsx(request, simulation_id):
     row = 1
     for share in cs:
         worksheet.write(row, 0, share.company.symbol)
-        worksheet.write(row, 1, share.share_value)
+        #worksheet.write(row, 1, share.share_value)
         worksheet.write(row, 2, share.dividends)
         worksheet.write(row, 3, share.net_income)
         worksheet.write(row, 4, share.drift)
