@@ -62,8 +62,8 @@ from .tasks import initialize_simulation
 from customers.models import Customer
 from tickers.models import Ticker, CompanyShare
 from stocks.tasks import open_market
-from stocks.models import Stock
-from .permissions import IsOwnerOrReadOnly, IsAdminOrReadOnly
+from stocks.models import HistoricalPrice
+
 
 logger = logging.getLogger(__name__)
 
@@ -340,26 +340,47 @@ def teams_export_xlsx(request, simulation_id=None, customer_id=None):
 def company_shares_export_xlsx(request, simulation_id):
     simulation = get_object_or_404(Simulation, pk=simulation_id)
     cs = CompanyShare.objects.filter(company__ticker__simulation=simulation).prefetch_related('company').order_by('sim_round', 'company__symbol')
+    hp = HistoricalPrice.objects.filter(stock__simulation=simulation).prefetch_related('stock').order_by('sim_round', 'sim_day', 'stock__symbol')
 
     output = io.BytesIO()
     workbook = Workbook(output, {'in_memory': True})
-    worksheet = workbook.add_worksheet('Companies Financials')
+    worksheet = workbook.add_worksheet('Price History')
     bold = workbook.add_format({'bold': True})
     date_format = workbook.add_format({'num_format': 'yyyy-MM-dd'})
-    worksheet.write(0, 0, 'Company', bold)
-    worksheet.write(0, 1, 'Share value', bold)
-    worksheet.write(0, 2, 'Dividends', bold)
-    worksheet.write(0, 3, 'Net income', bold)
-    worksheet.write(0, 4, 'Drift', bold)
-    worksheet.write(0, 5, 'Round', bold)
+    worksheet.write(0, 0, 'Stock', bold)
+    worksheet.write(0, 1, 'Price Open', bold)
+    worksheet.write(0, 2, 'Price High', bold)
+    worksheet.write(0, 3, 'Price Low', bold)
+    worksheet.write(0, 4, 'Price Close', bold)
+    worksheet.write(0, 5, 'Volume', bold)
+    worksheet.write(0, 6, 'Round', bold)
+    worksheet.write(0, 7, 'Day', bold)
+    row = 1
+    for price in hp:
+        worksheet.write(row, 0, price.stock.symbol)
+        worksheet.write(row, 1, price.price_open)
+        worksheet.write(row, 2, price.price_high)
+        worksheet.write(row, 3, price.price_low)
+        worksheet.write(row, 4, price.price_close)
+        worksheet.write(row, 5, price.volume)
+        worksheet.write(row, 6, price.sim_round)
+        worksheet.write(row, 7, price.sim_day)
+        row += 1
+    worksheet2 = workbook.add_worksheet('Companies Financials')
+    worksheet2.write(0, 0, 'Company', bold)
+    worksheet2.write(0, 1, 'Share value', bold)
+    worksheet2.write(0, 2, 'Dividends', bold)
+    worksheet2.write(0, 3, 'Net income', bold)
+    worksheet2.write(0, 4, 'Drift', bold)
+    worksheet2.write(0, 5, 'Round', bold)
     row = 1
     for share in cs:
-        worksheet.write(row, 0, share.company.symbol)
-        #worksheet.write(row, 1, share.share_value)
-        worksheet.write(row, 2, share.dividends)
-        worksheet.write(row, 3, share.net_income)
-        worksheet.write(row, 4, share.drift)
-        worksheet.write(row, 5, share.sim_round)
+        worksheet2.write(row, 0, share.company.symbol)
+        #worksheet2.write(row, 1, share.share_value)
+        worksheet2.write(row, 2, share.dividends)
+        worksheet2.write(row, 3, share.net_income)
+        worksheet2.write(row, 4, share.drift)
+        worksheet2.write(row, 5, share.sim_round)
         row += 1
     workbook.close()
 
