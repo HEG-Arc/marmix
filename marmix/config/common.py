@@ -272,7 +272,7 @@ class Common(Configuration):
                 'class': 'logging.NullHandler',
             },
             'console': {
-                'level': 'DEBUG',
+                'level': 'INFO',
                 'class': 'logging.StreamHandler',
                 'formatter': 'simple'
             },
