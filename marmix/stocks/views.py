@@ -279,7 +279,7 @@ class OrderBookViewSet(viewsets.ViewSet):
                 order_book.append({'price': current_price, 'quantity': 0, 'orders': 0, 'order_type': 'MARKET'})
             order_book.append({'price': order['price'], 'quantity': order['qty'], 'orders': order['orders'], 'order_type': order['order_type']})
             last_order_price = order['price']
-        if last_order_price > current_price:
+        if not last_order_price:
             order_book.append({'price': current_price, 'quantity': 0, 'orders': 0, 'order_type': 'MARKET'})
         response = Response(order_book, status=status.HTTP_200_OK)
         return response
