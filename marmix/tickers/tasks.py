@@ -82,6 +82,7 @@ def next_tick(simulation_id):
                 stocks = Stock.objects.all().filter(simulation_id=simulation.id)
                 for stock in stocks:
                     liquidity_trader_order.apply_async(args=[simulation.id, stock.id])
+                market_maker.apply_async(args=[simulation.id])
             print("Next tick processed: SIM: %s - R%sD%s @ %s" %
                   (sim_day.simulation_id, sim_day.sim_round, sim_day.sim_day, sim_day.timestamp))
         else:
@@ -232,3 +233,44 @@ def set_closing_price(simulation_id):
         share = CompanyShare.objects.get(company__stock=stock, sim_round=simulation.get_sim_day['sim_round'])
         stock.price = share.share_value
         stock.save()
+
+
+@app.task
+def market_maker(simulation_id):
+    simulation = Simulation.objects.get(pk=simulation_id)
+    stocks = simulation.stocks.all()
+    for stock in stocks:
+        # Check matching orders and force processing
+
+        # Make market liquid
+        try:
+            max_bid = Order.objects.filter(state=Order.SUBMITTED, stock=stock, order_type=Order.BID).order_by('-price')[0]
+            bid = max_bid.price
+        except IndexError:
+            bid = False
+        try:
+            min_ask = Order.objects.filter(state=Order.SUBMITTED, stock=stock, order_type=Order.ASK).order_by('price')[0]
+            ask = min_ask.price
+        except IndexError:
+            ask = False
+
+        if bid and ask:
+            nb_bid = Order.objects.filter(state=Order.SUBMITTED, stock=stock, order_type=Order.BID).count()
+            nb_ask = Order.objects.filter(state=Order.SUBMITTED, stock=stock, order_type=Order.ASK).count()
+            spread = ask - bid
+            best_price = bid + spread * Decimal(nb_ask / (nb_bid+nb_ask))
+            stock.price = best_price
+            stock.save()
+            print("New price for %s: %s" % (stock.symbol, best_price))
+        elif bid:
+            # We only have bid orders, so the market price is the max_bid
+            best_price = bid
+            stock.price = best_price
+            stock.save()
+            print("New price for %s [BID]: %s" % (stock.symbol, best_price))
+        elif ask:
+            # We only have bid orders, so the market price is the max_bid
+            best_price = ask
+            stock.price = best_price
+            stock.save()
+            print("New price for %s [ASK]: %s" % (stock.symbol, best_price))
