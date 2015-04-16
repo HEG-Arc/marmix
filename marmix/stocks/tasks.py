@@ -50,8 +50,12 @@ def check_matching_orders(order_id):
     """
     # TODO: Check if balance is sufficient!
     from .models import Order, process_order
-    order = Order.objects.get(pk=order_id)
-    if order.stock.simulation.state == Simulation.RUNNING:
+    try:
+        order = Order.objects.get(pk=order_id)
+    except Order.DoesNotExist:
+        order = None
+
+    if order and order.stock.simulation.state == Simulation.RUNNING:
         logger.debug("Starting a new order matching cycle...")
         if order.order_type == Order.ASK:
             book_order_type = Order.BID
