@@ -31,6 +31,7 @@ import time
 from django.core.cache import cache
 from django.utils import timezone
 from django.db.models import Sum
+from django.db import connection
 
 # Third-party app imports
 import numpy as np
@@ -38,9 +39,23 @@ import numpy as np
 # MarMix imports
 from config.celery import app
 from simulations.models import Simulation, SimDay, Team, current_sim_day
-from stocks.models import Stock, Order, TransactionLine, Transaction
+from stocks.models import Stock, Order, TransactionLine, Transaction, process_order
 from tickers.models import Ticker, TickerCompany, CompanyFinancial, CompanyShare
 from .utils import geometric_brownian
+
+
+def dictfetchall(cursor):
+    """
+    Returns all rows from a cursor as a dict
+
+    :param cursor:
+    :return:
+    """
+    desc = cursor.description
+    return [
+        dict(zip([col[0] for col in desc], row))
+        for row in cursor.fetchall()
+    ]
 
 
 @app.task
@@ -238,10 +253,29 @@ def set_closing_price(simulation_id):
 @app.task
 def market_maker(simulation_id):
     simulation = Simulation.objects.get(pk=simulation_id)
+    # We process all matching orders
+    cursor = connection.cursor()
+    cursor.execute('SELECT s.symbol as symbol, a.id as ask_id, b.id as bid_id, a.quantity as ask_qty, b.quantity as bid_qty '
+                   'FROM stocks_order a '
+                   'LEFT OUTER JOIN stocks_order b ON a.stock_id = b.stock_id AND a.price = b.price '
+                   'LEFT JOIN stocks_stock s ON a.stock_id = s.id '
+                   'WHERE a.order_type=%s AND b.order_type=%s AND a.state=%s AND b.state=%s AND a.team_id != b.team_id AND s.simulation_id=%s',
+                   [Order.ASK, Order.BID, Order.SUBMITTED, Order.SUBMITTED, simulation.id])
+    orders_list = dictfetchall(cursor)
+    for order in orders_list:
+        print("Matching order for stock %s" % order['symbol'])
+        if order['ask_qty'] > order['bid_qty']:
+            quantity = order['bid_qty']
+        elif order['ask_qty'] < order['bid_qty']:
+            quantity = order['ask_qty']
+        else:
+            quantity = order['bid_qty']
+        sell_order = Order.objects.get(pk=order['ask_id'])
+        buy_order = Order.objects.get(pk=order['bid_id'])
+        process_order(simulation, sell_order, buy_order, quantity, force=True)
+
     stocks = simulation.stocks.all()
     for stock in stocks:
-        # Check matching orders and force processing
-
         # Make market liquid
         try:
             max_bid = Order.objects.filter(state=Order.SUBMITTED, stock=stock, order_type=Order.BID).order_by('-price')[0]
