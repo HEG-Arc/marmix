@@ -353,7 +353,7 @@ def process_opening_transactions(simulation_id):
 
 
 @transaction.atomic
-def process_order(simulation, sell_order, buy_order, quantity):
+def process_order(simulation, sell_order, buy_order, quantity, force=False):
     """
     Fulfill two matching orders.
 
@@ -399,6 +399,8 @@ def process_order(simulation, sell_order, buy_order, quantity):
         # weighted_mean_price = cursor.fetchone()
     elif price > Decimal(1.5) * stock.price or price < Decimal(0.5) * stock.price:
         ready_to_process = False
+    elif force:
+        ready_to_process = True
     if current_shares(sell_order.team_id, sell_order.stock_id) < quantity:
         ready_to_process = False
         sell_order.state = Order.FAILED
@@ -408,19 +410,28 @@ def process_order(simulation, sell_order, buy_order, quantity):
         buy_order.state = Order.FAILED
         buy_order.save()
     if buy_order.team.team_type == Team.LIQUIDITY_MANAGER or sell_order.team.team_type == Team.LIQUIDITY_MANAGER:
-        max_bid = Order.objects.filter(state=Order.SUBMITTED, stock=stock, order_type=Order.BID).order_by('-price')[0]
-        min_ask = Order.objects.filter(state=Order.SUBMITTED, stock=stock, order_type=Order.ASK).order_by('price')[0]
-        if max_bid.price and min_ask.price:
-            spread = (min_ask.price - max_bid.price)/2 > 20
+        try:
+            max_bid = Order.objects.filter(state=Order.SUBMITTED, stock=stock, order_type=Order.BID).order_by('-price')[0]
+            max_bid_price = max_bid.price
+        except IndexError:
+            max_bid_price = False
+        try:
+            min_ask = Order.objects.filter(state=Order.SUBMITTED, stock=stock, order_type=Order.ASK).order_by('price')[0]
+            min_ask_price = min_ask.price
+        except IndexError:
+            min_ask_price = False
+
+        if max_bid_price and min_ask_price:
+            spread = (min_ask_price - max_bid_price)/2 > 20
             # It's too dangerous for the liquidity manager
             if buy_order.team.team_type == Team.LIQUIDITY_MANAGER:
                 if spread > 0:
-                    buy_order.price = Decimal(spread / 2) + max_bid.price
+                    buy_order.price = Decimal(spread / 2) + max_bid_price
                     buy_order.save()
                 ready_to_process = False
             if sell_order.team.team_type == Team.LIQUIDITY_MANAGER:
                 if spread > 0:
-                    sell_order.price = Decimal(spread / 2) + max_bid.price
+                    sell_order.price = Decimal(spread / 2) + max_bid_price
                     sell_order.save()
                 ready_to_process = False
         else:
