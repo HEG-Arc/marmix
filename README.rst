@@ -5,6 +5,8 @@ MarMix
 simulation in order to stepwise increase the difficulty of the game. The most advanced scenarios are developed to be
 run in parallel of an `ERPsim <http://erpsim.hec.ca/>`_ simulation.
 
+You can visit the **MarMix** website for more information on the product: https://m3.marmix.ch
+
 
 .. image:: https://travis-ci.org/HEG-Arc/marmix.svg
     :target: https://travis-ci.org/HEG-Arc/marmix
