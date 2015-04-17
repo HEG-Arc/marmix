@@ -212,7 +212,10 @@ def create_order(stock_id, team_id, order_type, quantity):
 def cleanup_open_orders(simulation_id, current_round, current_day):
     team = Team.objects.get(current_simulation_id=simulation_id, team_type=Team.LIQUIDITY_MANAGER)
     print("Time to cleanup old liquidity trader orders for trader %s" % team)
-    Order.objects.filter(team_id=team.id, transaction__isnull=True, sim_round=current_round, sim_day=current_day).delete()
+    orders = Order.objects.filter(team_id=team.id, transaction__isnull=True, sim_round=current_round, sim_day=current_day)
+    for order in orders:
+        order.state = Order.FAILED
+        order.save()
 
 
 @app.task

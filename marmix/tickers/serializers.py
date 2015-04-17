@@ -60,12 +60,12 @@ class CompaniesSerializer(serializers.ModelSerializer):
 
     def get_shares(self, obj):
         clock = current_sim_day(obj.ticker.simulation_id)
-        print("Clock %s" % clock)
+        #print("Clock %s" % clock)
         if clock['sim_round'] == 0:
             round = 1
-        elif clock['sim_state'] == Simulation.FINISHED:
-            print("We are in finished state!")
-            round = clock['sim_round'] + 1
+        #elif clock['sim_state'] == Simulation.FINISHED:
+        #    print("We are in finished state!")
+        #    round = clock['sim_round'] + 1
         else:
             round = clock['sim_round']
         current_shares = CompanyShare.objects.filter(company=obj).filter(sim_round__lt=round).filter(sim_round__gt=0)

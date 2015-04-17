@@ -13,7 +13,7 @@ from .common import Common
 
 
 class Production(Common):
-
+    DEBUG = True
     # This ensures that Django will be able to detect a secure connection
     # properly on Heroku.
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
@@ -102,7 +102,8 @@ class Production(Common):
                 'class': 'django.utils.log.AdminEmailHandler'
             },
             'file_debug': {
-                'level': 'DEBUG',
+                'level': 'INFO',
+                'filters': ['require_debug_false'],
                 'class': 'logging.FileHandler',
                 'filename': '/var/log/marmix/django-debug.log',
                 'formatter': 'verbose',
