@@ -79,10 +79,13 @@ django-envelope==1.1
 django-robots==1.1
 
 # SQL Server
-# sudo apt-get install freetds-dev
+# apt-get install freetds-dev
 pymssql==2.1.1
 
 # SOAP
 beautifulsoup4==4.4.1
 requests==2.9.1
+# apt-get install libxml2-dev libxslt1-dev
 lxml==3.5.0
+
+pylibmc

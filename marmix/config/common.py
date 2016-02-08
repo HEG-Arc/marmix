@@ -43,7 +43,7 @@ class Common(Configuration):
         'allauth.account',
         #'allauth.socialaccount',
         'rest_framework',  # API
-        'djangular',  # AngularJS
+        #'djangular',  # AngularJS
         'permission',
         'django_filters',
         'envelope',
