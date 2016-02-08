@@ -391,7 +391,7 @@ class Team(TimeStampedModel):
 
     customer = models.ForeignKey(Customer, verbose_name=_('organization'), related_name=_('teams'),
                                  help_text=_("The organization the team belongs to"))
-    simulations = models.ManyToManyField('Simulation', verbose_name=_('simulations'), related_name=_('teams'), null=True,
+    simulations = models.ManyToManyField('Simulation', verbose_name=_('simulations'), related_name=_('teams'),
                                          blank=True, help_text=_("The simulation(s) the team belongs to"))
     name = models.CharField(verbose_name=_("name"), max_length=50,
                             help_text=_("A name that can be attributed to the team"))
@@ -400,7 +400,7 @@ class Team(TimeStampedModel):
                                  help_text=_("Indicates if it is a team of players or a liquidity manager"))
     locked = models.BooleanField(verbose_name=_("locked"), default=False,
                                  help_text=_("Locked teams can not log in the simulation"))
-    users = models.ManyToManyField(User, verbose_name=_('members'), related_name=_('teams'), null=True, blank=True,
+    users = models.ManyToManyField(User, verbose_name=_('members'), related_name=_('teams'), blank=True,
                                    help_text=_("The users belonging to the team"))
     uuid = models.CharField(verbose_name=_("registration key"), max_length=8, blank=True, null=True, unique=True,
                             help_text=_("A unique registration key that is automatically created"))

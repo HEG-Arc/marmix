@@ -65,8 +65,8 @@ class Ticker(TimeStampedModel):
                                    help_text=_("For example: i02lp1.informatik.tu-muenchen.de"))
     system = models.CharField(verbose_name=_("ERP system abbreviation"), max_length=30, null=True, blank=True,
                               help_text=_("For example: ucctumI02"))
-    client = models.CharField(verbose_name=_("ERP client"), null=True, blank=True,
-                              help_text=_("For example: 900"))
+    client = models.IntegerField(verbose_name=_("ERP client"), null=True, blank=True,
+                                 help_text=_("For example: 900"))
 
     class Meta:
         verbose_name = _('ticker')

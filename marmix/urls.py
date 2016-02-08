@@ -12,7 +12,7 @@ admin.autodiscover()
 import permission
 permission.autodiscover()
 from simulations.views import RankingView
-from django.contrib.sitemaps import FlatPageSitemap
+from django.contrib.flatpages.sitemaps import FlatPageSitemap
 from django.contrib.sitemaps.views import sitemap
 from sitemaps import StaticViewSitemap
 
@@ -45,7 +45,7 @@ urlpatterns = patterns('',
     url(r'^pages/', include('django.contrib.flatpages.urls')),
     url(r'^sitemap\.xml$', sitemap, {'sitemaps': sitemaps},
         name='django.contrib.sitemaps.views.sitemap'),
-    url(r'^robots\.txt$', include('robots.urls')),
+    url(r'^robots\.txt', include('robots.urls')),
 
 ) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

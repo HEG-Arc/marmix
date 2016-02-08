@@ -308,3 +308,9 @@ class Common(Configuration):
             "schedule": datetime.timedelta(seconds=5),
             },
         }
+
+    # TODO Check how to solve the "permission.templatetags.permissionif" error
+    # django.core.exceptions.ImproperlyConfigured: "permission.templatetags.permissionif" is not found in none of `TEMPLATES[?]['OPTIONS']['builtins']`.
+    # From Django 1.9, users require to specify the module to the option for loading a templatetag automatically or load the module manually.
+    # Users can ignore this exception via setting `False` to `PERMISSION_CHECK_TEMPLATES_OPTIONS_BUILTINS`.
+    PERMISSION_CHECK_TEMPLATES_OPTIONS_BUILTINS = False

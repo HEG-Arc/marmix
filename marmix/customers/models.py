@@ -42,7 +42,7 @@ class Customer(TimeStampedModel):
                             help_text=_("Customer's name, usually a higher ed institution"))
     short_code = models.CharField(verbose_name=_("short code"), max_length=5, unique=True,
                                   help_text=_("This code is used to create simulation identification code in the user interface"))
-    users = models.ManyToManyField(User, verbose_name=_("admin users"), related_name='organizations', blank=True, null=True,
+    users = models.ManyToManyField(User, verbose_name=_("admin users"), related_name='organizations', blank=True,
                                    help_text=_('Users who are entitled to manage the organization'))
 
     class Meta:
