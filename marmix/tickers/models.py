@@ -57,6 +57,16 @@ class Ticker(TimeStampedModel):
                                         default='3.0000', help_text=_("Interest rate retributing portfolios. To disable retribution of cash, set to 0.00"))
     fixed_interest_rate = models.BooleanField(verbose_name=_("fixed interest rate"), default=False, help_text=_("If fixed, the interest rate will not vary accross time"))
     # TODO: Add fields needed for the live simulation
+    host = models.CharField(verbose_name=_("ERPsim host"), max_length=60, null=True, blank=True,
+                            help_text=_("For example: i02lp1.informatik.tu-muenchen.de"))
+    port = models.IntegerField(verbose_name=_("ERPsim port"), null=True, blank=True,
+                               help_text=_("For example: 80"))
+    application = models.CharField(verbose_name=_("application name"), max_length=60, null=True, blank=True,
+                                   help_text=_("For example: i02lp1.informatik.tu-muenchen.de"))
+    system = models.CharField(verbose_name=_("ERP system abbreviation"), max_length=30, null=True, blank=True,
+                              help_text=_("For example: ucctumI02"))
+    client = models.CharField(verbose_name=_("ERP client"), null=True, blank=True,
+                              help_text=_("For example: 900"))
 
     class Meta:
         verbose_name = _('ticker')

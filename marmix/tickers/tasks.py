@@ -26,6 +26,7 @@ import datetime
 from decimal import Decimal, getcontext
 from random import randint
 import time
+import re
 
 # Core Django imports
 from django.core.cache import cache
@@ -35,6 +36,8 @@ from django.db import connection
 
 # Third-party app imports
 import numpy as np
+import requests
+from bs4 import BeautifulSoup
 
 # MarMix imports
 from config.celery import app
@@ -58,8 +61,63 @@ def dictfetchall(cursor):
     ]
 
 
+def clock_erpsim(simulation_id):
+    simulation = Simulation.objects.select_related('ticker').get(pk=simulation_id)
+    host = simulation.ticker.host
+    port = simulation.ticker.port
+    application = simulation.ticker.application
+    system = simulation.ticker.system
+    client = simulation.ticker.client
+    url = 'http://%s:%s/%s/WS' % (host, port, application)
+    xmldata = """<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ws="http://ws.erpsim.hec.ca/">
+       <soapenv:Header/>
+       <soapenv:Body>
+          <ws:getSimState>
+             <arg0>
+                 <displayingAllNews>false</displayingAllNews>
+                 <erpClient>%s</erpClient>
+                 <erpSystem>%s</erpSystem>
+                 <loggedOut>false</loggedOut>
+                 <password>ERPSIM</password>
+                 <role>TEAM_MEMBER</role>
+                 <simulationNumber>01</simulationNumber>
+                 <teamId>0</teamId>
+                 <updated>false</updated>
+                 <username>A1</username>
+             </arg0>
+             <arg1>-1</arg1>
+             <arg2>0</arg2>
+          </ws:getSimState>
+       </soapenv:Body>
+    </soapenv:Envelope>""" % (client, system)
+    headers = {'Content-Type': 'text/xml'}
+    try:
+        r = requests.post(url, data=xmldata, headers=headers)
+    except:
+        # TODO check to limit the scope...
+        r = None
+    if r and r.status_code == requests.codes.ok:
+        soup = BeautifulSoup(r.text, 'lxml-xml')
+        m = re.findall('(\d+)', soup.date.string)
+        if len(m) == 1:
+            # We received a ##quarterDayEndShort('2')
+            current_round = int(m[0])
+            current_day = simulation.ticker.nb_days
+        elif len(m) == 2:
+            # We received a ##quarterDayShort('3', '1')
+            current_round = int(m[0])
+            current_day = int(m[1])
+        else:
+            # We should never be here ;-)
+            pass
+    else:
+        # No time
+        pass
+
+
 @app.task
 def main_ticker_task():
+    # Called every X seconds by Celery-BEAT (value fixed in config/common.py)
     running_simulations = Simulation.objects.all().filter(state=Simulation.RUNNING)
     for simulation in running_simulations:
         next_tick(simulation.id)
