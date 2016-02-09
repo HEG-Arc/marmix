@@ -125,7 +125,7 @@ def create_mssql_simulation(simulation_id):
     conn.commit()
     cursor.execute("CREATE USER %s FOR LOGIN %s", (simulation.ticker.userkey, simulation.ticker.userkey))
     conn.commit()
-    cursor.execute("GRAND SELECT TO %s", simulation.ticker.userkey)
+    cursor.execute("GRANT SELECT TO %s", simulation.ticker.userkey)
     conn.commit()
     cursor.execute("INSERT INTO MARMIX_SIMULATION (USERKEY, GAMEID, CURRENT_DAY, CURRENT_ROUND, SIMULATIONID) VALUES (%s, %d, 0, 0, %d)",
                    (simulation.ticker.userkey, simulation.ticker.gameid, simulation_id))
