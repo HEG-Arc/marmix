@@ -159,6 +159,7 @@ class Common(Configuration):
     # END GENERAL CONFIGURATION
 
     # TEMPLATE CONFIGURATION
+    # TODO use the new TEMPLATE directive
     # See: https://docs.djangoproject.com/en/dev/ref/settings/#template-context-processors
     TEMPLATE_CONTEXT_PROCESSORS = (
         'django.contrib.auth.context_processors.auth',
