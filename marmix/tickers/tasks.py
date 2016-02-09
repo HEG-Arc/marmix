@@ -65,6 +65,8 @@ def dictfetchall(cursor):
 
 def clock_erpsim(simulation_id):
     simulation = Simulation.objects.select_related('ticker').get(pk=simulation_id)
+    current_round = False
+    current_day = False
     host = simulation.ticker.host
     port = simulation.ticker.port
     application = simulation.ticker.application
@@ -104,17 +106,13 @@ def clock_erpsim(simulation_id):
         if len(m) == 1:
             # We received a ##quarterDayEndShort('2')
             current_round = int(m[0])
-            current_day = simulation.ticker.nb_days
+            current_day = simulation.ticker.nb_days+1
         elif len(m) == 2:
             # We received a ##quarterDayShort('3', '1')
             current_round = int(m[0])
             current_day = int(m[1])
-        else:
-            # We should never be here ;-)
-            pass
-    else:
-        # No time
-        pass
+
+    return current_round, current_day
 
 
 def create_mssql_simulation(simulation_id):
@@ -159,46 +157,58 @@ def main_ticker_task():
 
 @app.task
 def next_tick(simulation_id):
-    simulation = Simulation.objects.get(pk=simulation_id)
-    current = current_sim_day(simulation.id)
-    if current['sim_round'] != 0:
-        if current['timestamp'] < timezone.now()-datetime.timedelta(seconds=simulation.ticker.day_duration):
-            # Simulation was already started, we continue
-            current_day = current['sim_day']
-            current_round = current['sim_round']
-            cleanup_open_orders.apply_async(args=[simulation.id, current_round, current_day])
-            if current_day == simulation.ticker.nb_days:
-                if current_round == simulation.ticker.nb_rounds:
-                    simulation.state = Simulation.FINISHED
-                    if simulation.simulation_type == Simulation.INTRO or simulation.simulation_type == Simulation.ADVANCED:
-                        prepare_dividends_payments.apply_async([simulation.id, current_round])
-                    sim_day = SimDay(simulation=simulation, sim_round=current_round, sim_day=current_day+1, state=Simulation.FINISHED)
-                    sim_day.save()
-                else:
-                    simulation.state = Simulation.PAUSED
-                    if simulation.simulation_type == Simulation.INTRO or simulation.simulation_type == Simulation.ADVANCED:
-                        prepare_dividends_payments.apply_async([simulation.id, current_round])
-                    sim_day = SimDay(simulation=simulation, sim_round=current_round+1, sim_day=0, state=simulation.state)
-                    sim_day.save()
-                simulation.save()
-            else:
-                sim_day = SimDay(simulation=simulation, sim_round=current_round, sim_day=current_day+1, state=simulation.state)
-                sim_day.save()
-                stocks = Stock.objects.all().filter(simulation_id=simulation.id)
-                for stock in stocks:
-                    liquidity_trader_order.apply_async(args=[simulation.id, stock.id])
-                market_maker.apply_async(args=[simulation.id])
-            print("Next tick processed: SIM: %s - R%sD%s @ %s" %
-                  (sim_day.simulation_id, sim_day.sim_round, sim_day.sim_day, sim_day.timestamp))
-        else:
-            print("Not yet time...")
+    simulation = Simulation.objects.select_related('ticker').get(pk=simulation_id)
+    last_clock = current_sim_day(simulation_id)
+    clock = True
+    # We have two sorts of clocks: internal or external
+    if simulation.simulation_type == Simulation.LIVE:
+        # The clock is external
+        current_round, current_day = clock_erpsim(simulation_id)
+        if not current_round or not current_day:
+            clock = False
     else:
-        # First start of the simulation
-        sim_day = SimDay(simulation=simulation, sim_round=1, sim_day=1, state=simulation.state)
-        sim_day.save()
-        stocks = Stock.objects.all().filter(simulation_id=simulation.id)
-        for stock in stocks:
-            liquidity_trader_order.apply_async(args=[simulation.id, stock.id])
+        # The clock is internal
+        if last_clock['timestamp'] < timezone.now()-datetime.timedelta(seconds=simulation.ticker.day_duration):
+            current_round = last_clock['sim_round']
+            current_day = last_clock['sim_day']+1
+        else:
+            current_round = last_clock['sim_round']
+            current_day = last_clock['sim_day']
+    if clock:
+        if last_clock['sim_round'] != 0:
+            # We push the clock
+            if last_clock['sim_day'] != current_day:
+                cleanup_open_orders.apply_async(args=[simulation_id, last_clock['sim_round'], last_clock['sim_day']])
+                if last_clock['sim_day'] == simulation.ticker.nb_days:
+                    if last_clock['sim_round'] == simulation.ticker.nb_rounds:
+                        simulation.state = Simulation.FINISHED
+                        if simulation.simulation_type == Simulation.INTRO or simulation.simulation_type == Simulation.ADVANCED:
+                            prepare_dividends_payments.apply_async([simulation.id, current_round])
+                        sim_day = SimDay(simulation=simulation, sim_round=last_clock['sim_round'], sim_day=last_clock['sim_day'], state=Simulation.FINISHED)
+                        sim_day.save()
+                    else:
+                        simulation.state = Simulation.PAUSED
+                        if simulation.simulation_type == Simulation.INTRO or simulation.simulation_type == Simulation.ADVANCED:
+                            prepare_dividends_payments.apply_async([simulation.id, current_round])
+                        sim_day = SimDay(simulation=simulation, sim_round=last_clock['sim_round']+1, sim_day=0, state=simulation.state)
+                        sim_day.save()
+                    simulation.save()
+                else:
+                    sim_day = SimDay(simulation=simulation, sim_round=current_round, sim_day=current_day, state=simulation.state)
+                    sim_day.save()
+                    stocks = Stock.objects.all().filter(simulation_id=simulation.id)
+                    for stock in stocks:
+                        liquidity_trader_order.apply_async(args=[simulation.id, stock.id])
+                    market_maker.apply_async(args=[simulation.id])
+                print("Next tick processed: SIM: %s - R%sD%s @ %s" %
+                      (sim_day.simulation_id, sim_day.sim_round, sim_day.sim_day, sim_day.timestamp))
+        else:
+            # First start of the simulation
+            sim_day = SimDay(simulation=simulation, sim_round=1, sim_day=1, state=simulation.state)
+            sim_day.save()
+            stocks = Stock.objects.all().filter(simulation_id=simulation.id)
+            for stock in stocks:
+                liquidity_trader_order.apply_async(args=[simulation.id, stock.id])
 
 
 @app.task
