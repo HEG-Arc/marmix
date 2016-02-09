@@ -111,7 +111,7 @@ def clock_erpsim(simulation_id):
             # We received a ##quarterDayShort('3', '1')
             current_round = int(m[0])
             current_day = int(m[1])
-
+    print("ERPsim clock: %s/%s" % (current_round, current_day))
     return current_round, current_day
 
 
