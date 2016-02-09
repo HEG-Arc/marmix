@@ -121,11 +121,15 @@ def create_mssql_simulation(simulation_id):
     simulation = Simulation.objects.select_related('ticker').get(pk=simulation_id)
     conn = pymssql.connect(settings.MSSQL_HOST, settings.MSSQL_USER, settings.MSSQL_PASSWORD, settings.MSSQL_DATABASE)
     cursor = conn.cursor()
-    cursor.execute("CREATE LOGIN %s WITH PASSWORD='MARMIX', CHECK_EXPIRATION=OFF, CHECK_POLICY=OFF", simulation.ticker.userkey)
+    # TODO get ride of the 2-steps construction of the sql requests
+    sql = "CREATE LOGIN %s WITH PASSWORD='MARMIX', CHECK_EXPIRATION=OFF, CHECK_POLICY=OFF" % simulation.ticker.userkey
+    cursor.execute(sql)
     conn.commit()
-    cursor.execute("CREATE USER %s FOR LOGIN %s", (simulation.ticker.userkey, simulation.ticker.userkey))
+    sql = "CREATE USER %s FOR LOGIN %s" % (simulation.ticker.userkey, simulation.ticker.userkey)
+    cursor.execute(sql)
     conn.commit()
-    cursor.execute("GRANT SELECT TO %s", simulation.ticker.userkey)
+    sql = "GRANT SELECT TO %s" % simulation.ticker.userkey
+    cursor.execute(sql)
     conn.commit()
     cursor.execute("INSERT INTO MARMIX_SIMULATION (USERKEY, GAMEID, CURRENT_DAY, CURRENT_ROUND, SIMULATIONID) VALUES (%s, %d, 0, 0, %d)",
                    (simulation.ticker.userkey, simulation.ticker.gameid, simulation_id))
