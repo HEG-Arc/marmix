@@ -63,7 +63,7 @@ class Ticker(TimeStampedModel):
     port = models.IntegerField(verbose_name=_("ERPsim port"), null=True, blank=True,
                                help_text=_("For example: 80"))
     application = models.CharField(verbose_name=_("application name"), max_length=60, null=True, blank=True,
-                                   help_text=_("For example: i02lp1.informatik.tu-muenchen.de"))
+                                   help_text=_("For example: erpsim"))
     system = models.CharField(verbose_name=_("ERP system abbreviation"), max_length=30, null=True, blank=True,
                               help_text=_("For example: ucctumI02"))
     client = models.IntegerField(verbose_name=_("ERP client"), null=True, blank=True,
