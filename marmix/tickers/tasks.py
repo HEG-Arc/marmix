@@ -63,7 +63,9 @@ def dictfetchall(cursor):
     ]
 
 
-def clock_erpsim(simulation_id):
+def clock_erpsim(simulation_id, full=False):
+    # int(soup.nbRounds.string)
+    # int(float(soup.roundDurationInMinutes.string))
     simulation = Simulation.objects.select_related('ticker').get(pk=simulation_id)
     current_round = False
     current_day = False
@@ -102,6 +104,7 @@ def clock_erpsim(simulation_id):
         r = None
     if r and r.status_code == requests.codes.ok:
         soup = BeautifulSoup(r.text, 'lxml-xml')
+
         m = re.findall('(\d+)', soup.date.string)
         if len(m) == 1:
             # We received a ##quarterDayEndShort('2')
@@ -112,7 +115,13 @@ def clock_erpsim(simulation_id):
             current_round = int(m[0])
             current_day = int(m[1])
     print("ERPsim clock: %s/%s" % (current_round, current_day))
-    return current_round, current_day
+    if not full:
+        return current_round, current_day
+    else:
+        full_clock = {'current_round': current_round, 'current_day': current_day, 'nb_teams': int(soup.nbTeams.string),
+                      'max_rounds': int(soup.nbRounds.string),
+                      'max_days': int(float(soup.roundDurationInMinutes.string))}
+        return full_clock
 
 
 def create_mssql_simulation(simulation_id):

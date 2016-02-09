@@ -31,7 +31,7 @@ from async_messages import messages
 # MarMix imports
 from config.celery import app
 from simulations.models import Simulation, Team, create_liquidity_manager
-from tickers.tasks import create_company_simulation, create_company_live
+from tickers.tasks import create_company_simulation, create_company_live, clock_erpsim
 from stocks.models import create_generic_stocks, process_opening_transactions, Stock
 
 
@@ -87,6 +87,16 @@ def initialize_simulation(simulation_id):
     elif simulation.simulation_type == Simulation.ADVANCED:
         messages.info(simulation.user, _("Initialization of advanced simulation running..."))
     elif simulation.simulation_type == Simulation.LIVE or simulation.simulation_type == Simulation.INDEXED:
+        if simulation.simulation_type == Simulation.LIVE:
+            full_clock = clock_erpsim(simulation.id, full=True)
+            ticker = simulation.ticker
+            ticker.nb_companies = full_clock['nb_teams']
+            ticker.nb_rounds = full_clock['max_rounds']
+            ticker.nb_days = full_clock['max_days']
+            ticker.save()
+        else:
+            # TODO get info from MSSQL
+            pass
         create_generic_stocks(simulation.id)
         create_liquidity_manager(simulation.id)
         for stock in simulation.stocks.all():
