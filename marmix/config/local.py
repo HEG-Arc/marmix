@@ -33,6 +33,12 @@ class Local(Common):
 
     INTERNAL_IPS = ('127.0.0.1', '10.0.2.2',)
 
+    # MSSQL
+    MSSQL_HOST = values.Value('data.marmix.ch', environ_prefix='MARMIX')
+    MSSQL_DATABASE = values.Value('test', environ_prefix='MARMIX')
+    MSSQL_USER = values.Value('test', environ_prefix='MARMIX')
+    MSSQL_PASSWORD = values.SecretValue(environ_prefix='MARMIX')
+
     DEBUG_TOOLBAR_CONFIG = {
         'DISABLE_PANELS': [
             'debug_toolbar.panels.redirects.RedirectsPanel',

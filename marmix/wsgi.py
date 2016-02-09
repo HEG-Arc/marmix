@@ -31,6 +31,10 @@ class WSGIEnvironment(WSGIHandler):
         os.environ['MARMIX_SECRET_KEY'] = environ['MARMIX_SECRET_KEY']
         os.environ['MARMIX_DATABASE_URL'] = environ['MARMIX_DATABASE_URL']
         os.environ['MARMIX_CACHE_URL'] = environ['MARMIX_CACHE_URL']
+        os.environ['MARMIX_MSSQL_HOST'] = environ['MARMIX_MSSQL_HOST']
+        os.environ['MARMIX_MSSQL_DATABASE'] = environ['MARMIX_MSSQL_DATABASE']
+        os.environ['MARMIX_MSSQL_USER'] = environ['MARMIX_MSSQL_USER']
+        os.environ['MARMIX_MSSQL_PASSWORD'] = environ['MARMIX_MSSQL_PASSWORD']
         return super(WSGIEnvironment, self).__call__(environ, start_response)
 
 #application = WSGIEnvironment()

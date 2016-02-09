@@ -33,11 +33,13 @@ from django.core.cache import cache
 from django.utils import timezone
 from django.db.models import Sum
 from django.db import connection
+from django.conf import settings
 
 # Third-party app imports
 import numpy as np
 import requests
 from bs4 import BeautifulSoup
+import pymssql
 
 # MarMix imports
 from config.celery import app
@@ -113,6 +115,32 @@ def clock_erpsim(simulation_id):
     else:
         # No time
         pass
+
+
+def create_mssql_simulation(simulation_id):
+    simulation = Simulation.objects.select_related('ticker').get(pk=simulation_id)
+    conn = pymssql.connect(settings.MSSQL_HOST, settings.MSSQL_USER, settings.MSSQL_PASSWORD, settings.MSSQL_DATABASE)
+    cursor = conn.cursor()
+    cursor.execute("CREATE LOGIN %s WITH PASSWORD='MARMIX', CHECK_EXPIRATION=OFF, CHECK_POLICY=OFF", simulation.ticker.userkey)
+    conn.commit()
+    cursor.execute("CREATE USER %s FOR LOGIN %s", (simulation.ticker.userkey, simulation.ticker.userkey))
+    conn.commit()
+    cursor.execute("GRAND SELECT TO %s", simulation.ticker.userkey)
+    conn.commit()
+    cursor.execute("INSERT INTO MARMIX_SIMULATION (USERKEY, GAMEID, CURRENT_DAY, CURRENT_ROUND, SIMULATIONID) VALUES (%s, %d, 0, 0, %d)",
+                   (simulation.ticker.userkey, simulation.ticker.gameid, simulation_id))
+    conn.commit()
+    conn.close()
+
+
+def update_mssql_time(simulation_id):
+    current = current_sim_day(simulation_id)
+    conn = pymssql.connect(settings.MSSQL_HOST, settings.MSSQL_USER, settings.MSSQL_PASSWORD, settings.MSSQL_DATABASE)
+    cursor = conn.cursor()
+    cursor.execute("UPDATE MARMIX_SIMULATION SET CURRENT_DAY=%d, CURRENT_ROUND=%d WHERE SIMULATIONID=%d",
+                   (current['sim_day'], current['sim_round'], simulation_id))
+    conn.commit()
+    conn.close()
 
 
 @app.task

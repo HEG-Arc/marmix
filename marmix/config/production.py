@@ -58,6 +58,12 @@ class Production(Common):
     EMAIL_USE_TLS = True
     # END EMAIL
 
+    # MSSQL
+    MSSQL_HOST = values.Value('data.marmix.ch', environ_prefix='MARMIX')
+    MSSQL_DATABASE = values.Value('test', environ_prefix='MARMIX')
+    MSSQL_USER = values.Value('test', environ_prefix='MARMIX')
+    MSSQL_PASSWORD = values.SecretValue(environ_prefix='MARMIX')
+
     # TEMPLATE CONFIGURATION
     # See: https://docs.djangoproject.com/en/dev/ref/settings/#template-dirs
     TEMPLATE_LOADERS = (
