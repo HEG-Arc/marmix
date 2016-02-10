@@ -118,7 +118,7 @@ class SimulationDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super(SimulationDetailView, self).get_context_data(**kwargs)
         context['simulation_state'] = Simulation.SIMULATION_STATE_DICT
-        context['teams'] = Team.objects.filter(simulations=self.kwargs['pk']).select_related('user')
+        context['teams'] = Team.objects.filter(simulations=self.kwargs['pk']) #.select_related('users')
         return context
 
     def get_object(self, queryset=None):
@@ -440,10 +440,11 @@ class SimulationInitializeView(SuccessMessageMixin, UpdateView):
         elif self.simulation.simulation_type == Simulation.ADVANCED:
             fields += ['nb_companies', 'initial_value', 'dividend_payoff_rate', 'transaction_costs', 'interest_rate', 'fixed_interest_rate']
         elif self.simulation.simulation_type == Simulation.LIVE:
-            fields += ['nb_companies', 'dividend_payoff_rate', 'transaction_costs', 'interest_rate', 'fixed_interest_rate',
-                       'host', 'port', 'application', 'system', 'client']
+            fields += ['nb_companies', 'dividend_payoff_rate', 'transaction_costs', 'interest_rate',
+                       'fixed_interest_rate', 'host', 'port', 'application', 'system', 'client']
         elif self.simulation.simulation_type == Simulation.INDEXED:
-            fields += ['nb_companies', 'dividend_payoff_rate', 'transaction_costs', 'interest_rate', 'fixed_interest_rate']
+            fields += ['nb_companies', 'dividend_payoff_rate', 'transaction_costs', 'interest_rate',
+                       'fixed_interest_rate', 'gameid']
         return modelform_factory(model=Ticker, fields=fields)
 
 

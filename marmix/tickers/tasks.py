@@ -141,7 +141,25 @@ def create_mssql_simulation(simulation_id):
     cursor.execute("INSERT INTO MARMIX_SIMULATION (USERKEY, GAMEID, CURRENT_DAY, CURRENT_ROUND, SIMULATIONID) VALUES (%s, %d, 0, 0, %d)",
                    (simulation.ticker.userkey, simulation.ticker.gameid, simulation_id))
     conn.commit()
+
+    # List of teams
+    list_of_teams = []
+    cursor.execute("SELECT DISTINCT COMPANYCODE FROM MUESLI_SALES WHERE GAMEID=%d ORDER BY COMPANYCODE", simulation.ticker.gameid)
+    row = cursor.fetchone()
+    while row:
+        list_of_teams.append(row[0])
+        row = cursor.fetchone()
+    nb_teams = len(list_of_teams)
+
+    # Duration
+    cursor.execute("SELECT MAX(SIM_ROUND) FROM MUESLI_SALES WHERE GAMEID=%d", simulation.ticker.gameid)
+    row = cursor.fetchone()
+    max_rounds = row[0]
+    cursor.execute("SELECT MAX(VDAY) FROM MUESLI_SALES WHERE GAMEID=%d", simulation.ticker.gameid)
+    row = cursor.fetchone()
+    max_days = row[0]
     conn.close()
+    return {'nb_teams': nb_teams, 'max_rounds': max_rounds, 'max_days': max_days, 'list_of_teams': list_of_teams}
 
 
 def update_mssql_time(simulation_id):
@@ -209,6 +227,8 @@ def next_tick(simulation_id):
                     for stock in stocks:
                         liquidity_trader_order.apply_async(args=[simulation.id, stock.id])
                     market_maker.apply_async(args=[simulation.id])
+                if simulation.simulation_type == Simulation.INDEXED:
+                    update_mssql_time(simulation.id)
                 print("Next tick processed: SIM: %s - R%sD%s @ %s" %
                       (sim_day.simulation_id, sim_day.sim_round, sim_day.sim_day, sim_day.timestamp))
         else:
@@ -225,7 +245,7 @@ def create_company_live(simulation_id, stock_id):
     simulation = Simulation.objects.get(pk=simulation_id)
     stock = Stock.objects.get(pk=stock_id)
     ticker = Ticker.objects.get(simulation=simulation)
-    company = TickerCompany(ticker=ticker, stock=stock, symbol=stock.symbol, name="Company blue %s" % stock.symbol)
+    company = TickerCompany(ticker=ticker, stock=stock, symbol=stock.symbol, name="Company %s" % stock.symbol)
     company.save()
 
 

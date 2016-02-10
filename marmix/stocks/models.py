@@ -298,15 +298,21 @@ class TransactionLine(models.Model):
         return "%s-%s" % (self.transaction_id, self.id)
 
 
-def create_generic_stocks(simulation_id):
+def create_generic_stocks(simulation_id, symbols=None):
     simulation = Simulation.objects.get(pk=simulation_id)
     char_shift = 65
     stocks_created = 0
-    for i in range(0, simulation.ticker.nb_companies):
-        symbol = 2*chr(i+char_shift)
-        stock = Stock(simulation=simulation, symbol=symbol, name='Company %s' % symbol, quantity=simulation.nb_shares)
-        stock.save()
-        stocks_created += 1
+    if symbols:
+        for symbol in symbols:
+            stock = Stock(simulation=simulation, symbol=symbol, name='Company %s' % symbol, quantity=simulation.nb_shares)
+            stock.save()
+            stocks_created += 1
+    else:
+        for i in range(0, simulation.ticker.nb_companies):
+            symbol = chr(i+char_shift)
+            stock = Stock(simulation=simulation, symbol=symbol, name='Company %s' % symbol, quantity=simulation.nb_shares)
+            stock.save()
+            stocks_created += 1
     return stocks_created
 
 
