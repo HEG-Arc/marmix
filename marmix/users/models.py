@@ -1,12 +1,17 @@
 # -*- coding: utf-8 -*-
 # Import the AbstractUser model
 from django.contrib.auth.models import AbstractUser
+from django.db import models
+from jsonfield import JSONField
 
 
 #from simulations.models import Simulation
 
 
 class User(AbstractUser):
+
+    dashboard = JSONField(null=True, blank=True)
+    #ame = models.CharField(verbose_name="name", max_length=50)
 
     def _is_poweruser(self):
         if self.organizations.all().count() > 0 or self.is_staff:

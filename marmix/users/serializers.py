@@ -36,7 +36,7 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('id', 'username', 'simulations')
+        fields = ('id', 'username', 'simulations', 'dashboard')
 
 from django.contrib.auth import update_session_auth_hash
 
