@@ -387,11 +387,11 @@ def set_closing_price(simulation_id):
 def market_maker(simulation_id):
     simulation = Simulation.objects.get(pk=simulation_id)
     # We process all matching orders
-    # TODO There is a bug, we do not match market orders!
+    # TODO We do not match market orders. We need to match NULL price on one side
     cursor = connection.cursor()
     cursor.execute('SELECT s.symbol as symbol, a.id as ask_id, b.id as bid_id, a.quantity as ask_qty, b.quantity as bid_qty '
                    'FROM stocks_order a '
-                   'LEFT OUTER JOIN stocks_order b ON a.stock_id = b.stock_id AND a.price = b.price '
+                   'LEFT OUTER JOIN stocks_order b ON a.stock_id = b.stock_id AND round(a.price,2) = round(b.price,2) '
                    'LEFT JOIN stocks_stock s ON a.stock_id = s.id '
                    'WHERE a.order_type=%s AND b.order_type=%s AND a.state=%s AND b.state=%s AND a.team_id != b.team_id AND s.simulation_id=%s',
                    [Order.ASK, Order.BID, Order.SUBMITTED, Order.SUBMITTED, simulation.id])
@@ -408,6 +408,7 @@ def market_maker(simulation_id):
         buy_order = Order.objects.get(pk=order['bid_id'])
         process_order(simulation, sell_order, buy_order, quantity, force=True)
 
+    # TODO Really?
     stocks = simulation.stocks.all()
     for stock in stocks:
         # Make market liquid
