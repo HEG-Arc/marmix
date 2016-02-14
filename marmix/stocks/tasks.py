@@ -65,7 +65,10 @@ def check_matching_orders(order_id):
         if not order.price:
             logger.debug("No price asked, market order.")
             # This is a market order
-            order_book = Order.objects.filter(stock=order.stock).filter(state=Order.SUBMITTED).filter(order_type=book_order_type).filter(price__isnull=False)
+            if book_order_type == Order.BID:
+                order_book = Order.objects.filter(stock=order.stock).filter(state=Order.SUBMITTED).filter(order_type=book_order_type).filter(price__isnull=False).order_by('-price')
+            else:
+                order_book = Order.objects.filter(stock=order.stock).filter(state=Order.SUBMITTED).filter(order_type=book_order_type).filter(price__isnull=False).order_by('price')
             if order_book:
                 logger.debug("We have limit orders in the book")
                 qty = order.quantity
@@ -76,7 +79,8 @@ def check_matching_orders(order_id):
                             qty_traded = qty
                             logger.debug("Full order can be fulfilled: %s" % qty_traded)
                         else:
-                            #  We fulfill a partial order and look for the next one
+                            #  We fulfill a partial order
+                            # TODO we should look for the next one
                             qty_traded = match_order.quantity
                             logger.debug("Partial order can be fulfilled: %s (order qty was: %s)" %
                                          (qty_traded, match_order.quantity))
@@ -94,7 +98,7 @@ def check_matching_orders(order_id):
         else:
             # This is a limit order
             logger.debug("Price asked, limit order.")
-            order_book = Order.objects.filter(stock=order.stock).filter(state=Order.SUBMITTED).filter(order_type=book_order_type).filter(price__isnull=True)
+            order_book = Order.objects.filter(stock=order.stock).filter(state=Order.SUBMITTED).filter(order_type=book_order_type).filter(price__isnull=True).order_by('timestamp')
             if order_book:
                 logger.debug("We have market orders in the book")
                 qty = order.quantity
@@ -106,6 +110,7 @@ def check_matching_orders(order_id):
                             logger.debug("Full order can be fulfilled: %s" % qty_traded)
                         else:
                             #  We fulfill a partial order and look for the next one
+                            # TODO look for the next one
                             qty_traded = match_order.quantity
                             logger.debug("Partial order can be fulfilled: %s (order qty was: %s)" %
                                          (qty_traded, match_order.quantity))
@@ -121,7 +126,10 @@ def check_matching_orders(order_id):
                         logger.info("New transaction: STOCK: %s QTY: %s SELLER: %s BUYER: %s" % (order.stock, qty_traded, sell_order.team, buy_order.team))
                         break
             else:
-                order_book = Order.objects.filter(stock=order.stock).filter(state=Order.SUBMITTED).filter(order_type=book_order_type).filter(price__isnull=False)
+                if book_order_type == Order.BID:
+                    order_book = Order.objects.filter(stock=order.stock).filter(state=Order.SUBMITTED).filter(order_type=book_order_type).filter(price__isnull=False).order_by('-price')
+                else:
+                    order_book = Order.objects.filter(stock=order.stock).filter(state=Order.SUBMITTED).filter(order_type=book_order_type).filter(price__isnull=False).order_by('price')
                 if order_book:
                     logger.debug("We have limit orders in the book")
                     qty = order.quantity
