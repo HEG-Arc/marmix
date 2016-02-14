@@ -54,10 +54,10 @@ def initialize_simulation(simulation_id):
     if simulation.teams.count() == 0:
         messages.error(simulation.user, _("You need to select at least one team for the simulation!"))
     else:
-        if simulation.simulation_type == Simulation.INTRO:
-            msg_info += _("Initialization of introductory simulation running...") + "<br />"
+        if simulation.simulation_type == Simulation.INTRO or simulation.simulation_type == Simulation.ADVANCED:
+            msg_info += _("Initialization of simulation running...") + "<br />"
             # stocks creation
-            print("Initialization of introductory simulation running...")
+            print("Initialization of simulation running...")
             print("Create generic stocks")
             stocks = create_generic_stocks(simulation.id)
             if stocks > 0:
@@ -87,8 +87,6 @@ def initialize_simulation(simulation_id):
             if msg_error != "":
                 msg_error += _("There were errors during the initialization process!")
                 messages.error(simulation.user, msg_error)
-        elif simulation.simulation_type == Simulation.ADVANCED:
-            messages.info(simulation.user, _("Initialization of advanced simulation running..."))
         elif simulation.simulation_type == Simulation.LIVE or simulation.simulation_type == Simulation.INDEXED:
             if simulation.simulation_type == Simulation.LIVE:
                 full_clock = clock_erpsim(simulation.id, full=True)
