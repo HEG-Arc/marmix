@@ -43,7 +43,7 @@ import pymssql
 
 # MarMix imports
 from config.celery import app
-from simulations.models import Simulation, SimDay, Team, current_sim_day
+from simulations.models import Simulation, SimDay, Team, current_sim_day, current_shares
 from stocks.models import Stock, Order, TransactionLine, Transaction, process_order
 from tickers.models import Ticker, TickerCompany, CompanyFinancial, CompanyShare
 from .utils import geometric_brownian
@@ -309,6 +309,7 @@ def liquidity_trader_order(simulation_id, stock_id):
     simulation = Simulation.objects.get(pk=simulation_id)
     stock = Stock.objects.get(pk=stock_id)
     team = Team.objects.get(current_simulation_id=simulation_id, team_type=Team.LIQUIDITY_MANAGER)
+    shares = current_shares(team.id, stock.id)
     day_duration = simulation.ticker.day_duration
     first_order_type = [Order.BID, Order.ASK]
     second_order_type = first_order_type.pop(randint(0, 1))
@@ -316,16 +317,16 @@ def liquidity_trader_order(simulation_id, stock_id):
     first_order_time = randint(0, int(day_duration/4*3/2))
     second_order_time = int(day_duration/4*3/2) - first_order_time + randint(0, int(day_duration/4*3/2))
 
-    open_quantity = Order.objects.all().filter(stock_id=stock.id, order_type=second_order_type, price__isnull=False, quantity__lt=200).aggregate(Sum('quantity'))['quantity__sum']
-    if open_quantity:
-        quantity = randint(0, int(open_quantity*0.20))
-        if quantity > 0:
-            create_order.apply_async(args=[stock.id, team.id, first_order_type, quantity], countdown=first_order_time)
-    open_quantity = Order.objects.all().filter(stock_id=stock.id, order_type=first_order_type, price__isnull=False, quantity__lt=200).aggregate(Sum('quantity'))['quantity__sum']
-    if open_quantity:
-        quantity = randint(0, int(open_quantity*0.20))
-        if quantity > 0:
-            create_order.apply_async(args=[stock.id, team.id, second_order_type, quantity], countdown=second_order_time)
+    #open_quantity = Order.objects.all().filter(stock_id=stock.id, order_type=second_order_type, price__isnull=False, quantity__lt=200).aggregate(Sum('quantity'))['quantity__sum']
+    #if open_quantity:
+    quantity = randint(0, int(shares*0.05))
+    if quantity > 0:
+        create_order.apply_async(args=[stock.id, team.id, first_order_type, quantity], countdown=first_order_time)
+    #open_quantity = Order.objects.all().filter(stock_id=stock.id, order_type=first_order_type, price__isnull=False, quantity__lt=200).aggregate(Sum('quantity'))['quantity__sum']
+    #if open_quantity:
+    quantity = randint(0, int(shares*0.05))
+    if quantity > 0:
+        create_order.apply_async(args=[stock.id, team.id, second_order_type, quantity], countdown=second_order_time)
 
 
 @app.task
@@ -386,6 +387,7 @@ def set_closing_price(simulation_id):
 def market_maker(simulation_id):
     simulation = Simulation.objects.get(pk=simulation_id)
     # We process all matching orders
+    # TODO There is a bug, we do not match market orders!
     cursor = connection.cursor()
     cursor.execute('SELECT s.symbol as symbol, a.id as ask_id, b.id as bid_id, a.quantity as ask_qty, b.quantity as bid_qty '
                    'FROM stocks_order a '
