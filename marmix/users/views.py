@@ -8,6 +8,7 @@ from django.views.generic import RedirectView
 from django.views.generic import UpdateView
 from django.views.generic import ListView
 from rest_framework import viewsets, permissions
+from rest_framework.decorators import api_view
 
 # Only authenticated users can access views using this.
 from braces.views import LoginRequiredMixin
@@ -67,6 +68,16 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
     http_method_names = ('get', 'put')
+
+
+@api_view(['GET'])
+def current_user(request):
+    user = request.user
+    return Response({
+        'username': user.username,
+        'id': user.id,
+        'dashboard': user.dashboard
+    })
 
 
 import json

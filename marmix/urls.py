@@ -59,7 +59,7 @@ urlpatterns += patterns('django.contrib.flatpages.views',
 from django.conf.urls import url, include
 from simulations.views import SimulationViewSet, CurrencyViewSet, TeamViewSet, ClockViewSet
 from stocks.views import StockViewSet, QuoteViewSet, OrderViewSet, HoldingsViewSet, CreateOrderViewSet, DividendsViewSet, MarketViewSet, OrderBookViewSet
-from users.views import UserViewSet, LoginView
+from users.views import UserViewSet, LoginView, current_user
 from tickers.views import CompaniesViewSet
 from rest_framework.routers import DefaultRouter
 
@@ -87,4 +87,5 @@ urlpatterns += [
     url(r'^api/v1/', include(router.urls)),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     url(r'^api/v1/auth/login/$', LoginView.as_view(), name='login'),
+    url(r'^api/v1/current-user/$', current_user, name='current_user'),
 ]
