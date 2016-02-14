@@ -7,7 +7,7 @@ from django.views.generic import DetailView
 from django.views.generic import RedirectView
 from django.views.generic import UpdateView
 from django.views.generic import ListView
-from rest_framework import viewsets
+from rest_framework import viewsets, permissions
 
 # Only authenticated users can access views using this.
 from braces.views import LoginRequiredMixin
@@ -59,12 +59,14 @@ class UserListView(LoginRequiredMixin, ListView):
     slug_url_kwarg = "username"
 
 
-class UserViewSet(viewsets.ReadOnlyModelViewSet):
+class UserViewSet(viewsets.ModelViewSet):
     """
     This viewset automatically provides `list` and `detail` actions.
     """
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    http_method_names = ('get', 'put')
 
 
 import json
