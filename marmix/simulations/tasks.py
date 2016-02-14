@@ -65,28 +65,7 @@ def initialize_simulation(simulation_id):
                 print("%s stocks created" % stocks)
             else:
                 msg_error += _("No stocks were created!") + "<br />"
-            # liquidity traders creation
-            liquidity_manager = create_liquidity_manager(simulation.id)
-            if liquidity_manager:
-                msg_info += _("%s was created..." % liquidity_manager.name) + "<br />"
-            else:
-                msg_error += _("No liquidity manager was created!") + "<br />"
-            # initialize ticker
-            for stock in simulation.stocks.all():
-                create_company_simulation(simulation.id, stock.id)
-            # opening transactions
-            print("Process openings...............")
-            process_opening_transactions(simulation.id)
-            # if openings:
-            #     msg_info += _("Openings transactions were processed...") + "<br />"
-            # else:
-            #     msg_error += _("Unable to process opening transactions!") + "<br />"
-            if msg_info != "":
-                msg_info += _("Initialization succeeded! You can start running the simulation.")
-                messages.info(simulation.user, msg_info)
-            if msg_error != "":
-                msg_error += _("There were errors during the initialization process!")
-                messages.error(simulation.user, msg_error)
+
         elif simulation.simulation_type == Simulation.LIVE or simulation.simulation_type == Simulation.INDEXED:
             if simulation.simulation_type == Simulation.LIVE:
                 full_clock = clock_erpsim(simulation.id, full=True)
@@ -105,10 +84,32 @@ def initialize_simulation(simulation_id):
                 ticker.save()
                 create_generic_stocks(simulation_id, symbols=game['list_of_teams'])
 
-            create_liquidity_manager(simulation.id)
-            for stock in simulation.stocks.all():
-                create_company_live(simulation.id, stock.id)
+        if simulation.simulation_type in (Simulation.INTRO, Simulation.ADVANCED, Simulation.LIVE, Simulation.INDEXED):
+            liquidity_manager = create_liquidity_manager(simulation.id)
+            if liquidity_manager:
+                msg_info += _("%s was created..." % liquidity_manager.name) + "<br />"
+            else:
+                msg_error += _("No liquidity manager was created!") + "<br />"
+
+            # initialize ticker
+            if simulation.simulation_type == Simulation.INTRO or simulation.simulation_type == Simulation.ADVANCED:
+                for stock in simulation.stocks.all():
+                    create_company_simulation(simulation.id, stock.id)
+
+            elif simulation.simulation_type == Simulation.LIVE or simulation.simulation_type == Simulation.INDEXED:
+                for stock in simulation.stocks.all():
+                    create_company_live(simulation.id, stock.id)
+
+            # opening transactions (gives cash and stock to each team)
+            print("Process openings...............")
             process_opening_transactions(simulation.id)
-            messages.info(simulation.user, _("Initialization of live simulation successful."))
+
+            if msg_info != "":
+                msg_info += _("Initialization succeeded! You can start running the simulation.")
+                messages.info(simulation.user, msg_info)
+            if msg_error != "":
+                msg_error += _("There were errors during the initialization process!")
+                messages.error(simulation.user, msg_error)
+
         else:
             messages.error(simulation.user, _("Initialization of simulation failed!"))
