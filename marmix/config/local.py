@@ -36,8 +36,8 @@ class Local(Common):
     # MSSQL
     MSSQL_HOST = values.Value('data.marmix.ch', environ_prefix='MARMIX')
     MSSQL_DATABASE = values.Value('test', environ_prefix='MARMIX')
-    MSSQL_USER = values.Value('test', environ_prefix='MARMIX')
-    MSSQL_PASSWORD = values.SecretValue(environ_prefix='MARMIX')
+    MSSQL_USER = values.Value('marmixadmin', environ_prefix='MARMIX')
+    MSSQL_PASSWORD = values.Value('marmix7top', environ_prefix='MARMIX')
 
     DEBUG_TOOLBAR_CONFIG = {
         'DISABLE_PANELS': [

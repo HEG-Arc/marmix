@@ -371,7 +371,7 @@ def process_order(simulation, sell_order, buy_order, quantity, force=False):
     :param quantity: The quantity to exchange (could be a partial fulfillment).
     :return: Nothing.
     """
-    stock = Stock.objects.get(pk=sell_order.stock.id)
+    stock = Stock.objects.get(pk=sell_order.stock_id)
     ready_to_process = True
     new_transaction = Transaction(simulation=simulation, transaction_type=Transaction.ORDER)
     new_transaction.save()
@@ -386,15 +386,14 @@ def process_order(simulation, sell_order, buy_order, quantity, force=False):
         price = sell_order.price
     else:
         #  Should not happens
-        #  TODO: How to choose the price?
         if buy_order.created_at <= sell_order.created_at:
             price = buy_order.price
         else:
             price = sell_order.price
-    #if sell_order.team.team_type == Team.LIQUIDITY_MANAGER or buy_order.team.team_type == Team.LIQUIDITY_MANAGER:
-    # TODO: Quick fix
+
     print("PRICE: %s" % price)
     if stock.price == 0 and stock.opening_price == 0:
+        # TODO: Check if we need to do something here
         pass
         # # We open the market
         # cursor = connection.cursor()
@@ -403,8 +402,7 @@ def process_order(simulation, sell_order, buy_order, quantity, force=False):
         #                'WHERE stock_id=%s AND state=%s AND order_type=%s',
         #                [stock.id, Order.SUBMITTED, Order.ASK])
         # weighted_mean_price = cursor.fetchone()
-    elif price > Decimal(1.5) * stock.price or price < Decimal(0.5) * stock.price:
-        ready_to_process = False
+
     elif force:
         ready_to_process = True
     if current_shares(sell_order.team_id, sell_order.stock_id) < quantity:
@@ -427,29 +425,30 @@ def process_order(simulation, sell_order, buy_order, quantity, force=False):
         except IndexError:
             min_ask_price = False
 
-        if max_bid_price and min_ask_price:
-            spread = (min_ask_price - max_bid_price)/2 > 20
+        if price > Decimal(1.5) * stock.price or price < Decimal(0.5) * stock.price:
+            ready_to_process = False
+        elif max_bid_price and min_ask_price:
+            try:
+                spread = min_ask_price - max_bid_price
+                mean = (min_ask_price + max_bid_price)/2
+            except:
+                spread = None
+                mean = 0
             # It's too dangerous for the liquidity manager
-            if buy_order.team.team_type == Team.LIQUIDITY_MANAGER:
-                if spread > 0:
-                    buy_order.price = Decimal(spread / 2) + max_bid_price
-                    buy_order.save()
-                ready_to_process = False
-            if sell_order.team.team_type == Team.LIQUIDITY_MANAGER:
-                if spread > 0:
-                    sell_order.price = Decimal(spread / 2) + max_bid_price
-                    sell_order.save()
-                ready_to_process = False
+            if spread:
+                if spread > mean*0.33:
+                    # It's too dangerous for the liquidity manager
+                    if buy_order.team.team_type == Team.LIQUIDITY_MANAGER:
+                        buy_order.price = max_bid_price + spread*0.1
+                        buy_order.save()
+                        ready_to_process = False
+                    if sell_order.team.team_type == Team.LIQUIDITY_MANAGER:
+                        sell_order.price = min_ask_price - spread*0.1
+                        sell_order.save()
+                        ready_to_process = False
         else:
-            pass
-            # if buy_order.team.team_type == Team.LIQUIDITY_MANAGER:
-            #     buy_order.state = Order.FAILED
-            #     buy_order.save()
-            #     ready_to_process = False
-            # if sell_order.team.team_type == Team.LIQUIDITY_MANAGER:
-            #     sell_order.state = Order.FAILED
-            #     sell_order.save()
-            #     ready_to_process = False
+            ready_to_process = False
+
     if price > 0 and ready_to_process:
         sell = TransactionLine(transaction=new_transaction, stock=stock, team=sell_order.team,
                                quantity=-1*quantity, price=price, amount=-1*quantity*price,
