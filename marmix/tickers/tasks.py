@@ -282,13 +282,13 @@ def create_company_simulation(simulation_id, stock_id):
 
     # Share price estimation
     G = simulation_dividends[-1]/simulation_dividends[-2]-1
-    R = 0.1
+    R = 0.15
     g = R
     drift = 0
     simulation_stock_price = []
     previous_company_income = None
     for sim_round in range(0, rounds):
-        stock_price = np.npv(0.1, simulation_dividends[sim_round:rounds]) + (simulation_dividends[-1]*(1+g)/(R-G))/np.power(1+R, rounds-sim_round)
+        stock_price = np.npv(0.15, simulation_dividends[sim_round:rounds]) + (simulation_dividends[-1]*(1+g)/(R-G))/np.power(1+R, rounds-sim_round)
         simulation_stock_price.append(stock_price)
         if previous_company_income:
             drift = simulation_net_income[sim_round] / float(previous_company_income.net_income) - 1
