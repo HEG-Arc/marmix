@@ -386,33 +386,26 @@ def process_order(simulation, sell_order, buy_order, quantity, force=False):
         price = sell_order.price
     else:
         #  Should not happens
-        if buy_order.created_at <= sell_order.created_at:
-            price = buy_order.price
-        else:
-            price = sell_order.price
+        price = (buy_order.price + sell_order.price)/2
 
     print("PRICE: %s" % price)
     if stock.price == 0 and stock.opening_price == 0:
         # TODO: Check if we need to do something here
+        # We open the market
         pass
-        # # We open the market
-        # cursor = connection.cursor()
-        # cursor.execute('SELECT SUM(price * abs(quantity)) as price, SUM(abs(quantity)) as qty '
-        #                'FROM stocks_order '
-        #                'WHERE stock_id=%s AND state=%s AND order_type=%s',
-        #                [stock.id, Order.SUBMITTED, Order.ASK])
-        # weighted_mean_price = cursor.fetchone()
-
     elif force:
         ready_to_process = True
+
     if current_shares(sell_order.team_id, sell_order.stock_id) < quantity:
         ready_to_process = False
         sell_order.state = Order.FAILED
         sell_order.save()
+
     if current_cash(buy_order.team_id, simulation.id) < quantity * price:
         ready_to_process = False
         buy_order.state = Order.FAILED
         buy_order.save()
+
     if buy_order.team.team_type == Team.LIQUIDITY_MANAGER or sell_order.team.team_type == Team.LIQUIDITY_MANAGER:
         try:
             max_bid = Order.objects.filter(state=Order.SUBMITTED, stock=stock, order_type=Order.BID).order_by('-price')[0]
@@ -439,11 +432,11 @@ def process_order(simulation, sell_order, buy_order, quantity, force=False):
                 if spread > mean*0.33:
                     # It's too dangerous for the liquidity manager
                     if buy_order.team.team_type == Team.LIQUIDITY_MANAGER:
-                        buy_order.price = max_bid_price + spread*0.1
+                        buy_order.price = max_bid_price * 1.1
                         buy_order.save()
                         ready_to_process = False
                     if sell_order.team.team_type == Team.LIQUIDITY_MANAGER:
-                        sell_order.price = min_ask_price - spread*0.1
+                        sell_order.price = min_ask_price * 0.9
                         sell_order.save()
                         ready_to_process = False
         else:
