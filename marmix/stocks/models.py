@@ -433,7 +433,7 @@ def process_order(simulation, sell_order, buy_order, quantity, force=False):
                     mean = 0
                 # It's too dangerous for the liquidity manager
                 if spread:
-                    if spread > mean*0.33:
+                    if spread > mean*Decimal(0.33):
                         # It's too dangerous for the liquidity manager
                         if buy_order.team.team_type == Team.LIQUIDITY_MANAGER:
                             buy_order.price = max_bid_price * 1.1
