@@ -144,7 +144,7 @@ def create_mssql_simulation(simulation_id):
 
     # List of teams
     list_of_teams = []
-    cursor.execute("SELECT DISTINCT COMPANYCODE FROM MUESLI_SALES WHERE GAMEID=%d ORDER BY COMPANYCODE", simulation.ticker.gameid)
+    cursor.execute("SELECT DISTINCT COMPANYCODE FROM MUESLI_SALES_T WHERE GAMEID=%d ORDER BY COMPANYCODE", simulation.ticker.gameid)
     row = cursor.fetchone()
     while row:
         list_of_teams.append(row[0])
@@ -152,10 +152,10 @@ def create_mssql_simulation(simulation_id):
     nb_teams = len(list_of_teams)
 
     # Duration
-    cursor.execute("SELECT MAX(SIM_ROUND) FROM MUESLI_SALES WHERE GAMEID=%d", simulation.ticker.gameid)
+    cursor.execute("SELECT MAX(SIM_ROUND) FROM MUESLI_SALES_T WHERE GAMEID=%d", simulation.ticker.gameid)
     row = cursor.fetchone()
     max_rounds = row[0]
-    cursor.execute("SELECT MAX(VDAY) FROM MUESLI_SALES WHERE GAMEID=%d", simulation.ticker.gameid)
+    cursor.execute("SELECT MAX(VDAY) FROM MUESLI_SALES_T WHERE GAMEID=%d", simulation.ticker.gameid)
     row = cursor.fetchone()
     max_days = row[0]
     conn.close()
@@ -385,6 +385,20 @@ def set_closing_price(simulation_id):
         share = CompanyShare.objects.get(company__stock=stock, sim_round=simulation.get_sim_day['sim_round'])
         stock.price = share.share_value
         stock.save()
+
+
+def retrieve_open_market_orders(simulation_id):
+    for stock in Stock.objects.filter(simulation_id=simulation_id):
+        open_bid_orders = Order.objects.filter(stock_id=stock.id).filter(order_type=Order.BID).filter(state=Order.SUBMITTED).filter(price__isnull=True).order_by('timestamp')
+        if open_bid_orders:
+            limit_ask_orders = Order.objects.filter(stock_id=stock.id).filter(order_type=Order.ASK).filter(state=Order.SUBMITTED).filter(price__isnull=False).order_by('price')
+            bid_qty = 0
+            ask_qty = 0
+            ask_order = 0
+            for order in open_bid_orders:
+                bid_qty = order.quantity
+                ask_qty = limit_ask_orders[ask_order].quantity
+    pass
 
 
 @app.task
