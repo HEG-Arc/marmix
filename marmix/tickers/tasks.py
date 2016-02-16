@@ -351,14 +351,18 @@ def cleanup_open_orders(simulation_id, current_round, current_day):
 @app.task
 def prepare_dividends_payments(simulation_id, current_round):
     simulation = Simulation.objects.get(pk=simulation_id)
-    companies = TickerCompany.objects.filter(ticker__simulation_id=simulation.id)
-    for company in companies:
-        stock_id = company.stock_id
-        share = CompanyShare.objects.get(company_id=company.id, sim_round=current_round)
-        dividend = share.dividends
-        tl = TransactionLine.objects.filter(stock_id=stock_id).filter(asset_type=TransactionLine.STOCKS).filter(transaction__sim_round__lte=current_round).values('team').annotate(quantity=Sum('quantity')).order_by('team')
-        if tl:
-            execute_dividends_payments.apply_async(args=[simulation.id, stock_id, tl, dividend])
+    if simulation.simulation_type == Simulation.INTRO or simulation.simulation_type == Simulation.ADVANCED:
+        companies = TickerCompany.objects.filter(ticker__simulation_id=simulation.id)
+        for company in companies:
+            stock_id = company.stock_id
+            share = CompanyShare.objects.get(company_id=company.id, sim_round=current_round)
+            dividend = share.dividends
+            tl = TransactionLine.objects.filter(stock_id=stock_id).filter(asset_type=TransactionLine.STOCKS).filter(transaction__sim_round__lte=current_round).values('team').annotate(quantity=Sum('quantity')).order_by('team')
+            if tl:
+                execute_dividends_payments.apply_async(args=[simulation.id, stock_id, tl, dividend])
+    else:
+        # TODO Calculate the dividends based on the MSSQL server data
+        pass
 
 
 @app.task
