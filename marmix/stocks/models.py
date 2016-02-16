@@ -385,7 +385,7 @@ def process_order(simulation, sell_order, buy_order, quantity, force=False):
     elif buy_order.price == sell_order.price:
         price = sell_order.price
     else:
-        #  Should not happens
+        #  Due to rounding differences
         price = (buy_order.price + sell_order.price)/2
 
     print("PRICE: %s" % price)
@@ -407,38 +407,44 @@ def process_order(simulation, sell_order, buy_order, quantity, force=False):
         buy_order.save()
 
     if buy_order.team.team_type == Team.LIQUIDITY_MANAGER or sell_order.team.team_type == Team.LIQUIDITY_MANAGER:
-        try:
-            max_bid = Order.objects.filter(state=Order.SUBMITTED, stock=stock, order_type=Order.BID).order_by('-price')[0]
-            max_bid_price = max_bid.price
-        except IndexError:
-            max_bid_price = False
-        try:
-            min_ask = Order.objects.filter(state=Order.SUBMITTED, stock=stock, order_type=Order.ASK).order_by('price')[0]
-            min_ask_price = min_ask.price
-        except IndexError:
-            min_ask_price = False
-
-        if price > Decimal(1.5) * stock.price or price < Decimal(0.5) * stock.price:
-            ready_to_process = False
-        elif max_bid_price and min_ask_price:
+        # TODO tester qu'il y a au moins x teams avant de passer la transaction
+        bids = Order.objects.filter(state=Order.SUBMITTED, stock=stock, order_type=Order.BID).count()
+        asks = Order.objects.filter(state=Order.SUBMITTED, stock=stock, order_type=Order.ASK).count()
+        if bids > 3 and asks > 3:
             try:
-                spread = min_ask_price - max_bid_price
-                mean = (min_ask_price + max_bid_price)/2
-            except:
-                spread = None
-                mean = 0
-            # It's too dangerous for the liquidity manager
-            if spread:
-                if spread > mean*0.33:
-                    # It's too dangerous for the liquidity manager
-                    if buy_order.team.team_type == Team.LIQUIDITY_MANAGER:
-                        buy_order.price = max_bid_price * 1.1
-                        buy_order.save()
-                        ready_to_process = False
-                    if sell_order.team.team_type == Team.LIQUIDITY_MANAGER:
-                        sell_order.price = min_ask_price * 0.9
-                        sell_order.save()
-                        ready_to_process = False
+                max_bid = Order.objects.filter(state=Order.SUBMITTED, stock=stock, order_type=Order.BID).order_by('-price')[0]
+                max_bid_price = max_bid.price
+            except IndexError:
+                max_bid_price = False
+            try:
+                min_ask = Order.objects.filter(state=Order.SUBMITTED, stock=stock, order_type=Order.ASK).order_by('price')[0]
+                min_ask_price = min_ask.price
+            except IndexError:
+                min_ask_price = False
+
+            if price > Decimal(1.5) * stock.price or price < Decimal(0.5) * stock.price:
+                ready_to_process = False
+            elif max_bid_price and min_ask_price:
+                try:
+                    spread = min_ask_price - max_bid_price
+                    mean = (min_ask_price + max_bid_price)/2
+                except:
+                    spread = None
+                    mean = 0
+                # It's too dangerous for the liquidity manager
+                if spread:
+                    if spread > mean*0.33:
+                        # It's too dangerous for the liquidity manager
+                        if buy_order.team.team_type == Team.LIQUIDITY_MANAGER:
+                            buy_order.price = max_bid_price * 1.1
+                            buy_order.save()
+                            ready_to_process = False
+                        if sell_order.team.team_type == Team.LIQUIDITY_MANAGER:
+                            sell_order.price = min_ask_price * 0.9
+                            sell_order.save()
+                            ready_to_process = False
+            else:
+                ready_to_process = False
         else:
             ready_to_process = False
 
