@@ -351,7 +351,7 @@ def cleanup_open_orders(simulation_id, current_round, current_day):
 @app.task
 def prepare_dividends_payments(simulation_id, current_round):
     simulation = Simulation.objects.get(pk=simulation_id)
-    if simulation.simulation_type == Simulation.INTRO or simulation.simulation_type == Simulation.ADVANCED or simulation.simulation_type == Simulation.INDEXED:
+    if simulation.simulation_type == Simulation.INTRO or simulation.simulation_type == Simulation.ADVANCED or simulation.simulation_type == Simulation.INDEXED or simulation.simulation_type == Simulation.LIVE:
         companies = TickerCompany.objects.filter(ticker__simulation_id=simulation.id)
         for company in companies:
             stock_id = company.stock_id
