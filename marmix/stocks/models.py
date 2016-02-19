@@ -422,8 +422,13 @@ def process_order(simulation, sell_order, buy_order, quantity, force=False):
             except IndexError:
                 min_ask_price = False
 
-            if price > Decimal(1.5) * stock.price or price < Decimal(0.5) * stock.price:
+            # TODO Implement better test!
+            if price > Decimal(655.50):
                 ready_to_process = False
+
+            elif price > Decimal(1.5) * stock.price or price < Decimal(0.5) * stock.price:
+                ready_to_process = False
+
             elif max_bid_price and min_ask_price:
                 try:
                     spread = min_ask_price - max_bid_price
