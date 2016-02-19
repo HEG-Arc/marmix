@@ -439,8 +439,9 @@ def market_maker(simulation_id):
             min_ask = Order.objects.filter(state=Order.SUBMITTED, stock=stock, order_type=Order.ASK).order_by('price')[0]
             ask = min_ask.price
             # TODO Implement better check!
-            if ask > 1000:
-                ask = False
+            if ask:
+                if ask > Decimal(999):
+                    ask = False
         except IndexError:
             ask = False
 
