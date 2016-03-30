@@ -82,22 +82,24 @@ def CompanyShareCreateView(request, simulation_id, sim_round):
                 if form.cleaned_data.get('company'):
                     company = TickerCompany.objects.get(symbol=form.cleaned_data['company'], ticker=simulation.ticker)
                     net_income = form.cleaned_data['net_income']
-                    dividends = net_income * simulation.ticker.dividend_payoff_rate / 100 / company.stock.quantity
-                    if dividends < 0:
-                        dividends = 0
-                    if sim_round - 2 > 0:
-                        past = CompanyShare.objects.get(company=company, sim_round=sim_round - 2)
-                        drift = Decimal(net_income) / past.net_income - 1
-                        R = Decimal(0.1)
-                        if drift > R - Decimal(0.03):
-                            R = drift + Decimal(0.03)
-                        try:
-                            share_value = dividends * (1 + drift) / (R - drift)
-                        except:
-                            share_value = 0
+                    if net_income > 0:
+                        dividends = net_income * simulation.ticker.dividend_payoff_rate / 100 / company.stock.quantity
                     else:
-                        share_value = 0
-                        drift = 0
+                        dividends = 0
+                    # TODO: implement share price calculation
+                    # if sim_round - 2 > 0:
+                    #     past = CompanyShare.objects.get(company=company, sim_round=sim_round - 2)
+                    #     drift = Decimal(net_income) / past.net_income - 1
+                    #     R = Decimal(0.1)
+                    #     if drift > R - Decimal(0.03):
+                    #         R = drift + Decimal(0.03)
+                    #     try:
+                    #         share_value = dividends * (1 + drift) / (R - drift)
+                    #     except:
+                    #         share_value = 0
+                    # else:
+                    share_value = 0
+                    drift = 0
                     share = CompanyShare(company=company, share_value=share_value, dividends=dividends, net_income=net_income, drift=drift, sim_round=sim_round - 1)
                     share.save()
             prepare_dividends_payments.apply_async([simulation.id, sim_round-1])
