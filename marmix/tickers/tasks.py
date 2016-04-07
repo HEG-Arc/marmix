@@ -354,6 +354,33 @@ def cleanup_open_orders(simulation_id, current_round, current_day):
         order.save()
 
 
+def retrieve_erpsim_netincome_live(simulation_id):
+    simulation = Simulation.objects.select_related('ticker').get(pk=simulation_id)
+    url, xmldata = format_soap_request(simulation)
+    headers = {'Content-Type': 'text/xml'}
+    try:
+        r = requests.post(url, data=xmldata, headers=headers)
+    except:
+        # TODO check to limit the scope...
+        r = None
+    if r and r.status_code == requests.codes.ok:
+        saptree = ET.fromstring(r.text)
+
+        titles = []
+        for c in saptree.find('//colTitle'):
+            titles.append(re.sub("[^a-zA-Z]+", "", c.text))
+
+        titles.pop(0)
+
+        l = []
+        for c in saptree.find('//rows'):
+            l.append([r.text for r in c])
+
+        eor = {}
+        for team in l:
+            eor[team[0]] = dict(zip(titles, team[1:]))
+
+
 @app.task
 def prepare_dividends_payments(simulation_id, current_round):
     simulation = Simulation.objects.get(pk=simulation_id)
