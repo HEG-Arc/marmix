@@ -27,6 +27,7 @@ from decimal import Decimal, getcontext
 from random import randint
 import time
 import re
+import xml.etree.ElementTree as ET
 
 # Core Django imports
 from django.core.cache import cache
@@ -63,12 +64,7 @@ def dictfetchall(cursor):
     ]
 
 
-def clock_erpsim(simulation_id, full=False):
-    # int(soup.nbRounds.string)
-    # int(float(soup.roundDurationInMinutes.string))
-    simulation = Simulation.objects.select_related('ticker').get(pk=simulation_id)
-    current_round = False
-    current_day = False
+def format_soap_request(simulation):
     host = simulation.ticker.host
     port = simulation.ticker.port
     application = simulation.ticker.application
@@ -76,26 +72,36 @@ def clock_erpsim(simulation_id, full=False):
     client = simulation.ticker.client
     url = 'http://%s:%s/%s/WS' % (host, port, application)
     xmldata = """<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:ws="http://ws.erpsim.hec.ca/">
-       <soapenv:Header/>
-       <soapenv:Body>
-          <ws:getSimState>
-             <arg0>
-                 <displayingAllNews>false</displayingAllNews>
-                 <erpClient>%s</erpClient>
-                 <erpSystem>%s</erpSystem>
-                 <loggedOut>false</loggedOut>
-                 <password>ERPSIM</password>
-                 <role>TEAM_MEMBER</role>
-                 <simulationNumber>01</simulationNumber>
-                 <teamId>0</teamId>
-                 <updated>false</updated>
-                 <username>A1</username>
-             </arg0>
-             <arg1>-1</arg1>
-             <arg2>0</arg2>
-          </ws:getSimState>
-       </soapenv:Body>
-    </soapenv:Envelope>""" % (client, system)
+           <soapenv:Header/>
+           <soapenv:Body>
+              <ws:getSimState>
+                 <arg0>
+                     <displayingAllNews>false</displayingAllNews>
+                     <erpClient>%s</erpClient>
+                     <erpSystem>%s</erpSystem>
+                     <loggedOut>false</loggedOut>
+                     <password>ERPSIM</password>
+                     <role>TEAM_MEMBER</role>
+                     <simulationNumber>01</simulationNumber>
+                     <teamId>0</teamId>
+                     <updated>false</updated>
+                     <username>A1</username>
+                 </arg0>
+                 <arg1>-1</arg1>
+                 <arg2>0</arg2>
+              </ws:getSimState>
+           </soapenv:Body>
+        </soapenv:Envelope>""" % (client, system)
+    return url, xmldata
+
+
+def clock_erpsim(simulation_id, full=False):
+    # int(soup.nbRounds.string)
+    # int(float(soup.roundDurationInMinutes.string))
+    simulation = Simulation.objects.select_related('ticker').get(pk=simulation_id)
+    current_round = False
+    current_day = False
+    url, xmldata = format_soap_request(simulation)
     headers = {'Content-Type': 'text/xml'}
     try:
         r = requests.post(url, data=xmldata, headers=headers)
